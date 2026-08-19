@@ -1,0 +1,125 @@
+Entity,Field,Type,Required,Description,Example,Valid Values / Notes
+Company,name,Data,Yes,Company name,Haritha Hospitals,unique per site
+Company,abbr,Data,Yes,Company abbreviation,HH,unique, max 6 chars
+Company,default_currency,Link,Yes,Default currency for transactions,INR,Link → Currency
+Company,country,Link,Yes,Country where company is registered,India,Link → Country
+Company,fiscal_year_start_month,Select,Yes,Month when fiscal year starts,April,January-December
+Company,default_holiday_list,Link,No,Default holiday list applied to all employees,Haritha Hospitals Holiday List,Link → Holiday List
+Company,chart_of_accounts,Link,No,Chart of Accounts template to use,Standard,Link → Chart of Accounts Template
+Company,domain,Data,No,Business domain,Healthcare,Manufacturing/Retail/Healthcare/etc.
+Company,date_of_establishment,Date,No,Date the company was established,2020-01-01,ISO date
+Fiscal Year,year,Data,Yes,Fiscal year label,2025-2026,unique
+Fiscal Year,year_start_date,Date,Yes,First day of fiscal year,2025-04-01,ISO date
+Fiscal Year,year_end_date,Date,Yes,Last day of fiscal year,2026-03-31,ISO date
+Fiscal Year,companies,Table,No,Companies linked to this fiscal year (child table),,"child rows: company Link → Company"
+Holiday List,name,Data,Yes,Holiday list name,Haritha Hospitals Holiday List,unique
+Holiday List,weekly_off,Select,Yes,Default weekly off day for this list,Sunday,Sunday-Saturday
+Holiday List,from_date,Date,Yes,Start date of the holiday list validity,2025-01-01,ISO date
+Holiday List,to_date,Date,Yes,End date of the holiday list validity,2026-12-31,ISO date
+Holiday List,company,Link,No,Company this holiday list belongs to,Haritha Hospitals,Link → Company
+Holiday List,holidays,Table,No,List of holidays (child table — see Holiday DocType),,"child rows: holiday_date + description"
+Holiday,parent,Link,Yes,Parent holiday list,Haritha Hospitals Holiday List,Link → Holiday List
+Holiday,holiday_date,Date,Yes,Date of the holiday,2025-01-26,ISO date
+Holiday,description,Data,Yes,Holiday name,Republic Day,free text
+Holiday,weekly_off,Check,No,Marks a recurring weekly off (Sunday),0,0/1
+Holiday,optional_holiday,Check,No,Optional holiday (employee can choose),0,0/1
+Department,name,Data,Yes,Department name (canonicalized),Cardiology,unique (do not modify source)
+Department,parent_department,Link,No,Parent department in the tree,All Departments,Link → Department
+Department,company,Link,Yes,Company this department belongs to,Haritha Hospitals,Link → Company
+Department,is_group,Check,No,Whether this is a group node (no transactions),0,0/1
+Department,disabled,Check,No,Disabled without deletion,0,0/1
+Department,leave_block_list,Link,No,Leave block list if applicable,,Link → Leave Block List
+Designation,name,Data,Yes,Designation name (canonicalized source),Senior Staff Nurse,unique (do not modify source)
+Designation,description,Text,No,Description of the designation,Senior nursing role,free text
+Designation,appraisal_template,Link,No,Default appraisal template,,Link → Appraisal Template
+Designation,required_skills,Table,No,Required skills for this designation (child table),,"child rows: skill Link → Skill"
+Employment Type,name,Data,Yes,Employment type name,Full-time,unique
+Employment Type,description,Text,No,Description of the employment type,Full-time employment,free text
+Employment Type,allow_employee_creation,Check,No,Can create employees of this type,1,0/1
+Shift Type,name,Data,Yes,Shift display name,Morning Regular 06:00-14:00,unique
+Shift Type,start_time,Time,Yes,Shift start time,06:00:00,HH:MM:SS 24-hour
+Shift Type,end_time,Time,Yes,Shift end time,14:00:00,HH:MM:SS 24-hour (next day if past midnight)
+Shift Type,duration,Float,No,Duration in hours (computed),8.0,numeric
+Shift Type,shift_code,Data,No,10-char short code (custom field),M0600R0800,"Format: [P][HHMM][S][HHMM] — P=M/A/N/G; S=R/S"
+Shift Type,shift_category,Select,No,Shift prefix category (custom field),Morning,Morning/Afternoon/Night/General
+Shift Type,is_past_end_time,Check,No,True if shift ends past midnight (HRMS-native),0,0/1
+Shift Type,is_oncall,Check,No,On-call shift (custom field),0,0/1
+Shift Type,is_emergency,Check,No,Emergency shift (custom field),0,0/1
+Shift Type,allow_check_out,Check,No,Allow check-out beyond shift end,0,0/1
+Shift Type,mark_auto_attendance,Check,No,Auto-mark attendance from checkin,1,0/1
+Shift Type,last_sync_of_checkin,Datetime,No,Last datetime checkin was synced (per lesson #42),2025-05-26 08:00:00,ISO datetime — REQUIRED for auto-attendance
+Shift Type,company,Link,Yes,Company this shift type belongs to,Haritha Hospitals,Link → Company
+Employee,employee_name,Data,Yes,Full name of employee,Manager-1001,free text (synthetic per source)
+Employee,employee_number,Data,Yes,Unique employee ID,1001,unique sequential
+Employee,status,Select,Yes,Employment status,Active,Active/Inactive/Left/Suspended
+Employee,department,Link,Yes,Department,Cardiology,Link → Department
+Employee,designation,Link,Yes,Designation,Senior Staff Nurse,Link → Designation
+Employee,employment_type,Link,No,Employment type,Full-time,Link → Employment Type
+Employee,default_shift,Link,No,Default shift (auto-attendance cron uses this),Morning Regular 06:00-14:00,Link → Shift Type
+Employee,date_of_joining,Date,Yes,Date of joining,2025-01-01,ISO date
+Employee,company,Link,Yes,Company,Haritha Hospitals,Link → Company
+Employee,is_synthetic_data,Check,No,Mark synthetic / test data (custom field),1,0/1
+Employee,branch,Link,No,Branch location,Hyderabad,Link → Branch
+Employee,gender,Select,No,Gender,Male,Male/Female/Other
+Employee,date_of_birth,Date,No,Date of birth,1990-01-01,ISO date
+Employee,User_id,Link,No,Frappe User account for login,,Link → User
+Employee,holiday_list,Link,No,Holiday list for this employee,Haritha Hospitals Holiday List,Link → Holiday List
+Employee,attendance_device_id,Data,No,Biometric device ID,EMP-1001,free text
+Shift Assignment,employee,Link,Yes,Employee,EMP-001,Link → Employee
+Shift Assignment,shift_type,Link,Yes,Shift type to assign,Morning Regular 06:00-14:00,Link → Shift Type
+Shift Assignment,start_date,Date,Yes,First day of the assignment,2025-05-26,ISO date — supports multi-date SAs (per pberpqa M15)
+Shift Assignment,end_date,Date,No,Last day of the assignment,2025-06-24,ISO date — leave empty for open-ended
+Shift Assignment,status,Select,Yes,Assignment status,Active,Active/Draft/Inactive
+Shift Assignment,docstatus,Int,Yes,Document submit status,1,0=Draft / 1=Submitted / 2=Cancelled
+Shift Assignment,company,Link,Yes,Company,Haritha Hospitals,Link → Company
+Shift Assignment,shift_location,Link,No,Optional shift location override,,Link → Location
+Attendance,employee,Link,Yes,Employee,EMP-001,Link → Employee
+Attendance,attendance_date,Date,Yes,Date of attendance,2025-05-26,ISO date
+Attendance,status,Select,Yes,Attendance status,Present,"Present/Absent/On Leave/Half Day/Work From Home/Weekly Off/Holiday/Optional Holiday"
+Attendance,shift,Link,No,Shift type, Morning Regular 06:00-14:00,Link → Shift Type
+Attendance,leave_type,Link,No,Leave type if On Leave / Half Day,Casual Leave,Link → Leave Type
+Attendance,leave_application,Link,No,Leave application linkage,LAP-001,Link → Leave Application
+Attendance,late_entry_by,Int,No,Minutes late (custom field — 0 if not late),0,Custom Field (Rule #9 from day 1)
+Attendance,early_out_by,Int,No,Minutes early (custom field — 0 if not early),0,Custom Field (Rule #9 from day 1)
+Attendance,is_wfh,Check,No,Work from home flag (custom field — fixes pberpqa gap),0,Custom Field 0/1
+Attendance,is_optional_holiday,Check,No,Optional holiday flag (custom field),0,Custom Field 0/1
+Attendance,company,Link,Yes,Company,Haritha Hospitals,Link → Company
+Leave Type,name,Data,Yes,Leave type name,Casual Leave,unique
+Leave Type,max_leaves_allowed,Int,No,Max leaves per allocation period,12,numeric
+Leave Type,applicable_after,Int,No,Days after joining before eligibility,30,numeric
+Leave Type,max_continuous_days_allowed,Int,No,Max continuous days allowed,5,numeric
+Leave Type,is_carry_forward,Check,No,Whether unused leaves carry forward,0,0/1
+Leave Type,is_lwp,Check,No,Whether this is leave without pay,0,0/1
+Leave Type,is_optional_holiday,Check,No,Whether this is an optional holiday type,0,0/1
+Leave Type,is_compensatory,Check,No,Whether this is a compensatory leave,0,0/1
+Leave Type,include_holiday,Check,No,Include holidays in leave count,0,0/1
+Leave Type,allow_negative,Check,No,Allow negative balance,0,0/1
+Leave Type,earned_leave,Check,No,Whether this is earned leave (auto-accrues),0,0/1
+Leave Type,remarks,Text,No,Allocation rules & policy (mandatory here per user),CL: 12/year granted Jan 1; standard Indian policy,free text — keep rules here
+Leave Allocation,employee,Link,Yes,Employee,EMP-001,Link → Employee
+Leave Allocation,leave_type,Link,Yes,Leave type to allocate,Casual Leave,Link → Leave Type
+Leave Allocation,from_date,Date,Yes,Allocation start date,2025-01-01,ISO date
+Leave Allocation,to_date,Date,Yes,Allocation end date,2025-12-31,ISO date
+Leave Allocation,new_leaves_allocated,Float,Yes,Number of leaves allocated,12,numeric (supports 0.5 for half-day)
+Leave Allocation,carry_forward,Float,No,Carried-forward leaves from previous period,0,numeric
+Leave Allocation,docstatus,Int,Yes,Document submit status,1,0/1/2
+Leave Allocation,company,Link,Yes,Company,Haritha Hospitals,Link → Company
+Leave Application,employee,Link,Yes,Employee,EMP-001,Link → Employee
+Leave Application,leave_type,Link,Yes,Leave type,Casual Leave,Link → Leave Type
+Leave Application,from_date,Date,Yes,Leave start date,2025-06-01,ISO date
+Leave Application,to_date,Date,Yes,Leave end date,2025-06-03,ISO date
+Leave Application,leave_half_day,Check,No,Half-day leave flag (Frappe convention),0,0/1
+Leave Application,half_day_date,Date,No,Which date is half-day,2025-06-01,ISO date (required if leave_half_day=1)
+Leave Application,reason,Text,No,Reason for leave,Personal,free text
+Leave Application,status,Select,Yes,Application status,Approved,Open/Approved/Rejected/Cancelled
+Leave Application,docstatus,Int,Yes,Document submit status,1,0/1/2
+Leave Application,company,Link,Yes,Company,Haritha Hospitals,Link → Company
+Leave Application,follow_via_email,Check,No,Notify via email,0,0/1
+Employee Checkin,employee,Link,Yes,Employee,EMP-001,Link → Employee
+Employee Checkin,time,Datetime,Yes,Check-in timestamp,2025-05-26 06:00:00,ISO datetime
+Employee Checkin,log_type,Select,Yes,IN or OUT,IN,IN/OUT
+Employee Checkin,device_id,Data,No,Biometric device ID,DEV-001,free text
+Employee Checkin,source,Select,No,Check-in source,Manual,Manual/Biometric/Web/Email
+Employee Checkin,is_off,Check,No,Off-shift checkin flag (custom field — fixes pberpqa gap),0,Custom Field 0/1
+Employee Checkin,shift,Link,No,Linked shift type,Morning Regular 06:00-14:00,Link → Shift Type
+Employee Checkin,company,Link,Yes,Company,Haritha Hospitals,Link → Company
