@@ -1,0 +1,18 @@
+# Haritha Hospitals - Schema + Data
+# Entity: Employment Type
+# Generated: 2026-08-19 19:31 IST
+
+## Schema
+Entity,Field,Type,Required,Description,Example,Valid Values / Notes
+Employment Type,name,Data,Yes,Employment type name,Full-time,unique
+Employment Type,description,Text,No,Description of the employment type,Full-time employment,free text
+Employment Type,allow_employee_creation,Check,No,Can create employees of this type,1,0/1
+
+## Data
+name,description,allow_employee_creation
+Full-time,Full-time employment,1
+Part-time,Part-time employment,1
+Contract,Contract employment,1
+Internship,Internship / trainee,0
+Consultant,Consultant engagement,0
+Temporary,Temporary employment,1

@@ -1,0 +1,21 @@
+# Haritha Hospitals - Schema + Data
+# Entity: Shift Schedule Assignment
+# Generated: 2026-08-19 19:31 IST
+
+## Schema
+Entity,Field,Type,Required,Description,Example,Valid Values / Notes
+Shift Schedule Assignment,name,Data,Yes,SSA identifier,SSA-001,unique
+Shift Schedule Assignment,shift_schedule,Link,Yes,Parent schedule,Cardiology Nursing Rotation June 2026,Link → Shift Schedule
+Shift Schedule Assignment,employee,Link,Yes,Employee,EMP-001,Link → Employee
+Shift Schedule Assignment,shift_type,Link,Yes,Shift type,M0600R0800,Link → Shift Type
+Shift Schedule Assignment,date,Date,Yes,Assigned date,2026-06-01,ISO date
+Shift Schedule Assignment,shift_status,Select,Yes,Shift status,Draft,Draft/Active/Cancelled
+Shift Schedule Assignment,docstatus,Int,Yes,Submit status,0,0/1/2
+Shift Schedule Assignment,company,Link,Yes,Company,Haritha Hospitals,Link → Company
+Shift Schedule Assignment,shift_location,Link,No,Shift Location override,,Link → Shift Location
+Shift Schedule Assignment,enabled,Check,No,Scheduler on/off toggle,1,0/1
+Shift Schedule Assignment,create_shifts_after,Date,No,Scheduler cursor (auto-updated),,ISO date
+
+## Data
+name,shift_schedule,employee,shift_type,date,shift_status,docstatus,company,shift_location,enabled,create_shifts_after
+(no rows)

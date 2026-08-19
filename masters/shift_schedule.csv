@@ -1,0 +1,17 @@
+# Haritha Hospitals - Schema + Data
+# Entity: Shift Schedule
+# Generated: 2026-08-19 19:31 IST
+
+## Schema
+Entity,Field,Type,Required,Description,Example,Valid Values / Notes
+Shift Schedule,name,Data,Yes,Schedule name,Cardiology Nursing Rotation June 2026,unique
+Shift Schedule,company,Link,Yes,Company,Haritha Hospitals,Link → Company
+Shift Schedule,shift_type,Link,Yes,Shift type to assign,M0600R0800,Link → Shift Type
+Shift Schedule,frequency,Select,Yes,Generation frequency,Daily,Daily/Weekly/Custom
+Shift Schedule,repeat_on_days,Table,Yes,Days to repeat on (child → Assignment Rule Day),,child rows: day weekday
+Shift Schedule,amended_from,Link,No,Amendment source,,Link → Shift Schedule
+Shift Schedule,docstatus,Int,Yes,Submit status,0,0/1/2
+
+## Data
+name,company,shift_type,frequency,repeat_on_days,amended_from,docstatus
+(no rows)

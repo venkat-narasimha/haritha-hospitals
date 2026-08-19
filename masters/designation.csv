@@ -1,0 +1,61 @@
+# Haritha Hospitals - Schema + Data
+# Entity: Designation
+# Generated: 2026-08-19 19:31 IST
+
+## Schema
+Entity,Field,Type,Required,Description,Example,Valid Values / Notes
+Designation,name,Data,Yes,Designation name (canonicalized source),Senior Staff Nurse,unique (do not modify source)
+Designation,description,Text,No,Description of the designation,Senior nursing role,free text
+Designation,appraisal_template,Link,No,Default appraisal template,,Link → Appraisal Template
+Designation,required_skills,Table,No,Required skills for this designation (child table),,child rows: skill Link → Skill
+
+## Data
+name,description,appraisal_template,required_skills
+Assistant,,,
+Assistant General Manager,,,
+Assistant Manager,,,
+Assistant Nurse,,,
+Chief Operating Officer,,,
+Clinical Assistant,,,
+Clinical Pharmacist,,,
+Co-Ordinator,,,
+Deputy General Manager,,,
+Deputy Manager,,,
+Dietician,,,
+Driver,,,
+Duty Medical Officer,,,
+Electrician,,,
+Executive,,,
+Executive Assistant,,,
+General Manager,,,
+Incharge,,,
+Incharge - Micu,,,
+Jr.Staff Nurse,,,
+Jr.Technician,,,
+Liaison Officer,,,
+Manager,,,
+Medical Superintendent,,,
+Nursing Superintendent,,,
+Nursing Supervisor,,,
+Patient Care Attendant,,,
+Pharmacist,,,
+Physician Assistant,,,
+Physiotherapist,,,
+Scrub Nurse,,,
+Senior Electrician,,,
+Senior Executive,,,
+Senior Manager,,,
+Senior Nurse Assistant,,,
+Senior Pharma Aid,,,
+Senior Physiotherapist,,,
+Senior Respiratory Therapy,,,
+Senior Staff Nurse,,,
+Senior Technician,,,
+Senior Vice President,,,
+Staff Nurse,,,
+Supervisor,,,
+Technician,,,
+Technician - Ct,,,
+Trainee,,,
+Trainee Nurse,,,
+Typist,,,

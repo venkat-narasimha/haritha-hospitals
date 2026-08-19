@@ -1,0 +1,21 @@
+# Haritha Hospitals - Schema + Data
+# Entity: Leave Application
+# Generated: 2026-08-19 19:31 IST
+
+## Schema
+Entity,Field,Type,Required,Description,Example,Valid Values / Notes
+Leave Application,employee,Link,Yes,Employee,EMP-001,Link → Employee
+Leave Application,leave_type,Link,Yes,Leave type,Casual Leave,Link → Leave Type
+Leave Application,from_date,Date,Yes,Leave start date,2025-06-01,ISO date
+Leave Application,to_date,Date,Yes,Leave end date,2025-06-03,ISO date
+Leave Application,leave_half_day,Check,No,Half-day leave flag (Frappe convention),0,0/1
+Leave Application,half_day_date,Date,No,Which date is half-day,2025-06-01,ISO date (required if leave_half_day=1)
+Leave Application,reason,Text,No,Reason for leave,Personal,free text
+Leave Application,status,Select,Yes,Application status,Approved,Open/Approved/Rejected/Cancelled
+Leave Application,docstatus,Int,Yes,Document submit status,1,0/1/2
+Leave Application,company,Link,Yes,Company,Haritha Hospitals,Link → Company
+Leave Application,follow_via_email,Check,No,Notify via email,0,0/1
+
+## Data
+employee,leave_type,from_date,to_date,leave_half_day,half_day_date,reason,status,docstatus,company,follow_via_email
+(no rows)

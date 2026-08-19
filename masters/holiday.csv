@@ -1,0 +1,28 @@
+# Haritha Hospitals - Schema + Data
+# Entity: Holiday
+# Generated: 2026-08-19 19:31 IST
+
+## Schema
+Entity,Field,Type,Required,Description,Example,Valid Values / Notes
+Holiday,parent,Link,Yes,Parent holiday list,Haritha Hospitals Holiday List,Link → Holiday List
+Holiday,holiday_date,Date,Yes,Date of the holiday,2025-01-26,ISO date
+Holiday,description,Data,Yes,Holiday name,Republic Day,free text
+Holiday,weekly_off,Check,No,Marks a recurring weekly off (Sunday),0,0/1
+Holiday,optional_holiday,Check,No,Optional holiday (employee can choose),0,0/1
+
+## Data
+parent,holiday_date,description,weekly_off,optional_holiday
+Haritha Hospitals Holiday List,2025-01-26,Republic Day,0,0
+Haritha Hospitals Holiday List,2025-03-25,Holi,0,0
+Haritha Hospitals Holiday List,2025-04-14,Dr. Ambedkar Jayanti,0,0
+Haritha Hospitals Holiday List,2025-05-01,May Day,0,0
+Haritha Hospitals Holiday List,2025-08-15,Independence Day,0,0
+Haritha Hospitals Holiday List,2025-10-02,Gandhi Jayanti,0,0
+Haritha Hospitals Holiday List,2025-11-12,Diwali,0,0
+Haritha Hospitals Holiday List,2025-12-25,Christmas,0,0
+Haritha Hospitals Holiday List,2026-01-26,Republic Day,0,0
+Haritha Hospitals Holiday List,2026-03-04,Holi,0,0
+Haritha Hospitals Holiday List,2026-05-01,May Day,0,0
+Haritha Hospitals Holiday List,2026-08-15,Independence Day,0,0
+Haritha Hospitals Holiday List,2026-10-02,Gandhi Jayanti,0,0
+Haritha Hospitals Holiday List,2026-12-25,Christmas,0,0

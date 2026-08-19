@@ -1,0 +1,19 @@
+# Haritha Hospitals - Schema + Data
+# Entity: Shift Request
+# Generated: 2026-08-19 19:31 IST
+
+## Schema
+Entity,Field,Type,Required,Description,Example,Valid Values / Notes
+Shift Request,employee,Link,Yes,Employee,EMP-001,Link → Employee
+Shift Request,shift_type,Link,Yes,Requested shift type,M0600R0800,Link → Shift Type
+Shift Request,from_date,Date,Yes,Start date,2026-06-01,ISO date
+Shift Request,to_date,Date,Yes,End date,2026-06-03,ISO date
+Shift Request,reason,Text,No,Reason,Personal,free text
+Shift Request,status,Select,Yes,Request status,Open,Open/Approved/Rejected/Cancelled
+Shift Request,docstatus,Int,Yes,Submit status,0,0/1/2
+Shift Request,approver,Link,Yes,Approver,EMP-002,Link → User
+Shift Request,company,Link,Yes,Company,Haritha Hospitals,Link → Company
+
+## Data
+employee,shift_type,from_date,to_date,reason,status,docstatus,approver,company
+(no rows)

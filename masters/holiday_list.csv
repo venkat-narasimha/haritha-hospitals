@@ -1,0 +1,16 @@
+# Haritha Hospitals - Schema + Data
+# Entity: Holiday List
+# Generated: 2026-08-19 19:31 IST
+
+## Schema
+Entity,Field,Type,Required,Description,Example,Valid Values / Notes
+Holiday List,name,Data,Yes,Holiday list name,Haritha Hospitals Holiday List,unique
+Holiday List,weekly_off,Select,Yes,Default weekly off day for this list,Sunday,Sunday-Saturday
+Holiday List,from_date,Date,Yes,Start date of the holiday list validity,2025-01-01,ISO date
+Holiday List,to_date,Date,Yes,End date of the holiday list validity,2026-12-31,ISO date
+Holiday List,company,Link,No,Company this holiday list belongs to,Haritha Hospitals,Link → Company
+Holiday List,holidays,Table,No,List of holidays (child table — see Holiday DocType),,child rows: holiday_date + description
+
+## Data
+name,weekly_off,from_date,to_date,company
+Haritha Hospitals Holiday List,Sunday,2025-01-01,2026-12-31,Haritha Hospitals

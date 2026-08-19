@@ -1,0 +1,19 @@
+# Haritha Hospitals - Schema + Data
+# Entity: Company
+# Generated: 2026-08-19 19:31 IST
+
+## Schema
+Entity,Field,Type,Required,Description,Example,Valid Values / Notes
+Company,name,Data,Yes,Company name,Haritha Hospitals,unique per site
+Company,abbr,Data,Yes,Company abbreviation,HH,unique
+Company,default_currency,Link,Yes,Default currency for transactions,INR,Link → Currency
+Company,country,Link,Yes,Country where company is registered,India,Link → Country
+Company,fiscal_year_start_month,Select,Yes,Month when fiscal year starts,April,January-December
+Company,default_holiday_list,Link,No,Default holiday list applied to all employees,Haritha Hospitals Holiday List,Link → Holiday List
+Company,chart_of_accounts,Link,No,Chart of Accounts template to use,Standard,Link → Chart of Accounts Template
+Company,domain,Data,No,Business domain,Healthcare,Manufacturing/Retail/Healthcare/etc.
+Company,date_of_establishment,Date,No,Date the company was established,2020-01-01,ISO date
+
+## Data
+name,abbr,default_currency,country,fiscal_year_start_month,default_holiday_list,chart_of_accounts,domain,date_of_establishment
+Haritha Hospitals,HH,INR,India,April,Haritha Hospitals Holiday List,Standard,Healthcare,2020-01-01

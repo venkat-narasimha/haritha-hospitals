@@ -1,0 +1,51 @@
+# Haritha Hospitals - Schema + Data
+# Entity: Department
+# Generated: 2026-08-19 19:31 IST
+
+## Schema
+Entity,Field,Type,Required,Description,Example,Valid Values / Notes
+Department,name,Data,Yes,Department name (canonicalized),Cardiology,unique (do not modify source)
+Department,parent_department,Link,No,Parent department in the tree,All Departments,Link → Department
+Department,company,Link,Yes,Company this department belongs to,Haritha Hospitals,Link → Company
+Department,is_group,Check,No,Whether this is a group node (no transactions),0,0/1
+Department,disabled,Check,No,Disabled without deletion,0,0/1
+Department,leave_block_list,Link,No,Leave block list if applicable,,Link → Leave Block List
+
+## Data
+name,parent_department,company,is_group,disabled,leave_block_list
+Administration - Medical,,Haritha Hospitals,0,0,
+Billing,,Haritha Hospitals,0,0,
+Bio Medical,,Haritha Hospitals,0,0,
+Business Development,,Haritha Hospitals,0,0,
+CSSD,,Haritha Hospitals,0,0,
+Cardiology,,Haritha Hospitals,0,0,
+Cath Lab,,Haritha Hospitals,0,0,
+Corporate Relations,,Haritha Hospitals,0,0,
+Credit Realization,,Haritha Hospitals,0,0,
+Dialysis,,Haritha Hospitals,0,0,
+Dietetics,,Haritha Hospitals,0,0,
+Endoscopy,,Haritha Hospitals,0,0,
+Finance & Accounts,,Haritha Hospitals,0,0,
+General Purchase,,Haritha Hospitals,0,0,
+Housekeeping,,Haritha Hospitals,0,0,
+Human Resources,,Haritha Hospitals,0,0,
+IP Operations,,Haritha Hospitals,0,0,
+IT,,Haritha Hospitals,0,0,
+Internal Audit,,Haritha Hospitals,0,0,
+Lab Services,,Haritha Hospitals,0,0,
+Legal,,Haritha Hospitals,0,0,
+Maintenance,,Haritha Hospitals,0,0,
+Medical Records,,Haritha Hospitals,0,0,
+Medical Services,,Haritha Hospitals,0,0,
+Nursing,,Haritha Hospitals,0,0,
+Nursing - OT,,Haritha Hospitals,0,0,
+OP Operations,,Haritha Hospitals,0,0,
+Operation Theatre,,Haritha Hospitals,0,0,
+Operations,,Haritha Hospitals,0,0,
+Pharmacy,,Haritha Hospitals,0,0,
+Physiotherapy,,Haritha Hospitals,0,0,
+Quality,,Haritha Hospitals,0,0,
+Radiology,,Haritha Hospitals,0,0,
+Respiratory Therapy,,Haritha Hospitals,0,0,
+Transport,,Haritha Hospitals,0,0,
+Typing Pool,,Haritha Hospitals,0,0,

@@ -1,0 +1,15 @@
+# Haritha Hospitals - Schema + Data
+# Entity: Fiscal Year
+# Generated: 2026-08-19 19:31 IST
+
+## Schema
+Entity,Field,Type,Required,Description,Example,Valid Values / Notes
+Fiscal Year,year,Data,Yes,Fiscal year label,2025-2026,unique
+Fiscal Year,year_start_date,Date,Yes,First day of fiscal year,2025-04-01,ISO date
+Fiscal Year,year_end_date,Date,Yes,Last day of fiscal year,2026-03-31,ISO date
+Fiscal Year,companies,Table,No,Companies linked to this fiscal year (child table),,child rows: company Link → Company
+
+## Data
+year,year_start_date,year_end_date,companies
+2025-2026,2025-04-01,2026-03-31,Haritha Hospitals
+2026-2027,2026-04-01,2027-03-31,Haritha Hospitals

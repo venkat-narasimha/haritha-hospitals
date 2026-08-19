@@ -1,0 +1,59 @@
+# Haritha Hospitals - Schema + Data
+# Entity: Shift Type
+# Generated: 2026-08-19 19:31 IST
+
+## Schema
+Entity,Field,Type,Required,Description,Example,Valid Values / Notes
+Shift Type,name,Data,Yes,Shift display name,Morning Regular 06:00-14:00,unique
+Shift Type,start_time,Time,Yes,Shift start time,06:00:00,HH:MM:SS 24-hour
+Shift Type,end_time,Time,Yes,Shift end time,14:00:00,HH:MM:SS 24-hour (next day if past midnight)
+Shift Type,duration,Float,No,Duration in hours (computed),8.0,numeric
+Shift Type,is_past_end_time,Check,No,True if shift ends past midnight (HRMS-native),0,0/1
+Shift Type,is_oncall,Check,No,On-call shift (custom field),0,0/1
+Shift Type,is_emergency,Check,No,Emergency shift (custom field),0,0/1
+Shift Type,mark_auto_attendance,Check,No,Auto-mark attendance from checkin,1,0/1
+Shift Type,last_sync_of_checkin,Datetime,No,Last datetime checkin was synced (per lesson #42),2025-05-26 08:00:00,ISO datetime — REQUIRED for auto-attendance
+Shift Type,company,Link,Yes,Company this shift type belongs to,Haritha Hospitals,Link → Company
+Shift Type,holiday_list,Link,No,Holiday List for this shift,,Link → Holiday List
+Shift Type,enable_auto_attendance,Check,No,Master auto-attendance toggle,0,0/1
+Shift Type,determine_check_in_and_check_out,Select,No,IN/OUT detection method,Alternating entries as IN and OUT,Alternating entries as IN and OUT / Strictly based on Log Type
+Shift Type,working_hours_calculation_based_on,Select,No,How to compute working hours,First Check-in and Last Check-out,First Check-in and Last Check-out / Every Valid Check-in and Check-out
+Shift Type,begin_check_in_before_shift_start_time,Int,No,Grace period before start (minutes),0,numeric
+Shift Type,allow_check_out_after_shift_end_time,Int,No,Grace period after end (minutes),0,numeric
+Shift Type,mark_auto_attendance_on_holidays,Check,No,Auto-mark on holidays,0,0/1
+Shift Type,working_hours_threshold_for_half_day,Float,No,Hours threshold for half day,0,numeric
+Shift Type,working_hours_threshold_for_absent,Float,No,Hours threshold for absent,0,numeric
+Shift Type,process_attendance_after,Date,No,Backfill cutoff date,,ISO date
+Shift Type,auto_update_last_sync_of_checkin,Check,No,Auto-update last_sync on checkin,0,0/1
+Shift Type,enable_late_entry_marking,Check,No,Enable late entry detection,0,0/1
+Shift Type,late_entry_grace_period,Int,No,Late entry grace (minutes),0,numeric
+Shift Type,enable_early_exit_marking,Check,No,Enable early exit detection,0,0/1
+Shift Type,early_exit_grace_period,Int,No,Early exit grace (minutes),0,numeric
+
+## Data
+name,start_time,end_time,duration,is_past_end_time,is_oncall,is_emergency,mark_auto_attendance,last_sync_of_checkin,company,holiday_list,enable_auto_attendance,determine_check_in_and_check_out,working_hours_calculation_based_on,begin_check_in_before_shift_start_time,allow_check_out_after_shift_end_time,mark_auto_attendance_on_holidays,working_hours_threshold_for_half_day,working_hours_threshold_for_absent,process_attendance_after,auto_update_last_sync_of_checkin,enable_late_entry_marking,late_entry_grace_period,enable_early_exit_marking,early_exit_grace_period
+M0600R0830,06:00:00,14:30:00,8.5,0,0,0,1,2025-05-26 08:00:00,Haritha Hospitals,Haritha Hospitals Holiday List,0,Alternating entries as IN and OUT,First Check-in and Last Check-out,60,60,0,5.0,0.0,,0,0,15,0,15
+M0700R0830,07:00:00,15:30:00,8.5,0,0,0,1,2025-05-26 08:00:00,Haritha Hospitals,Haritha Hospitals Holiday List,0,Alternating entries as IN and OUT,First Check-in and Last Check-out,60,60,0,5.0,0.0,,0,0,15,0,15
+M0800R0830,08:00:00,16:30:00,8.5,0,0,0,1,2025-05-26 08:00:00,Haritha Hospitals,Haritha Hospitals Holiday List,0,Alternating entries as IN and OUT,First Check-in and Last Check-out,60,60,0,5.0,0.0,,0,0,15,0,15
+M0800R0600,08:00:00,14:00:00,6.0,0,0,0,1,2025-05-26 08:00:00,Haritha Hospitals,Haritha Hospitals Holiday List,0,Alternating entries as IN and OUT,First Check-in and Last Check-out,60,60,0,5.0,0.0,,0,0,15,0,15
+A1200R0830,12:00:00,20:30:00,8.5,0,0,0,1,2025-05-26 08:00:00,Haritha Hospitals,Haritha Hospitals Holiday List,0,Alternating entries as IN and OUT,First Check-in and Last Check-out,60,60,0,5.0,0.0,,0,0,15,0,15
+A1400R0600,14:00:00,20:00:00,6.0,0,0,0,1,2025-05-26 08:00:00,Haritha Hospitals,Haritha Hospitals Holiday List,0,Alternating entries as IN and OUT,First Check-in and Last Check-out,60,60,0,5.0,0.0,,0,0,15,0,15
+N2000R1200,20:00:00,32:00:00,12.0,0,0,0,1,2025-05-26 08:00:00,Haritha Hospitals,Haritha Hospitals Holiday List,0,Alternating entries as IN and OUT,First Check-in and Last Check-out,60,60,0,5.0,0.0,,0,0,15,0,15
+G0900R0830,09:00:00,17:30:00,8.5,0,0,0,1,2025-05-26 08:00:00,Haritha Hospitals,Haritha Hospitals Holiday List,0,Alternating entries as IN and OUT,First Check-in and Last Check-out,60,60,0,5.0,0.0,,0,0,15,0,15
+G0930R0830,09:30:00,18:00:00,8.5,0,0,0,1,2025-05-26 08:00:00,Haritha Hospitals,Haritha Hospitals Holiday List,0,Alternating entries as IN and OUT,First Check-in and Last Check-out,60,60,0,5.0,0.0,,0,0,15,0,15
+G1000R0830,10:00:00,18:30:00,8.5,0,0,0,1,2025-05-26 08:00:00,Haritha Hospitals,Haritha Hospitals Holiday List,0,Alternating entries as IN and OUT,First Check-in and Last Check-out,60,60,0,5.0,0.0,,0,0,15,0,15
+G1100R0830,11:00:00,19:30:00,8.5,0,0,0,1,2025-05-26 08:00:00,Haritha Hospitals,Haritha Hospitals Holiday List,0,Alternating entries as IN and OUT,First Check-in and Last Check-out,60,60,0,5.0,0.0,,0,0,15,0,15
+G0900R0800,09:00:00,17:00:00,8.0,0,0,0,1,2025-05-26 08:00:00,Haritha Hospitals,Haritha Hospitals Holiday List,0,Alternating entries as IN and OUT,First Check-in and Last Check-out,60,60,0,5.0,0.0,,0,0,15,0,15
+G0930R0800,09:30:00,17:30:00,8.0,0,0,0,1,2025-05-26 08:00:00,Haritha Hospitals,Haritha Hospitals Holiday List,0,Alternating entries as IN and OUT,First Check-in and Last Check-out,60,60,0,5.0,0.0,,0,0,15,0,15
+G1000R0800,10:00:00,18:00:00,8.0,0,0,0,1,2025-05-26 08:00:00,Haritha Hospitals,Haritha Hospitals Holiday List,0,Alternating entries as IN and OUT,First Check-in and Last Check-out,60,60,0,5.0,0.0,,0,0,15,0,15
+G0900R0900,09:00:00,18:00:00,9.0,0,0,0,1,2025-05-26 08:00:00,Haritha Hospitals,Haritha Hospitals Holiday List,0,Alternating entries as IN and OUT,First Check-in and Last Check-out,60,60,0,5.0,0.0,,0,0,15,0,15
+G0930R0900,09:30:00,18:30:00,9.0,0,0,0,1,2025-05-26 08:00:00,Haritha Hospitals,Haritha Hospitals Holiday List,0,Alternating entries as IN and OUT,First Check-in and Last Check-out,60,60,0,5.0,0.0,,0,0,15,0,15
+G1000R0900,10:00:00,19:00:00,9.0,0,0,0,1,2025-05-26 08:00:00,Haritha Hospitals,Haritha Hospitals Holiday List,0,Alternating entries as IN and OUT,First Check-in and Last Check-out,60,60,0,5.0,0.0,,0,0,15,0,15
+G1100R0800,11:00:00,19:00:00,8.0,0,0,0,1,2025-05-26 08:00:00,Haritha Hospitals,Haritha Hospitals Holiday List,0,Alternating entries as IN and OUT,First Check-in and Last Check-out,60,60,0,5.0,0.0,,0,0,15,0,15
+G1200R0800,12:00:00,20:00:00,8.0,0,0,0,1,2025-05-26 08:00:00,Haritha Hospitals,Haritha Hospitals Holiday List,0,Alternating entries as IN and OUT,First Check-in and Last Check-out,60,60,0,5.0,0.0,,0,0,15,0,15
+M0800R0800,08:00:00,16:00:00,8.0,0,0,0,1,2025-05-26 08:00:00,Haritha Hospitals,Haritha Hospitals Holiday List,0,Alternating entries as IN and OUT,First Check-in and Last Check-out,60,60,0,5.0,0.0,,0,0,15,0,15
+N1700S1600,17:00:00,33:00:00,16.0,1,0,0,1,2025-05-26 08:00:00,Haritha Hospitals,Haritha Hospitals Holiday List,0,Alternating entries as IN and OUT,First Check-in and Last Check-out,60,60,0,5.0,0.0,,0,0,15,0,15
+N2200R0800,22:00:00,30:00:00,8.0,1,0,0,1,2025-05-26 08:00:00,Haritha Hospitals,Haritha Hospitals Holiday List,0,Alternating entries as IN and OUT,First Check-in and Last Check-out,60,60,0,5.0,0.0,,0,0,15,0,15
+M0800S1200,08:00:00,20:00:00,12.0,0,0,0,1,2025-05-26 08:00:00,Haritha Hospitals,Haritha Hospitals Holiday List,0,Alternating entries as IN and OUT,First Check-in and Last Check-out,60,60,0,5.0,0.0,,0,0,15,0,15
+M0800R0900,08:00:00,17:00:00,9.0,0,0,0,1,2025-05-26 08:00:00,Haritha Hospitals,Haritha Hospitals Holiday List,0,Alternating entries as IN and OUT,First Check-in and Last Check-out,60,60,0,5.0,0.0,,0,0,15,0,15
+A1300S1230,13:00:00,25:30:00,12.5,1,0,0,1,2025-05-26 08:00:00,Haritha Hospitals,Haritha Hospitals Holiday List,0,Alternating entries as IN and OUT,First Check-in and Last Check-out,60,60,0,5.0,0.0,,0,0,15,0,15

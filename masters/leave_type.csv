@@ -1,0 +1,28 @@
+# Haritha Hospitals - Schema + Data
+# Entity: Leave Type
+# Generated: 2026-08-19 19:31 IST
+
+## Schema
+Entity,Field,Type,Required,Description,Example,Valid Values / Notes
+Leave Type,name,Data,Yes,Leave type name,Casual Leave,unique
+Leave Type,max_leaves_allowed,Int,No,Max leaves per allocation period,12,numeric
+Leave Type,applicable_after,Int,No,Days after joining before eligibility,30,numeric
+Leave Type,max_continuous_days_allowed,Int,No,Max continuous days allowed,5,numeric
+Leave Type,is_carry_forward,Check,No,Whether unused leaves carry forward,0,0/1
+Leave Type,is_lwp,Check,No,Whether this is leave without pay,0,0/1
+Leave Type,is_optional_holiday,Check,No,Whether this is an optional holiday type,0,0/1
+Leave Type,is_compensatory,Check,No,Whether this is a compensatory leave,0,0/1
+Leave Type,include_holiday,Check,No,Include holidays in leave count,0,0/1
+Leave Type,allow_negative,Check,No,Allow negative balance,0,0/1
+Leave Type,earned_leave,Check,No,Whether this is earned leave (auto-accrues),0,0/1
+Leave Type,remarks,Text,No,Allocation rules & policy (mandatory here per user),CL: 12/year granted Jan 1; standard Indian policy,free text — keep rules here
+
+## Data
+name,max_leaves_allowed,applicable_after,max_continuous_days_allowed,is_carry_forward,is_lwp,is_optional_holiday,is_compensatory,include_holiday,allow_negative,earned_leave,remarks
+Casual Leave,12,30,5,0,0,0,0,0,0,0,CL: 12/year granted Jan 1; standard Indian policy
+Sick Leave,10,30,5,0,0,0,0,0,0,0,SL: 10/year granted Jan 1; standard Indian policy
+Earned Leave,18,90,30,1,0,0,0,0,0,1,EL: 18/year (1.5/month); carry-forward; standard Indian policy
+Maternity Leave,180,0,180,0,0,0,0,0,0,0,ML: 180 days (Indian law); 0 waiting period
+Paternity Leave,15,0,15,0,0,0,0,0,0,0,PL: 15 days (Indian law); 0 waiting period
+Leave Without Pay,0,0,0,0,1,0,0,0,0,0,LWP: 0 quota; unlimited unpaid leave
+Compensatory Leave,0,0,0,0,0,0,1,0,0,0,CO: 1 per extra day worked

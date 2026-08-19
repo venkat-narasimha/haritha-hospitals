@@ -1,0 +1,18 @@
+# Haritha Hospitals - Schema + Data
+# Entity: Leave Allocation
+# Generated: 2026-08-19 19:31 IST
+
+## Schema
+Entity,Field,Type,Required,Description,Example,Valid Values / Notes
+Leave Allocation,employee,Link,Yes,Employee,EMP-001,Link → Employee
+Leave Allocation,leave_type,Link,Yes,Leave type to allocate,Casual Leave,Link → Leave Type
+Leave Allocation,from_date,Date,Yes,Allocation start date,2025-01-01,ISO date
+Leave Allocation,to_date,Date,Yes,Allocation end date,2025-12-31,ISO date
+Leave Allocation,new_leaves_allocated,Float,Yes,Number of leaves allocated,12,numeric (supports 0.5 for half-day)
+Leave Allocation,carry_forward,Float,No,Carried-forward leaves from previous period,0,numeric
+Leave Allocation,docstatus,Int,Yes,Document submit status,1,0/1/2
+Leave Allocation,company,Link,Yes,Company,Haritha Hospitals,Link → Company
+
+## Data
+employee,leave_type,from_date,to_date,new_leaves_allocated,carry_forward,docstatus,company
+(no rows)

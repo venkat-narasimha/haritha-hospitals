@@ -1,0 +1,16 @@
+# Haritha Hospitals - Schema + Data
+# Entity: Shift Location
+# Generated: 2026-08-19 19:31 IST
+
+## Schema
+Entity,Field,Type,Required,Description,Example,Valid Values / Notes
+Shift Location,location_name,Data,Yes,Location name (autoname source),Main Hospital Gate,unique
+Shift Location,checkin_radius,Int,No,Geofence radius in meters,100,non_negative
+Shift Location,latitude,Float,No,Latitude coordinate,17.3850,decimal
+Shift Location,longitude,Float,No,Longitude coordinate,78.4867,decimal
+Shift Location,geolocation,Geolocation,No,Composite map field,,Frappe Geolocation control
+Shift Location,fetch_geolocation,Button,No,Auto-fetch lat/long from browser geolocation,,UI button
+
+## Data
+location_name,checkin_radius,latitude,longitude,geolocation,fetch_geolocation
+(no rows)
