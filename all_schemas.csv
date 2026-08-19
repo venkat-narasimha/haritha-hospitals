@@ -11,13 +11,13 @@ Company,date_of_establishment,Date,No,Date the company was established,2020-01-0
 Fiscal Year,year,Data,Yes,Fiscal year label,2025-2026,unique
 Fiscal Year,year_start_date,Date,Yes,First day of fiscal year,2025-04-01,ISO date
 Fiscal Year,year_end_date,Date,Yes,Last day of fiscal year,2026-03-31,ISO date
-Fiscal Year,companies,Table,No,Companies linked to this fiscal year (child table),,"child rows: company Link → Company"
+Fiscal Year,companies,Table,No,Companies linked to this fiscal year (child table),,child rows: company Link → Company
 Holiday List,name,Data,Yes,Holiday list name,Haritha Hospitals Holiday List,unique
 Holiday List,weekly_off,Select,Yes,Default weekly off day for this list,Sunday,Sunday-Saturday
 Holiday List,from_date,Date,Yes,Start date of the holiday list validity,2025-01-01,ISO date
 Holiday List,to_date,Date,Yes,End date of the holiday list validity,2026-12-31,ISO date
 Holiday List,company,Link,No,Company this holiday list belongs to,Haritha Hospitals,Link → Company
-Holiday List,holidays,Table,No,List of holidays (child table — see Holiday DocType),,"child rows: holiday_date + description"
+Holiday List,holidays,Table,No,List of holidays (child table — see Holiday DocType),,child rows: holiday_date + description
 Holiday,parent,Link,Yes,Parent holiday list,Haritha Hospitals Holiday List,Link → Holiday List
 Holiday,holiday_date,Date,Yes,Date of the holiday,2025-01-26,ISO date
 Holiday,description,Data,Yes,Holiday name,Republic Day,free text
@@ -32,7 +32,7 @@ Department,leave_block_list,Link,No,Leave block list if applicable,,Link → Lea
 Designation,name,Data,Yes,Designation name (canonicalized source),Senior Staff Nurse,unique (do not modify source)
 Designation,description,Text,No,Description of the designation,Senior nursing role,free text
 Designation,appraisal_template,Link,No,Default appraisal template,,Link → Appraisal Template
-Designation,required_skills,Table,No,Required skills for this designation (child table),,"child rows: skill Link → Skill"
+Designation,required_skills,Table,No,Required skills for this designation (child table),,child rows: skill Link → Skill
 Employment Type,name,Data,Yes,Employment type name,Full-time,unique
 Employment Type,description,Text,No,Description of the employment type,Full-time employment,free text
 Employment Type,allow_employee_creation,Check,No,Can create employees of this type,1,0/1
@@ -40,7 +40,6 @@ Shift Type,name,Data,Yes,Shift display name,Morning Regular 06:00-14:00,unique
 Shift Type,start_time,Time,Yes,Shift start time,06:00:00,HH:MM:SS 24-hour
 Shift Type,end_time,Time,Yes,Shift end time,14:00:00,HH:MM:SS 24-hour (next day if past midnight)
 Shift Type,duration,Float,No,Duration in hours (computed),8.0,numeric
-Shift Type,shift_code,Data,No,10-char short code (custom field),M0600R0800,"Format: [P][HHMM][S][HHMM] — P=M/A/N/G; S=R/S"
 Shift Type,shift_category,Select,No,Shift prefix category (custom field),Morning,Morning/Afternoon/Night/General
 Shift Type,is_past_end_time,Check,No,True if shift ends past midnight (HRMS-native),0,0/1
 Shift Type,is_oncall,Check,No,On-call shift (custom field),0,0/1
@@ -75,7 +74,7 @@ Shift Assignment,company,Link,Yes,Company,Haritha Hospitals,Link → Company
 Shift Assignment,shift_location,Link,No,Optional shift location override,,Link → Location
 Attendance,employee,Link,Yes,Employee,EMP-001,Link → Employee
 Attendance,attendance_date,Date,Yes,Date of attendance,2025-05-26,ISO date
-Attendance,status,Select,Yes,Attendance status,Present,"Present/Absent/On Leave/Half Day/Work From Home/Weekly Off/Holiday/Optional Holiday"
+Attendance,status,Select,Yes,Attendance status,Present,Present/Absent/On Leave/Half Day/Work From Home/Weekly Off/Holiday/Optional Holiday
 Attendance,shift,Link,No,Shift type, Morning Regular 06:00-14:00,Link → Shift Type
 Attendance,leave_type,Link,No,Leave type if On Leave / Half Day,Casual Leave,Link → Leave Type
 Attendance,leave_application,Link,No,Leave application linkage,LAP-001,Link → Leave Application
@@ -123,3 +122,30 @@ Employee Checkin,source,Select,No,Check-in source,Manual,Manual/Biometric/Web/Em
 Employee Checkin,is_off,Check,No,Off-shift checkin flag (custom field — fixes pberpqa gap),0,Custom Field 0/1
 Employee Checkin,shift,Link,No,Linked shift type,Morning Regular 06:00-14:00,Link → Shift Type
 Employee Checkin,company,Link,Yes,Company,Haritha Hospitals,Link → Company
+Shift Schedule,name,Data,Yes,Schedule name,Cardiology Nursing Rotation June 2026,unique
+Shift Schedule,company,Link,Yes,Company,Haritha Hospitals,Link → Company
+Shift Schedule,shift_type,Link,Yes,Shift type to assign,M0600R0800,Link → Shift Type
+Shift Schedule,shift_assignment_count,Int,No,Number of assignments per period,1,numeric
+Shift Schedule,frequency,Select,Yes,Generation frequency,Daily,Daily/Weekly/Custom
+Shift Schedule,applicable_departments,Table MultiSelect,No,Departments this applies to,Cardiology Nursing,child rows: department Link → Department
+Shift Schedule,start_date,Date,Yes,Schedule start date,2026-06-01,ISO date
+Shift Schedule,end_date,Date,Yes,Schedule end date,2026-06-30,ISO date
+Shift Schedule,enabled,Check,No,Active schedule,1,0/1
+Shift Schedule,color,Data,No,Display color,#2196F3,hex color
+Shift Schedule Assignment,name,Data,Yes,SSA identifier,SSA-001,unique
+Shift Schedule Assignment,shift_schedule,Link,Yes,Parent schedule,Cardiology Nursing Rotation June 2026,Link → Shift Schedule
+Shift Schedule Assignment,employee,Link,Yes,Employee,EMP-001,Link → Employee
+Shift Schedule Assignment,shift_type,Link,Yes,Shift type,M0600R0800,Link → Shift Type
+Shift Schedule Assignment,date,Date,Yes,Assigned date,2026-06-01,ISO date
+Shift Schedule Assignment,status,Select,Yes,SSA status,Draft,Draft/Active/Cancelled
+Shift Schedule Assignment,docstatus,Int,Yes,Submit status,0,0/1/2
+Shift Schedule Assignment,company,Link,Yes,Company,Haritha Hospitals,Link → Company
+Shift Request,employee,Link,Yes,Employee,EMP-001,Link → Employee
+Shift Request,shift_type,Link,Yes,Requested shift type,M0600R0800,Link → Shift Type
+Shift Request,from_date,Date,Yes,Start date,2026-06-01,ISO date
+Shift Request,to_date,Date,Yes,End date,2026-06-03,ISO date
+Shift Request,reason,Text,No,Reason,Personal,free text
+Shift Request,status,Select,Yes,Request status,Open,Open/Approved/Rejected/Cancelled
+Shift Request,docstatus,Int,Yes,Submit status,0,0/1/2
+Shift Request,approver,Link,No,Approver,EMP-002,Link → User
+Shift Request,company,Link,Yes,Company,Haritha Hospitals,Link → Company
