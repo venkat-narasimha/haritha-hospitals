@@ -40,14 +40,27 @@ Shift Type,name,Data,Yes,Shift display name,Morning Regular 06:00-14:00,unique
 Shift Type,start_time,Time,Yes,Shift start time,06:00:00,HH:MM:SS 24-hour
 Shift Type,end_time,Time,Yes,Shift end time,14:00:00,HH:MM:SS 24-hour (next day if past midnight)
 Shift Type,duration,Float,No,Duration in hours (computed),8.0,numeric
-Shift Type,shift_category,Select,No,Shift prefix category (custom field),Morning,Morning/Afternoon/Night/General
 Shift Type,is_past_end_time,Check,No,True if shift ends past midnight (HRMS-native),0,0/1
 Shift Type,is_oncall,Check,No,On-call shift (custom field),0,0/1
 Shift Type,is_emergency,Check,No,Emergency shift (custom field),0,0/1
-Shift Type,allow_check_out,Check,No,Allow check-out beyond shift end,0,0/1
 Shift Type,mark_auto_attendance,Check,No,Auto-mark attendance from checkin,1,0/1
 Shift Type,last_sync_of_checkin,Datetime,No,Last datetime checkin was synced (per lesson #42),2025-05-26 08:00:00,ISO datetime — REQUIRED for auto-attendance
 Shift Type,company,Link,Yes,Company this shift type belongs to,Haritha Hospitals,Link → Company
+Shift Type,holiday_list,Link,No,Holiday List for this shift,,Link → Holiday List
+Shift Type,enable_auto_attendance,Check,No,Master auto-attendance toggle,0,0/1
+Shift Type,determine_check_in_and_check_out,Select,No,IN/OUT detection method,Alternating entries as IN and OUT,Alternating entries as IN and OUT / Strictly based on Log Type
+Shift Type,working_hours_calculation_based_on,Select,No,How to compute working hours,First Check-in and Last Check-out,First Check-in and Last Check-out / Every Valid Check-in and Check-out
+Shift Type,begin_check_in_before_shift_start_time,Int,No,Grace period before start (minutes),0,numeric
+Shift Type,allow_check_out_after_shift_end_time,Int,No,Grace period after end (minutes),0,numeric
+Shift Type,mark_auto_attendance_on_holidays,Check,No,Auto-mark on holidays,0,0/1
+Shift Type,working_hours_threshold_for_half_day,Float,No,Hours threshold for half day,0,numeric
+Shift Type,working_hours_threshold_for_absent,Float,No,Hours threshold for absent,0,numeric
+Shift Type,process_attendance_after,Date,No,Backfill cutoff date,,ISO date
+Shift Type,auto_update_last_sync_of_checkin,Check,No,Auto-update last_sync on checkin,0,0/1
+Shift Type,enable_late_entry_marking,Check,No,Enable late entry detection,0,0/1
+Shift Type,late_entry_grace_period,Int,No,Late entry grace (minutes),0,numeric
+Shift Type,enable_early_exit_marking,Check,No,Enable early exit detection,0,0/1
+Shift Type,early_exit_grace_period,Int,No,Early exit grace (minutes),0,numeric
 Employee,employee_name,Data,Yes,Full name of employee,Manager-1001,free text (synthetic per source)
 Employee,employee_number,Data,Yes,Unique employee ID,1001,unique sequential
 Employee,status,Select,Yes,Employment status,Active,Active/Inactive/Left/Suspended
@@ -68,10 +81,10 @@ Shift Assignment,employee,Link,Yes,Employee,EMP-001,Link → Employee
 Shift Assignment,shift_type,Link,Yes,Shift type to assign,Morning Regular 06:00-14:00,Link → Shift Type
 Shift Assignment,start_date,Date,Yes,First day of the assignment,2025-05-26,ISO date — supports multi-date SAs (per pberpqa M15)
 Shift Assignment,end_date,Date,No,Last day of the assignment,2025-06-24,ISO date — leave empty for open-ended
-Shift Assignment,status,Select,Yes,Assignment status,Active,Active/Draft/Inactive
+Shift Assignment,status,Select,Yes,Assignment status,Active,Active/Inactive
 Shift Assignment,docstatus,Int,Yes,Document submit status,1,0=Draft / 1=Submitted / 2=Cancelled
 Shift Assignment,company,Link,Yes,Company,Haritha Hospitals,Link → Company
-Shift Assignment,shift_location,Link,No,Optional shift location override,,Link → Location
+Shift Assignment,shift_location,Link,No,Optional shift location override,,Link → Shift Location
 Attendance,employee,Link,Yes,Employee,EMP-001,Link → Employee
 Attendance,attendance_date,Date,Yes,Date of attendance,2025-05-26,ISO date
 Attendance,status,Select,Yes,Attendance status,Present,Present/Absent/On Leave/Half Day/Work From Home/Weekly Off/Holiday/Optional Holiday
@@ -81,7 +94,6 @@ Attendance,leave_application,Link,No,Leave application linkage,LAP-001,Link → 
 Attendance,late_entry_by,Int,No,Minutes late (custom field — 0 if not late),0,Custom Field (Rule #9 from day 1)
 Attendance,early_out_by,Int,No,Minutes early (custom field — 0 if not early),0,Custom Field (Rule #9 from day 1)
 Attendance,is_wfh,Check,No,Work from home flag (custom field — fixes pberpqa gap),0,Custom Field 0/1
-Attendance,is_optional_holiday,Check,No,Optional holiday flag (custom field),0,Custom Field 0/1
 Attendance,company,Link,Yes,Company,Haritha Hospitals,Link → Company
 Leave Type,name,Data,Yes,Leave type name,Casual Leave,unique
 Leave Type,max_leaves_allowed,Int,No,Max leaves per allocation period,12,numeric
@@ -125,21 +137,21 @@ Employee Checkin,company,Link,Yes,Company,Haritha Hospitals,Link → Company
 Shift Schedule,name,Data,Yes,Schedule name,Cardiology Nursing Rotation June 2026,unique
 Shift Schedule,company,Link,Yes,Company,Haritha Hospitals,Link → Company
 Shift Schedule,shift_type,Link,Yes,Shift type to assign,M0600R0800,Link → Shift Type
-Shift Schedule,shift_assignment_count,Int,No,Number of assignments per period,1,numeric
 Shift Schedule,frequency,Select,Yes,Generation frequency,Daily,Daily/Weekly/Custom
-Shift Schedule,applicable_departments,Table MultiSelect,No,Departments this applies to,Cardiology Nursing,child rows: department Link → Department
-Shift Schedule,start_date,Date,Yes,Schedule start date,2026-06-01,ISO date
-Shift Schedule,end_date,Date,Yes,Schedule end date,2026-06-30,ISO date
-Shift Schedule,enabled,Check,No,Active schedule,1,0/1
-Shift Schedule,color,Data,No,Display color,#2196F3,hex color
+Shift Schedule,repeat_on_days,Table,Yes,Days to repeat on (child → Assignment Rule Day),,child rows: day weekday
+Shift Schedule,amended_from,Link,No,Amendment source,,Link → Shift Schedule
+Shift Schedule,docstatus,Int,Yes,Submit status,0,0/1/2
 Shift Schedule Assignment,name,Data,Yes,SSA identifier,SSA-001,unique
 Shift Schedule Assignment,shift_schedule,Link,Yes,Parent schedule,Cardiology Nursing Rotation June 2026,Link → Shift Schedule
 Shift Schedule Assignment,employee,Link,Yes,Employee,EMP-001,Link → Employee
 Shift Schedule Assignment,shift_type,Link,Yes,Shift type,M0600R0800,Link → Shift Type
 Shift Schedule Assignment,date,Date,Yes,Assigned date,2026-06-01,ISO date
-Shift Schedule Assignment,status,Select,Yes,SSA status,Draft,Draft/Active/Cancelled
+Shift Schedule Assignment,shift_status,Select,Yes,Shift status,Draft,Draft/Active/Cancelled
 Shift Schedule Assignment,docstatus,Int,Yes,Submit status,0,0/1/2
 Shift Schedule Assignment,company,Link,Yes,Company,Haritha Hospitals,Link → Company
+Shift Schedule Assignment,shift_location,Link,No,Shift Location override,,Link → Shift Location
+Shift Schedule Assignment,enabled,Check,No,Scheduler on/off toggle,1,0/1
+Shift Schedule Assignment,create_shifts_after,Date,No,Scheduler cursor (auto-updated),,ISO date
 Shift Request,employee,Link,Yes,Employee,EMP-001,Link → Employee
 Shift Request,shift_type,Link,Yes,Requested shift type,M0600R0800,Link → Shift Type
 Shift Request,from_date,Date,Yes,Start date,2026-06-01,ISO date
@@ -147,5 +159,11 @@ Shift Request,to_date,Date,Yes,End date,2026-06-03,ISO date
 Shift Request,reason,Text,No,Reason,Personal,free text
 Shift Request,status,Select,Yes,Request status,Open,Open/Approved/Rejected/Cancelled
 Shift Request,docstatus,Int,Yes,Submit status,0,0/1/2
-Shift Request,approver,Link,No,Approver,EMP-002,Link → User
+Shift Request,approver,Link,Yes,Approver,EMP-002,Link → User
 Shift Request,company,Link,Yes,Company,Haritha Hospitals,Link → Company
+Shift Location,location_name,Data,Yes,Location name (autoname source),Main Hospital Gate,unique
+Shift Location,checkin_radius,Int,No,Geofence radius in meters,100,non_negative
+Shift Location,latitude,Float,No,Latitude coordinate,17.3850,decimal
+Shift Location,longitude,Float,No,Longitude coordinate,78.4867,decimal
+Shift Location,geolocation,Geolocation,No,Composite map field,,Frappe Geolocation control
+Shift Location,fetch_geolocation,Button,No,Auto-fetch lat/long from browser geolocation,,UI button
