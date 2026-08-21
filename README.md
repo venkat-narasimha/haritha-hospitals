@@ -5,6 +5,10 @@
 **Started:** 2026-08-19.
 **Scope:** Shift management + HRMS basics (employees, departments, shift types, attendance, leave). Out of scope (deferred): wards, beds, OTs, pharmacy, lab, billing, full CoA, cost centers.
 
+## 🔄 Project Status (2026-08-21 10:33 IST)
+
+**Restart from Phase 1.** The Phase 2 deployment (pberp.duckdns.org) was destroyed in a teardown at 10:11–10:18 IST 2026-08-21 (Option B: nuke only, no backup). 24,511 records + deployment artifacts lost. Phase 0 + 1 design preserved (CSVs + git history intact). Phases 2–5 need redo. New env domain TBD. See `TRACKER.md` for full details.
+
 ## Stack
 
 - Frappe 16.x
@@ -46,4 +50,4 @@
 
 ---
 
-*Last updated: 2026-08-19 14:45 IST*
+*Last updated: 2026-08-21 10:33 IST — restart-from-Phase-1 update after pberp teardown*

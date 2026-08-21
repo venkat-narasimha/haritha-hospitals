@@ -9,6 +9,35 @@
 
 ---
 
+## 🔄 Project Status (2026-08-21) — Rollback
+
+At **10:11–10:18 IST 2026-08-21**, the `pberp.duckdns.org` environment was torn down (Option B: nuke, no backup). All Phase 2–5 deployment work was destroyed. Restart from Phase 1.
+
+| Phase | Before rollback (2026-08-19/20) | After rollback (2026-08-21) |
+|---|---|---|
+| Phase 0 — Schema Planning | ✅ done | ✅ done (preserved) |
+| Phase 1 — Schema Approval | ✅ done | ✅ done (preserved) |
+| Phase 2 — Site Setup | ✅ done at pberp.duckdns.org | 🔄 rolled back — needs redo |
+| Phase 3 — Data Import (24,511 records) | ✅ done at pberp.duckdns.org | 🔄 rolled back — needs redo |
+| Phase 4 — Workflow Testing (backend PASS) | ✅ done at pberp.duckdns.org | 🔄 rolled back — needs redo |
+| Phase 5 — Production Readiness | ⚠️ partial (backup cron only) | 🔄 rolled back — needs redo |
+| Phase L — Cert monitoring + sign-off | ⏳ pending | ⏳ pending |
+
+**What was lost:** pberp.duckdns.org env, 24,511 records across 9 entities, all live config (Company, Holidays, Custom Fields), backup cron on vijay@144.217.163.228, all nginx/websocket/workers config.
+
+**What is preserved (intact):**
+- CSV masters in `masters/` (19 files, 1.77 MB, 24,758 rows) — canonical source
+- All Phase 0 + 1 design decisions (schema, canonicalization, holidays)
+- Full git history (a468113 and earlier)
+- Lessons learned (table at bottom)
+- Venkat VPS backups: `pberpprod_backup_20260821_000039.tar.gz` (only one backup ever created — covers 1.6 MB but pre-Phase 4 data)
+
+**Open question:** New env domain — reuse `pberp.duckdns.org` (faster, but was the destroyed env) or pick new domain (cleaner)? See Open Questions section.
+
+**Restart strategy:** Pick new env domain → re-run Phase 2 (site setup) → re-run Phase 3 (CSV import) → re-run Phase 4 (testing) → re-run Phase 5 (production readiness). CSV masters are idempotent so re-import is safe.
+
+---
+
 ## Phase 0: Schema Planning (DONE ✅)
 
 **Goal:** Document schema for all master data entities needed for shift management system.
@@ -51,7 +80,9 @@
 
 ---
 
-## Phase 2: Site Setup (DONE ✅ 2026-08-20)
+## Phase 2: Site Setup (🔄 ROLLED BACK 2026-08-21 — work preserved, env destroyed)
+
+> **Rollback 2026-08-21:** All Phase 2 deployment work (pberp.duckdns.org site, 9 containers, apps, custom fields, MySQL grants, Company, Holidays) was destroyed when pberp env was torn down at 10:11–10:18 IST. Details below kept as historical record of what was planned and executed. Re-execute from scratch on new env.
 
 **Goal:** Create Haritha Hospitals site on a fresh environment.
 
@@ -79,7 +110,9 @@
 
 ---
 
-## Phase 3: Data Import (DONE ✅ 2026-08-20)
+## Phase 3: Data Import (🔄 ROLLED BACK 2026-08-21 — work preserved, env destroyed)
+
+> **Rollback 2026-08-21:** All 24,511 records imported into pberp.duckdns.org were destroyed in the env teardown. The 19 CSV masters in `masters/` are intact and idempotent — re-run Phase 3 on new env to recover.
 
 **Goal:** Load all master data from CSV into the site.
 
@@ -102,7 +135,9 @@
 
 ---
 
-## Phase 4: Shift Management Workflow Testing (DONE ✅ 2026-08-21)
+## Phase 4: Shift Management Workflow Testing (🔄 ROLLED BACK 2026-08-21 — work preserved, env destroyed)
+
+> **Rollback 2026-08-21:** All backend API testing (K-1, K-2, K-3 — PASS), nginx config, worker fixes, and websocket routing were destroyed with pberp.duckdns.org. Backend tests were PASS (verified via API) — scripts can be re-run on new env. UI smoke test was already inconclusive (headless browser unreliable).
 
 **Goal:** Test end-to-end shift management.
 
@@ -156,7 +191,9 @@
 
 ---
 
-## Phase 5: Production Readiness (PARTIAL ⚠️)
+## Phase 5: Production Readiness (🔄 ROLLED BACK 2026-08-21 — work partially preserved)
+
+> **Rollback 2026-08-21:** Backup cron on vijay@144.217.163.228 (`/home/vijay/scripts/pberp_backup.sh`) is destroyed along with the env. The cron schedule (`0 */6 * * *`) and offsite push to venkat@135.125.196.35 will need to be recreated on new env. One backup file (`pberpprod_backup_20260821_000039.tar.gz`, 1.6 MB) exists on venkat VPS — covers pre-Phase 4 state.
 
 **Goal:** Audit and harden for production.
 
@@ -212,6 +249,7 @@
 | 2026-08-21 | UI smoke test inconclusive (headless browser tool unreliable) | Needs real browser verification next session |
 | 2026-08-21 | Token limit issues (rate_limit_error) on long subagent runs — workaround: split into K1/K2/K3 + direct exec | Lesson learned for future orchestration |
 | 2026-08-21 | nginx `Upgrade: websocket` forced for /socket.io/ (added during UI debugging — may need review/revert) | Frappe ws server validates Upgrade header on every request |
+| 2026-08-21 | **Rollback: pberp.duckdns.org env torn down 10:11–10:18 IST (Option B: nuke, no backup). All Phase 2–5 deployment work destroyed. Restart from Phase 1 on new env. CSV masters + git history intact.** | Venkat authorized Option B at 10:33 IST; Phase 0 + 1 design work preserved; deployment was not recoverable |
 
 ---
 
@@ -247,12 +285,13 @@
 
 ## Open Questions
 
-1. **Site location** — which env for Haritha Hospitals? ✅ RESOLVED: NEW env `pberp.duckdns.org`
+1. **Site location** — which env for Haritha Hospitals? 🔄 RE-OPENED 2026-08-21: prior choice `pberp.duckdns.org` was destroyed. Options: (a) reuse `pberp.duckdns.org` (faster, but was the destroyed env), (b) pick new domain like `haritha.duckdns.org` (cleaner — no association with teardown). Awaiting user decision.
 2. **Custom app `haritha_hospital`** — needed or just custom fields + fixtures? ✅ RESOLVED: deferred, using custom fields + fixtures
-3. Hospital-specific holidays (founder day, anniversary)? ⏳ Pending user input
-4. ⚠️ **UI verification in real browser** — needed before go-live
-5. ⚠️ **nginx `Upgrade: websocket` force-set** — should we revert? (added during debugging)
-6. ⚠️ **User `Administrator` default `desktop:home_page="setup-wizard"`** — clear before production?
+3. **🆕 New env domain** — reuse `pberp.duckdns.org` or pick new? Decision needed before Phase 2 restart.
+4. Hospital-specific holidays (founder day, anniversary)? ⏳ Pending user input
+5. ⚠️ **UI verification in real browser** — needed before go-live
+6. ⚠️ **nginx `Upgrade: websocket` force-set** — should we revert? (added during debugging)
+7. ⚠️ **User `Administrator` default `desktop:home_page="setup-wizard"`** — clear before production?
 
 **Resolved:**
 - ~~Telangana 2025 + 2026 holiday list~~ — using standard Indian national 14 holidays (per user)
@@ -264,14 +303,21 @@
 
 ## Pending Actions (Next Session)
 
-1. **Phase L** — Cert monitoring + final sign-off report (~15m)
-2. **UI smoke test in real browser** — verify Frappe desk loads at https://pberp.duckdns.org/desk (login Administrator / admin123)
-3. **Review nginx `Upgrade: websocket` change** — may need revert (added during debugging)
-4. **Clear `desktop:home_page` default for user Administrator** — possibly needed for production
-5. **Activate Auto Attendance cron** — `enable_auto_attendance=1` on Shift Types
-6. **Pre-flight + post-flight process docs** — for go-live
-7. **Disaster recovery test** — restore from backup
-8. **User training** — for Haritha Hospital staff
+> **🔄 RESTART NOTE (2026-08-21):** Phases 2–5 must be RE-EXECUTED on new env (after env domain decision). Items below are ordered by restart priority.
+
+1. **🆕 Decide new env domain** — see Open Question #1 (reuse pberp.duckdns.org or new?)
+2. **🆕 Phase 2 (re-execute)** — site setup on new env (use Phase 2 detailed section as runbook)
+3. **🆕 Phase 3 (re-execute)** — CSV import (idempotent, 19 CSV masters ready)
+4. **🆕 Phase 4 (re-execute)** — workflow testing (K-1/K-2/K-3 scripts preserved)
+5. **🆕 Phase 5 (re-execute)** — backup cron + production readiness
+6. **Phase L** — Cert monitoring + final sign-off report (~15m)
+7. **UI smoke test in real browser** — verify Frappe desk loads at new env (login Administrator / admin123)
+8. **Review nginx `Upgrade: websocket` change** — may need revert (added during debugging)
+9. **Clear `desktop:home_page` default for user Administrator** — possibly needed for production
+10. **Activate Auto Attendance cron** — `enable_auto_attendance=1` on Shift Types
+11. **Pre-flight + post-flight process docs** — for go-live
+12. **Disaster recovery test** — restore from backup (note: backups are for pre-Phase 4 state only)
+13. **User training** — for Haritha Hospital staff
 
 ---
 
@@ -292,4 +338,4 @@
 
 ---
 
-*Last updated: 2026-08-21 09:42 IST — Phases 2–5 substantially complete; UI smoke test pending real browser verification*
+*Last updated: 2026-08-21 10:34 IST — 🔄 ROLLBACK: pberp.duckdns.org env destroyed 10:11–10:18 IST; restart from Phase 1 on new env. Phase 0 + 1 + CSV masters + git history preserved.*
