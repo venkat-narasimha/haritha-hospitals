@@ -184,3 +184,8 @@
 ---
 
 **Source:** `TRACKER.md` Decisions Log table, extracted 2026-08-21 11:55 IST.
+
+### 2026-08-21 — Holiday List 2025 Buddha Purnima date discrepancy
+**Decision:** Accept Frappe's stored date (2025-05-13) instead of sent date (2025-05-12). Off-by-1 likely due to Frappe interpreting the Hindu lunar calendar differently. Can amend post-import if user disputes.
+**Rationale:** Minor discrepancy, non-blocking for Phase 3 import. Lunar calendar dates vary by interpretation.
+**Status:** accepted
