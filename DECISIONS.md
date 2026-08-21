@@ -189,3 +189,8 @@
 **Decision:** Accept Frappe's stored date (2025-05-13) instead of sent date (2025-05-12). Off-by-1 likely due to Frappe interpreting the Hindu lunar calendar differently. Can amend post-import if user disputes.
 **Rationale:** Minor discrepancy, non-blocking for Phase 3 import. Lunar calendar dates vary by interpretation.
 **Status:** accepted
+
+### 2026-08-21 — Phase 3.5: 8 entities DEFERRED
+**Decision:** Defer import of 8 entities to Phase 3.5 (later) — Shift Location, Shift Request, Shift Schedule, Shift Schedule Assignment, Leave Application, Leave Allocation, Employee Group, Employee Advance.
+**Rationale:** CSVs are empty (0 data rows) or missing on disk. Original Phase 1 (2026-08-19) generated schemas for 19 entities but only 13 had matching source data from `roster_and_attendance_june.xlsx`. Scope per TRACKER.md Phase 1 = "shift management only (deferred: wards, beds, OTs, pharmacy, lab, billing, full CoA, cost centers)" — implicitly excludes workflow features like leave, advances, shift swaps, schedule templates.
+**Status:** deferred — populate when source data becomes available (e.g., live HR system export or manual entry).
