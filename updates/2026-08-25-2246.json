@@ -1,0 +1,62 @@
+{
+  "status_date": "2026-08-25 22:46 IST",
+  "status_subtitle": "Resumed — backup verified",
+  "footer_text": "2026-08-25 22:46 IST — Phase 1.5 verify ✅ + Step A1-A5 backup ✅ (verified local + offsite). Push to origin main ✅ (commit 7e95049). Awaiting green-light for Step B1-B6 wipe.",
+  "sections": [
+    {
+      "title": "## Phase 2: Step A1-A5 Pre-flight Backup (2026-08-25 22:27 IST) ✅",
+      "body": "**Goal:** Mandatory backup before any destructive wipe (Aug 19 lesson #79 + user safety rule).\n\n**Status:** ✅ Complete + verified. SHA256 byte-match between local + offsite.\n\n**Subagent:** OX Alpha free (1M ctx, code-writing specialty, run mode, lightContext=true). 1 fix applied: direct gateway→venkat `scp` invalid (files on vijay VPS). Subagent swapped to vijay→venkat SSH tar-pipe. Worked.\n\n**Deliverables:**\n- [x] Site name verified: `pberpprod.duckdns.org` (db `_b80f05e76a0dcaad`)\n- [x] Local backup: `/home/vijay/backups/prod/20260825_222729/` (6 files, 1.23 MB master + 4 components + sha256)\n- [x] Offsite backup: `venkat@135.125.196.35:/home/venkat/pberpprod_backups/20260825_222729/` (6 files, identical SHA256)\n- [x] Master archive: `pberpprod_phase2_20260825_222729.tar.gz` (1,229,164 B)\n- [x] gzip integrity test: OK on both sides\n- [x] SHA256: `37ff656efa89ac04dfe9a93539dce24b8807de5f3149ae641731e47d71b39007` (matches local + offsite)\n- [x] Disk after backup: 14G free / 81% used (stable)\n- [x] Reusable script: `/tmp/phase2_backup.sh` on vijay VPS (idempotent, re-runnable)\n\n**Pre-flight checks completed:**\n- Container `erp-prod-backend-1` Up\n- Site name from container (not assumed)\n- Disk space >500MB free before backup\n- Existing backups preserved (not deleted)\n\n**Parent verification (Lesson #72):** Independent SHA256 + gzip integrity check via inline SSH after subagent completion. Both local + offsite verified byte-identical.\n\n**Push to origin:** ✅ Done (inline fallback — Nemotron subagent hit FailoverError). 3 commits pushed: `219978d..7e95049`. Remote HEAD matches local."
+    }
+  ],
+  "decisions": [
+    {
+      "date": "2026-08-25",
+      "name": "Phase 2 Step A1-A5 backup executed + verified",
+      "rationale": "Backup is mandatory before any destructive wipe (Aug 19 lesson #79 + SOUL never-migrate-prod-without-backup). OX Alpha subagent ran the script, parent (main) verified independently per Lesson #72."
+    },
+    {
+      "date": "2026-08-25",
+      "name": "Git push: subagent fail-over to inline SSH",
+      "rationale": "Nemotron 3 Ultra free returned FailoverError on first push attempt. Fell back to inline SSH chain (subagent quota/availability unreliable). Push succeeded: `219978d..7e95049 main -> main`. 3 commits: f0e109a + 51d0bb4 + 7e95049. Branch now synced with origin."
+    },
+    {
+      "date": "2026-08-25",
+      "name": "TRACKER.md updates via reusable script (`update_tracker.py`)",
+      "rationale": "Per Venkat directive (22:46 IST): 'write a script for this as well because it is repetitive task'. JSON-driven, idempotent, handles status_date/footer/sections/decisions/lessons/pending items. Future tracker updates = write JSON spec + run script. No more manual sed/edit."
+    },
+    {
+      "date": "2026-08-25",
+      "name": "Subagent model fallback pattern established",
+      "rationale": "Nemotron free FailoverError and OX Alpha rate limit both observed. Pattern: try primary model → on failure, fall back to inline or alternative free model. Document this for future ops. Premium MiniMax reserved for critical-path work."
+    }
+  ],
+  "lessons": [
+    {
+      "issue": "OX Alpha free model rate-limited mid-task (Aug 25 commit subagent)",
+      "lesson": "Subagent bootstrap costs ~13-15k tokens even when LLM call is free. For trivial mechanical ops (git commit, single SSH call), inline is cheaper + faster. Reserve subagent for scripted ops with fix loops (write script → run → fix until works)."
+    },
+    {
+      "issue": "Nemotron 3 Ultra free returned FailoverError mid-push (Aug 25)",
+      "lesson": "Free-tier models have unreliable availability. For critical ops (e.g., git push to protected branch), have inline fallback ready. Don't depend on subagent success for one-shot operations."
+    },
+    {
+      "issue": "Subagent claimed success on backup, parent verification needed (Lesson #72)",
+      "lesson": "Always run independent verification probes after subagent claims (SHA256 byte-match, file listing, gzip integrity). Costs ~500 tokens inline; saves catching fabricated success reports."
+    },
+    {
+      "issue": "scp directly from gateway to venkat VPS failed (Aug 25 backup)",
+      "lesson": "Backup files on vijay VPS, not gateway. Use `ssh tar-pipe` from vijay to venkat for cross-VPS copy, or move files through a shared mount. Don't assume direct paths between VPS hosts."
+    },
+    {
+      "issue": "TRACKER.md manual edits are repetitive + error-prone",
+      "lesson": "Use `scripts/update_tracker.py` (Aug 25) — JSON-driven, idempotent. Future updates = JSON spec + run script. Covers: status_date, footer, sections, decisions log, lessons, pending actions."
+    }
+  ],
+  "pending_done": [],
+  "pending_add": [
+    "🆕 Reusable update_tracker.py script (Aug 25) — JSON spec + run for future TRACKER updates",
+    "⏳ Phase 2 Step B1–B6: wipe + reinit — backup verified, awaiting green-light (OX Alpha subagent)",
+    "⏳ Phase 2 Step B5: cert refresh check — same URL but cert may need renewal after wipe+reinit",
+    "✅ Phase 2 Step A1–A5: pre-flight backup — DONE 2026-08-25 22:27 IST (verified local + offsite)"
+  ]
+}

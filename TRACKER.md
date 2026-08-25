@@ -9,7 +9,7 @@
 
 ---
 
-## 🔄 Project Status (2026-08-25 22:00 IST) — Resumed
+## 🔄 Project Status (2026-08-25 22:46 IST) — Resumed — Resumed — backup verified
 
 **Tonight:** Verified 19 CSV masters pre-ingest (0 FAILs, 0 WARNs). Phase 2 plan revised: env = **pberpprod.duckdns.org** (Option B: wipe + reinit). Backup + wipe pending green-light.
 
@@ -342,6 +342,10 @@ Phase 3: ingest in sub-phases (3a masters → 3b shift_assignments → 3c attend
 | 2026-08-25 | **Verify script = reusable** | `scripts/verify_csvs.py` re-runs in Phase 4 (CSV count vs DB count comparison). |
 | 2026-08-25 | **Phase 6 added: ISO/CMM Level 5 docs** | Per Venkat 21:30 IST. Scope default = ISO 9001 + 27001, SOPs + process maps + audit trail, customer + manager audience. |
 | 2026-08-25 | **Phase 7 added: Handover + optional demo deck** | Per Venkat 21:30 IST. Manager walkthrough + customer pilot (this week). |
+| 2026-08-25 | Phase 2 Step A1-A5 backup executed + verified | Backup is mandatory before any destructive wipe (Aug 19 lesson #79 + SOUL never-migrate-prod-without-backup). OX Alpha subagent ran the script, parent (main) verified independently per Lesson #72. |
+| 2026-08-25 | Git push: subagent fail-over to inline SSH | Nemotron 3 Ultra free returned FailoverError on first push attempt. Fell back to inline SSH chain (subagent quota/availability unreliable). Push succeeded: `219978d..7e95049 main -> main`. 3 commits: f0e109a + 51d0bb4 + 7e95049. Branch now synced with origin. |
+| 2026-08-25 | TRACKER.md updates via reusable script (`update_tracker.py`) | Per Venkat directive (22:46 IST): 'write a script for this as well because it is repetitive task'. JSON-driven, idempotent, handles status_date/footer/sections/decisions/lessons/pending items. Future tracker updates = write JSON spec + run script. No more manual sed/edit. |
+| 2026-08-25 | Subagent model fallback pattern established | Nemotron free FailoverError and OX Alpha rate limit both observed. Pattern: try primary model → on failure, fall back to inline or alternative free model. Document this for future ops. Premium MiniMax reserved for critical-path work. |
 
 ---
 
@@ -426,6 +430,43 @@ Phase 3: ingest in sub-phases (3a masters → 3b shift_assignments → 3c attend
 
 ---
 
+
+
+11. 🆕 Reusable update_tracker.py script (Aug 25) — JSON spec + run for future TRACKER updates
+
+12. ⏳ Phase 2 Step B1–B6: wipe + reinit — backup verified, awaiting green-light (OX Alpha subagent)
+
+13. ⏳ Phase 2 Step B5: cert refresh check — same URL but cert may need renewal after wipe+reinit
+
+14. ✅ Phase 2 Step A1–A5: pre-flight backup — DONE 2026-08-25 22:27 IST (verified local + offsite)
+## Phase 2: Step A1-A5 Pre-flight Backup (2026-08-25 22:27 IST) ✅
+
+**Goal:** Mandatory backup before any destructive wipe (Aug 19 lesson #79 + user safety rule).
+
+**Status:** ✅ Complete + verified. SHA256 byte-match between local + offsite.
+
+**Subagent:** OX Alpha free (1M ctx, code-writing specialty, run mode, lightContext=true). 1 fix applied: direct gateway→venkat `scp` invalid (files on vijay VPS). Subagent swapped to vijay→venkat SSH tar-pipe. Worked.
+
+**Deliverables:**
+- [x] Site name verified: `pberpprod.duckdns.org` (db `_b80f05e76a0dcaad`)
+- [x] Local backup: `/home/vijay/backups/prod/20260825_222729/` (6 files, 1.23 MB master + 4 components + sha256)
+- [x] Offsite backup: `venkat@135.125.196.35:/home/venkat/pberpprod_backups/20260825_222729/` (6 files, identical SHA256)
+- [x] Master archive: `pberpprod_phase2_20260825_222729.tar.gz` (1,229,164 B)
+- [x] gzip integrity test: OK on both sides
+- [x] SHA256: `37ff656efa89ac04dfe9a93539dce24b8807de5f3149ae641731e47d71b39007` (matches local + offsite)
+- [x] Disk after backup: 14G free / 81% used (stable)
+- [x] Reusable script: `/tmp/phase2_backup.sh` on vijay VPS (idempotent, re-runnable)
+
+**Pre-flight checks completed:**
+- Container `erp-prod-backend-1` Up
+- Site name from container (not assumed)
+- Disk space >500MB free before backup
+- Existing backups preserved (not deleted)
+
+**Parent verification (Lesson #72):** Independent SHA256 + gzip integrity check via inline SSH after subagent completion. Both local + offsite verified byte-identical.
+
+**Push to origin:** ✅ Done (inline fallback — Nemotron subagent hit FailoverError). 3 commits pushed: `219978d..7e95049`. Remote HEAD matches local.
+
 ## Known Issues / Lessons Learned
 
 | # | Issue | Lesson |
@@ -443,7 +484,12 @@ Phase 3: ingest in sub-phases (3a masters → 3b shift_assignments → 3c attend
 | NEW | Subagent work pattern: write script + run + fix loop until works; never hallucinate (2026-08-25) | Applies to all scripted ops. Inline only for trivial ≤5-line edits. |
 | NEW | Verify scripts must discover `## Data` marker correctly (2026-08-25) | `csv.DictReader` needs header in input — slice `readlines()[header_idx:]` (marker+1), not `[data_start:]` (marker+2). |
 | NEW | Haritha employee.csv has no `name` column (2026-08-25) | Use `attendance_device_id` (EMP-NNNN) as FK join key for `shift_assignment.employee`. |
+| OX Alpha free model rate-limited mid-task (Aug 25 commit subagent) | Subagent bootstrap costs ~13-15k tokens even when LLM call is free. For trivial mechanical ops (git commit, single SSH call), inline is cheaper + faster. Reserve subagent for scripted ops with fix loops (write script → run → fix until works). |
+| Nemotron 3 Ultra free returned FailoverError mid-push (Aug 25) | Free-tier models have unreliable availability. For critical ops (e.g., git push to protected branch), have inline fallback ready. Don't depend on subagent success for one-shot operations. |
+| Subagent claimed success on backup, parent verification needed (Lesson #72) | Always run independent verification probes after subagent claims (SHA256 byte-match, file listing, gzip integrity). Costs ~500 tokens inline; saves catching fabricated success reports. |
+| scp directly from gateway to venkat VPS failed (Aug 25 backup) | Backup files on vijay VPS, not gateway. Use `ssh tar-pipe` from vijay to venkat for cross-VPS copy, or move files through a shared mount. Don't assume direct paths between VPS hosts. |
+| TRACKER.md manual edits are repetitive + error-prone | Use `scripts/update_tracker.py` (Aug 25) — JSON-driven, idempotent. Future updates = JSON spec + run script. Covers: status_date, footer, sections, decisions log, lessons, pending actions. |
 
 ---
 
-*Last updated: 2026-08-25 22:00 IST — Phase 1.5 verify ✅ done (0 FAILs). Phase 2 restart #2 planned on `pberpprod.duckdns.org` (Option B wipe + reinit). Backup + wipe pending green-light.*
+*Last updated: 2026-08-25 22:46 IST — Phase 1.5 verify ✅ + Step A1-A5 backup ✅ (verified local + offsite). Push to origin main ✅ (commit 7e95049). Awaiting green-light for Step B1-B6 wipe.*
