@@ -1,0 +1,160 @@
+{
+  "csvs_dir": "/root/.openclaw/workspace/projects/haritha-hospitals/masters",
+  "checks": {
+    "1_row_counts": {
+      "employee": {
+        "expected": 210,
+        "actual": 210,
+        "status": "OK"
+      },
+      "shift_type": {
+        "expected": 25,
+        "actual": 25,
+        "status": "OK"
+      },
+      "shift_assignment": {
+        "expected": 5317,
+        "actual": 5317,
+        "status": "OK"
+      },
+      "attendance": {
+        "expected": 6300,
+        "actual": 6300,
+        "status": "OK"
+      },
+      "employee_checkin": {
+        "expected": 12562,
+        "actual": 12562,
+        "status": "OK"
+      },
+      "leave_application": {
+        "expected": 1,
+        "actual": 1,
+        "status": "OK"
+      },
+      "designation": {
+        "expected": 48,
+        "actual": 48,
+        "status": "OK"
+      },
+      "holiday_list": {
+        "expected": 1,
+        "actual": 1,
+        "status": "OK"
+      },
+      "holiday": {
+        "expected": 14,
+        "actual": 14,
+        "status": "OK"
+      },
+      "company": {
+        "expected": 1,
+        "actual": 1,
+        "status": "OK"
+      },
+      "department": {
+        "expected": 36,
+        "actual": 36,
+        "status": "OK"
+      },
+      "shift_schedule": {
+        "expected": 1,
+        "actual": 1,
+        "status": "OK"
+      },
+      "shift_schedule_assignment": {
+        "expected": 1,
+        "actual": 1,
+        "status": "OK"
+      },
+      "shift_request": {
+        "expected": 1,
+        "actual": 1,
+        "status": "OK"
+      },
+      "shift_location": {
+        "expected": 1,
+        "actual": 1,
+        "status": "OK"
+      },
+      "leave_type": {
+        "expected": 7,
+        "actual": 7,
+        "status": "OK"
+      },
+      "leave_allocation": {
+        "expected": 1,
+        "actual": 1,
+        "status": "OK"
+      },
+      "fiscal_year": {
+        "expected": 2,
+        "actual": 2,
+        "status": "OK"
+      },
+      "employment_type": {
+        "expected": 6,
+        "actual": 6,
+        "status": "OK"
+      }
+    },
+    "2_designation_collisions": {
+      "status": "OK",
+      "collision_count": 0,
+      "details": [],
+      "total_designations": 48
+    },
+    "3_shift_duplicates": {
+      "status": "OK",
+      "duplicates_found": [],
+      "total_shift_types": 25,
+      "unique_codes": 25
+    },
+    "4_shift_code_format": {
+      "status": "FAIL",
+      "malformed_codes": [
+        "M0600R0830",
+        "M0700R0830",
+        "M0800R0830",
+        "M0800R0600",
+        "A1200R0830",
+        "A1400R0600",
+        "N2000R1200",
+        "G0900R0830",
+        "G0930R0830",
+        "G1000R0830"
+      ],
+      "malformed_count": 25,
+      "total_codes_checked": 25
+    },
+    "5_fk_integrity_emp_st_sa": {
+      "status": "FAIL",
+      "employee_duplicates": [],
+      "shift_type_duplicates": [],
+      "shift_assignment_orphan_employees": 210,
+      "shift_assignment_orphan_shift_types": 0,
+      "total_shift_assignments_checked": 5317
+    },
+    "6_holiday_completeness": {
+      "status": "WARN",
+      "total_holidays": 8,
+      "missing_common_national": [
+        "Buddha Purnima",
+        "Christmas Day",
+        "Dussehra",
+        "Eid",
+        "Good Friday",
+        "Janmashtami",
+        "Labour Day",
+        "Mahavir Jayanti",
+        "New Year"
+      ]
+    },
+    "7_fk_holistic": {
+      "status": "OK",
+      "department_dupes": [],
+      "company_dupes": [],
+      "designation_dupes": []
+    }
+  }
+}

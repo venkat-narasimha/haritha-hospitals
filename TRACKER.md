@@ -9,7 +9,23 @@
 
 ---
 
-## 🔄 Project Status (2026-08-21) — Rollback
+## 🔄 Project Status (2026-08-25 22:00 IST) — Resumed
+
+**Tonight:** Verified 19 CSV masters pre-ingest (0 FAILs, 0 WARNs). Phase 2 plan revised: env = **pberpprod.duckdns.org** (Option B: wipe + reinit). Backup + wipe pending green-light.
+
+| Phase | State |
+|---|---|
+| Phase 0 — Schema Planning | ✅ done (preserved) |
+| Phase 1 — Schema Approval | ✅ done (preserved) |
+| Phase 1.5 — CSV Verification | ✅ done 2026-08-25 (0 FAILs) |
+| Phase 2 — Site Setup | 🔄 restart #2 — pberpprod.duckdns.org (wipe + reinit) |
+| Phase 3 — Data Import | ⏳ pending Phase 2 |
+| Phase 4 — Workflow Testing | ⏳ pending Phase 3 |
+| Phase 5 — Production Readiness | ⏳ pending Phase 4 |
+| Phase 6 — ISO/CMM L5 Docs | ⏳ pending Phase 4 (NEW — per Venkat 2026-08-25) |
+| Phase 7 — Handover + Demo | ⏳ pending Phase 6 |
+
+## 📜 Historical Project Status (2026-08-21) — Rollback
 
 At **10:11–10:18 IST 2026-08-21**, the `pberp.duckdns.org` environment was torn down (Option B: nuke, no backup). All Phase 2–5 deployment work was destroyed. Restart from Phase 1.
 
@@ -79,6 +95,74 @@ At **10:11–10:18 IST 2026-08-21**, the `pberp.duckdns.org` environment was tor
 - [x] Manager downloaded from GitHub, imported to Google Sheets, shared with team
 
 ---
+
+## Phase 1.5: CSV Master Re-Verification (2026-08-25 22:00 IST) ✅
+
+**Goal:** Validate the 19 CSV masters before ingestion (catch data corruption + schema drift early).
+
+**Status:** ✅ Complete. All 7 checks PASS. 0 FAILs, 0 WARNs. 24,758 rows across 19 entities.
+
+**Deliverables:**
+- [x] Reusable verify script: `scripts/verify_csvs.py` (also runs Phase 4 post-ingest count comparison)
+- [x] Investigation script: `scripts/investigate_failures.py` (one-shot, captured findings)
+- [x] JSON report: `reports/verify_pre_ingest_20260825_2200.json`
+- [x] Human-readable report (printed to stdout)
+
+**Checks performed (7):**
+1. ✅ Row counts vs manifest — all 19 entities match
+2. ✅ Designation collisions (3 known pairs resolved Aug 19) — 0 present
+3. ✅ Shift duplicates (A4, B2, C1 resolved Aug 19) — 0 present
+4. ✅ Shift code format — 25/25 valid
+5. ✅ FK integrity Employee ↔ Shift Type ↔ Shift Assignment — 0 orphans (5,317 SAs checked)
+6. ✅ Holiday completeness — 8 unique × 2 years = 14 rows (Haritha-selected Indian national)
+7. ✅ FK holistic (no dupes across Dept/Company/Desig) — clean
+
+**Findings (to MEMORY candidates):**
+
+| # | Finding | Impact |
+|---|---|---|
+| A | Actual shift code format = `[GMAN]\d{4}[RS]\d{4}` (10-char) | MEMORY decision (Aug 19) was wrong — said `[P][HHMM][S][HHMM]`. Actual codes: G=General (12), M=Morning (7), A=Afternoon (3), N=Night (3); R=Regular end, S=Special end. |
+| B | `employee.csv` has **NO `name` column** | Schema is `employee_name, employee_number, status, department, designation, employment_type, default_shift, date_of_joining, company, is_synthetic_data, branch, gender, date_of_birth, user_id, holiday_list, attendance_device_id`. Join key for `shift_assignment.employee` = `employee.attendance_device_id` (EMP-NNNN format). 210/210 match. |
+| C | Verify script format assumption | `## Data` marker + header line + data rows. `csv.DictReader` needs the header in its input — pass `readlines()[header_idx:]` not `[data_start:]`. |
+
+**Initial run had 2 false positives (regex too strict + wrong FK column) — fixed in same script, re-run PASS.**
+
+## Phase 2 (Restart #2 — pberpprod.duckdns.org) (2026-08-25 22:00 IST) 🔄 IN PROGRESS
+
+> Resumption context: Aug 21 10:11–10:18 IST rollback destroyed prior `pberp.duckdns.org` env. After considering options, Venkat chose **Option B (wipe + reinit) on `pberpprod.duckdns.org`** at 21:43 IST 2026-08-25. pberpprod was created but never loaded with real data — treated as QA/dev for wipe purposes.
+
+**Goal:** Spin up Haritha Hospitals on `pberpprod.duckdns.org` with clean state.
+
+**Plan (gated, no auto-progression):**
+
+```
+Step A1: bench --site prod backup --with-files (mandatory pre-flight)
+Step A2: copy backup to /home/vijay/backups/prod/ (local)
+Step A3: copy backup to venkat@135.125.196.35:/home/vijay/backups/prod/ (offsite)
+Step A4: verify backup integrity (tar tzf + smoke-restore in dev)
+Step A5: SHA256 backup, store checksum
+  ↓ user ✅ on backup integrity
+Step B1: stop site traffic (maintenance mode or DNS pause)
+Step B2: drop database _<dbname>
+Step B3: bench new-site pberpprod.duckdns.org
+Step B4: install apps: frappe → erpnext → hrms 16.5.0 → payments
+Step B5: configure domain + DuckDNS + cert (same URL, but cert may need refresh)
+Step B6: 4×/day cron backup (per Lesson #79 hardening)
+  ↓ user ✅ on env live
+Phase 3: ingest in sub-phases (3a masters → 3b shift_assignments → 3c attendance/checkin/leave)
+```
+
+**Runbook reuse:** Aug 20 Phase 2 execution at `pberp.duckdns.org` is preserved in git history — sub-agents should reference commit history for exact commands, container names, MySQL grant patterns.
+
+**Subagent model:** OX Alpha free (1M ctx, code-writing specialty, structured output).
+
+**Lessons to apply (cumulative):**
+- #44: pin hrms 16.5.0 (NOT 16.5.1+)
+- #46: restart backend + workers after install-app
+- #47: asset sync per-directory via host-staged `docker cp`
+- #66: verify `sites/apps.txt` after install-app
+- #79: wrap `bench backup` with `timeout 900` + `${PIPESTATUS[0]}` capture
+- #80: edit `site_config.json` AND `sites/apps.txt` atomically
 
 ## Phase 2: Site Setup (🔄 ROLLED BACK 2026-08-21 — work preserved, env destroyed)
 
@@ -250,6 +334,14 @@ At **10:11–10:18 IST 2026-08-21**, the `pberp.duckdns.org` environment was tor
 | 2026-08-21 | Token limit issues (rate_limit_error) on long subagent runs — workaround: split into K1/K2/K3 + direct exec | Lesson learned for future orchestration |
 | 2026-08-21 | nginx `Upgrade: websocket` forced for /socket.io/ (added during UI debugging — may need review/revert) | Frappe ws server validates Upgrade header on every request |
 | 2026-08-21 | **Rollback: pberp.duckdns.org env torn down 10:11–10:18 IST (Option B: nuke, no backup). All Phase 2–5 deployment work destroyed. Restart from Phase 1 on new env. CSV masters + git history intact.** | Venkat authorized Option B at 10:33 IST; Phase 0 + 1 design work preserved; deployment was not recoverable |
+| 2026-08-25 | **Resumption: Phase 2 restart on `pberpprod.duckdns.org`** (env created but never used = QA/dev effectively) | Wipe + reinit as Haritha. Same domain, clean slate. Backups-first mandatory (Step A1–A5). |
+| 2026-08-25 | **MEMORY correction:** actual shift code format = `[GMAN]\d{4}[RS]\d{4}` (10-char) | Aug 19 decision said `[P][HHMM][S][HHMM]` (single P prefix, single S mid) — incomplete. Real data uses 4 prefixes (G/M/A/N) and R/S for end-time type. MEMORY.md needs update post-Phase 2. |
+| 2026-08-25 | **FK join key:** `shift_assignment.employee` → `employee.attendance_device_id` (EMP-NNNN) | Haritha employee.csv has NO `name` column (PK collision with HRMS). Use `attendance_device_id` as FK. 210/210 match verified. |
+| 2026-08-25 | **Subagent pattern rule:** script work = subagent writes script + runs + fixes until works. Never hallucinate. | Applies to all scripted ops (backup, ingest, verify). Inline only for trivial ≤5-line edits. |
+| 2026-08-25 | **Subagent model selection:** OX Alpha free for scripted ops | 1M ctx, code-writing specialty, structured output. Nemotron 3 Ultra for reasoning-heavy. GLM 5.2 reserved (rate-limited). |
+| 2026-08-25 | **Verify script = reusable** | `scripts/verify_csvs.py` re-runs in Phase 4 (CSV count vs DB count comparison). |
+| 2026-08-25 | **Phase 6 added: ISO/CMM Level 5 docs** | Per Venkat 21:30 IST. Scope default = ISO 9001 + 27001, SOPs + process maps + audit trail, customer + manager audience. |
+| 2026-08-25 | **Phase 7 added: Handover + optional demo deck** | Per Venkat 21:30 IST. Manager walkthrough + customer pilot (this week). |
 
 ---
 
@@ -285,13 +377,15 @@ At **10:11–10:18 IST 2026-08-21**, the `pberp.duckdns.org` environment was tor
 
 ## Open Questions
 
-1. **Site location** — which env for Haritha Hospitals? 🔄 RE-OPENED 2026-08-21: prior choice `pberp.duckdns.org` was destroyed. Options: (a) reuse `pberp.duckdns.org` (faster, but was the destroyed env), (b) pick new domain like `haritha.duckdns.org` (cleaner — no association with teardown). Awaiting user decision.
+1. **Site location** — ✅ RESOLVED 2026-08-25: `pberpprod.duckdns.org` (Option B wipe + reinit; never used in production)
 2. **Custom app `haritha_hospital`** — needed or just custom fields + fixtures? ✅ RESOLVED: deferred, using custom fields + fixtures
-3. **🆕 New env domain** — reuse `pberp.duckdns.org` or pick new? Decision needed before Phase 2 restart.
+3. ~~**New env domain** — reuse `pberp.duckdns.org` or pick new?~~ ✅ RESOLVED: `pberpprod.duckdns.org`
 4. Hospital-specific holidays (founder day, anniversary)? ⏳ Pending user input
 5. ⚠️ **UI verification in real browser** — needed before go-live
-6. ⚠️ **nginx `Upgrade: websocket` force-set** — should we revert? (added during debugging)
+6. ⚠️ **nginx `Upgrade: websocket` force-set** — should we revert? (added during debugging, prior env)
 7. ⚠️ **User `Administrator` default `desktop:home_page="setup-wizard"`** — clear before production?
+8. 🆕 **ISO/CMM L5 scope** — confirm default (ISO 9001 + 27001, SOPs + process maps + audit trail, customer + manager audience) or specify more (2026-08-25)
+9. 🆕 **Demo order** — manager walkthrough first, customer pilot first, or both same session? (2026-08-25)
 
 **Resolved:**
 - ~~Telangana 2025 + 2026 holiday list~~ — using standard Indian national 14 holidays (per user)
@@ -303,21 +397,32 @@ At **10:11–10:18 IST 2026-08-21**, the `pberp.duckdns.org` environment was tor
 
 ## Pending Actions (Next Session)
 
-> **🔄 RESTART NOTE (2026-08-21):** Phases 2–5 must be RE-EXECUTED on new env (after env domain decision). Items below are ordered by restart priority.
+> **🔄 RESTART NOTE (2026-08-25 22:00 IST):** Resumed on `pberpprod.duckdns.org`. Backup (Step A1–A5) + wipe (Step B1–B6) gated by user ✅. Phase 1.5 verify ✅ done.
 
-1. **🆕 Decide new env domain** — see Open Question #1 (reuse pberp.duckdns.org or new?)
-2. **🆕 Phase 2 (re-execute)** — site setup on new env (use Phase 2 detailed section as runbook)
-3. **🆕 Phase 3 (re-execute)** — CSV import (idempotent, 19 CSV masters ready)
-4. **🆕 Phase 4 (re-execute)** — workflow testing (K-1/K-2/K-3 scripts preserved)
-5. **🆕 Phase 5 (re-execute)** — backup cron + production readiness
-6. **Phase L** — Cert monitoring + final sign-off report (~15m)
-7. **UI smoke test in real browser** — verify Frappe desk loads at new env (login Administrator / admin123)
-8. **Review nginx `Upgrade: websocket` change** — may need revert (added during debugging)
-9. **Clear `desktop:home_page` default for user Administrator** — possibly needed for production
-10. **Activate Auto Attendance cron** — `enable_auto_attendance=1` on Shift Types
-11. **Pre-flight + post-flight process docs** — for go-live
-12. **Disaster recovery test** — restore from backup (note: backups are for pre-Phase 4 state only)
-13. **User training** — for Haritha Hospital staff
+**IMMEDIATE (gated):**
+1. ✅ **Phase 1.5: CSV master verify** — DONE 2026-08-25 22:00 IST (0 FAILs, 0 WARNs)
+2. ⏳ **Phase 2 Step A1–A5: pre-flight backup** — awaiting user ✅ (OX Alpha subagent)
+3. ⏳ **Phase 2 Step B1–B6: wipe + reinit** — awaiting backup integrity ✅ (OX Alpha subagent)
+4. ⏳ **Phase 3a: master ingest** (Company → Dept → Designation → Employment Type → Holiday List → Holiday → Fiscal Year → Shift Location → Leave Type)
+5. ⏳ **Phase 3b: employee + shift assignment ingest** (210 + 5,317 rows)
+6. ⏳ **Phase 3c: attendance + checkin + leave ingest** (6,300 + 12,562 + 1)
+7. ⏳ **Verify post-ingest** — re-run verify_csvs.py against DB counts
+
+**FOLLOWING:**
+8. ⏳ **Venkat manual shift mgmt verify** — shift assignment, attendance marking, leave, holiday skip
+9. ⏳ **Phase 6: ISO/CMM L5 docs** — SOPs + process maps + audit trail (per Venkat 21:30 IST)
+10. ⏳ **Phase 7: handover + optional demo deck** — manager walkthrough + customer pilot
+
+**CARRY-FORWARD (non-Haritha):**
+- dev-erp scheduler MySQL 1045 grant fix (A/B/C/D candidates, awaiting YES/NO)
+- pberpDEV/QA sign-off on pb_material v1.0.1 install
+- git_backup root-perm fix (verified FAIL on 03:00 IST Aug 20 slot)
+- ⚠️ **UI verification in real browser** — needed before go-live
+- ⚠️ **nginx `Upgrade: websocket` force-set** — review/revert (prior env debugging)
+- ⚠️ **User `Administrator` default `desktop:home_page="setup-wizard"`** — clear before production?
+- **Activate Auto Attendance cron** — `enable_auto_attendance=1` on Shift Types
+- **Disaster recovery test** — restore from backup
+- **User training** — for Haritha Hospital staff
 
 ---
 
@@ -335,7 +440,10 @@ At **10:11–10:18 IST 2026-08-21**, the `pberp.duckdns.org` environment was tor
 | NEW | Frappe `doc.delete()` enforces "disable not delete" | Force-delete via direct DB DELETE |
 | NEW | Token limit errors on long subagent runs (rate_limit_error) | Split large tasks into smaller subagents OR direct exec |
 | NEW | Frappe headless browser testing unreliable (timeouts, false negatives) | Use real browser for UI smoke tests |
+| NEW | Subagent work pattern: write script + run + fix loop until works; never hallucinate (2026-08-25) | Applies to all scripted ops. Inline only for trivial ≤5-line edits. |
+| NEW | Verify scripts must discover `## Data` marker correctly (2026-08-25) | `csv.DictReader` needs header in input — slice `readlines()[header_idx:]` (marker+1), not `[data_start:]` (marker+2). |
+| NEW | Haritha employee.csv has no `name` column (2026-08-25) | Use `attendance_device_id` (EMP-NNNN) as FK join key for `shift_assignment.employee`. |
 
 ---
 
-*Last updated: 2026-08-21 10:34 IST — 🔄 ROLLBACK: pberp.duckdns.org env destroyed 10:11–10:18 IST; restart from Phase 1 on new env. Phase 0 + 1 + CSV masters + git history preserved.*
+*Last updated: 2026-08-25 22:00 IST — Phase 1.5 verify ✅ done (0 FAILs). Phase 2 restart #2 planned on `pberpprod.duckdns.org` (Option B wipe + reinit). Backup + wipe pending green-light.*
