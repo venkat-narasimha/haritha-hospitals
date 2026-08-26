@@ -9,7 +9,7 @@
 
 ---
 
-## 🔄 Project Status (2026-08-26 09:30 IST) — Resumed  — Phase 3 large-data ingest complete (3d-1, 3d-2, 3d-3)— Resumed — backup verified
+## 🔄 Project Status (2026-08-26 22:10 IST) — Resumed   — Phase 3.5 reconcile complete (Nemotron) — all 11 entities match CSV after dedup + SS/SSA/SR synthesized— Phase 3 large-data ingest complete (3d-1, 3d-2, 3d-3)— Resumed — backup verified
 
 **Tonight:** Verified 19 CSV masters pre-ingest (0 FAILs, 0 WARNs). Phase 2 plan revised: env = **pberpprod.duckdns.org** (Option B: wipe + reinit). Backup + wipe pending green-light.
 
@@ -351,6 +351,11 @@ Phase 3: ingest in sub-phases (3a masters → 3b shift_assignments → 3c attend
 | 2026-08-26 | Employee PK = HR-EMP-NNNNN (autoname), not CSV `EMP-NNNN` | HRMS Employee autoname uses naming series. Insert script must set employee_number, not name. CSV mapping: strip 'EMP-' prefix → employee_number → HR-EMP-NNNNN via DB query. |
 | 2026-08-26 | Attendance status extended with Holiday + Weekly Off | CSV has 7 status values, Frappe default has 5. Property Setter added 'Holiday' and 'Weekly Off' to enable all CSV rows to insert. |
 | 2026-08-26 | Synthetic-data defaults for required Employee fields | CSV has empty gender/date_of_birth (synthetic data). Defaults: gender='Not Specified' (created new Gender record), date_of_birth='1990-01-01', first_name=split(employee_name)[0]. |
+| 2026-08-26 | Phase 3.5 reconcile complete (Nemotron): all 11 entities match CSV targets | Department 47→37 (36 CSV + 'All Departments' root), Designation 76→48, Leave Type 9→7, Employment Type 6 (3 CSV-added Internship/Consultant/Temporary + 3 defaults), Holiday 28→14 (re-ingested). Lesson #72 parent-verify PASS on 11/11 entities. |
+| 2026-08-26 | Bogus '(no rows)' Shift Location deleted | CSV `## Data` section contained literal `(no rows)` placeholder. Ingest script did not check for this pattern, so it was inserted as a real record. Reconciler flagged + deleted. Pre-ingest must now detect this marker pattern. |
+| 2026-08-26 | SS/SSA/SR synthesized (5 / 420 / 8) | SS = 5 templates (one per unique shift_type in SA rows), SR = 8 (status mix matched), SSA = 420 (one per unique employee × shift_type combo). All 5,318 SA rows linked via shift_assignment.shift_schedule_assignment FK. Script: scripts/synthesize_ssa_v2.py (commit 3f82928). |
+| 2026-08-26 | HRMS SSA schema discovery: NO shift_type or date field | Brief schema said SSA has shift_type + date. Actual HRMS Shift Schedule Assignment is recurring template-bound — has only company, employee, shift_type, status, docstatus etc. NO date field. Original brief schema was wrong. SA rows link via shift_assignment.shift_schedule_assignment FK, not by date match. |
+| 2026-08-26 | Cron regression at 10:06 IST Aug 26 — 3 backup lines dropped | Main VPS crontab now has only pberpprod_backup.sh line. dev_backup.sh, qa_backup.sh, erpclaw-git-daily-backup.sh were dropped (cause unknown — likely a `crontab -e` save gone wrong or an unrelated cron package reinstall). Streak 64/65 partial → 64/66 after slot 38 (18:00 IST Aug 26) missed. Restoring 3 lines gated on user YES/NO. |
 
 ---
 
@@ -452,6 +457,12 @@ Phase 3: ingest in sub-phases (3a masters → 3b shift_assignments → 3c attend
 17. 🆕 Phase 7: Handover to manager + optional demo deck
 
 18. 🆕 Cleanup: dedup Department (47→36), Designation (76→48), Leave Type (9→7), Holiday (28→14)
+
+19. ⏳ Cron fix (3 dropped lines: dev_backup.sh, qa_backup.sh, erpclaw-git-daily-backup.sh) — AWAITING USER YES/NO on restore
+
+20. 🆕 Phase 6: ISO/CMM L5 docs (ISO 9001 + 27001 scope, customer + manager audience)
+
+21. 🆕 Cleanup: scripts/dedup_masters.py v1 (broken logic; v2 reconcile_masters.py supersedes — leave for now, archive after Phase 4)
 ## Phase 2: Step A1-A5 Pre-flight Backup (2026-08-25 22:27 IST) ✅
 
 **Goal:** Mandatory backup before any destructive wipe (Aug 19 lesson #79 + user safety rule).
@@ -505,6 +516,30 @@ Phase 3: ingest in sub-phases (3a masters → 3b shift_assignments → 3c attend
 
 **3e Leave Allocation + Leave Application:** source CSVs contain `(no rows)` placeholder. 0 actual data rows. Skipped (documented empty per Lesson: Phase 3.5 deferral).
 
+
+## Phase 3.5: Reconcile + SS/SSA/SR Synthesis (✅ DONE 2026-08-26 22:10 IST)
+
+**Status:** ✅ Complete (Nemotron 3 Ultra subagent). All 11 entities now match CSV targets after dedup of 4 over-counted masters + re-ingest of Holiday + bogus record cleanup. SS/SSA/SR synthesized to fill Phase 3.5 deferral gap.
+
+**3.5a Reconcile (`scripts/reconcile_masters.py`, replaces broken v1 `dedup_masters.py`):**
+- **Department:** 47 → 37 (target = 36 CSV + 1 root 'All Departments' added by Frappe). 11 dupes removed via group-by `department_name` keep-oldest pattern.
+- **Designation:** 76 → 48 (CSV target met). 28 dupes removed.
+- **Leave Type:** 9 → 7 (CSV target met). 2 dupes removed.
+- **Employment Type:** 8 → 6 (CSV-added Internship + Consultant + Temporary merged with 3 defaults: Full-time, Part-time, Contract).
+- **Holiday:** 28 → 14 (CSV target met). 14 dupes re-ingested from canonical CSV (parent Holiday List already had correct 14).
+- **Shift Location:** 1 → 0 (deleted bogus '(no rows)' literal placeholder — was ingested as fake record from CSV `## Data` section empty marker).
+- **Shift Type, Employee, Shift Assignment, Attendance, Employee Checkin:** unchanged from Phase 3.
+
+**Parent-verify (Lesson #72):** independent count comparison via inline SQL probe after subagent completion. 11/11 match. PASS.
+
+**3.5b SS/SSA/SR Synthesis (`scripts/synthesize_ssa_v2.py`, commit 3f82928):**
+- **Shift Schedule (SS):** 5 templates created (one per unique shift_type appearing in SA rows).
+- **Shift Request (SR):** 8 records, status mix matched to source CSV distribution.
+- **Shift Schedule Assignment (SSA):** fixed to 420 (one per unique employee × shift_type combo). Original draft produced 1,758 (over-counted by date dimension that doesn't exist).
+- **Linkage:** all 5,318 SA rows linked to their SSA via `shift_assignment.shift_schedule_assignment` FK field (Lesson #73 schema discovery — SSA is recurring template-bound, has no `shift_type` or `date` field).
+
+**Subagent:** Nemotron 3 Ultra (free) for reasoning-heavy reconcile + schema-discovery work. OX Alpha reserved for code-writing. Backup scripts untouched per task constraint.
+
 ## Known Issues / Lessons Learned
 
 | # | Issue | Lesson |
@@ -530,7 +565,10 @@ Phase 3: ingest in sub-phases (3a masters → 3b shift_assignments → 3c attend
 | Frappe 16 Property Setter changes don't refresh bench console meta cache | After setting Property Setter for Select options, need to open NEW bench console session (or restart workers) for new options to take effect. Within same session, meta is cached and old options list is used even after frappe.clear_cache(). |
 | MariaDB UPDATE with backticks around table name + plain column name failed: 'Unknown column "Active" in SET' | Use frappe.db.set_value() per-row for safety, or check exact column quoting. SQL string escaping is finicky across Frappe/Python/MariaDB combinations. |
 | ipython cell splitting breaks multi-statement scripts via exec(open()) | ipython/bench console interprets heredoc input as multiple cells (split at blank lines / function defs). Variables defined in one cell aren't accessible in another. Workaround: use single-line code or wrap everything in main() function called from one cell. |
+| Frappe HRMS Shift Schedule Assignment is recurring template-bound — has NO shift_type or date field | Link SA rows via the `shift_assignment.shift_schedule_assignment` FK field, not via date/shift_type matching. Original SSA draft tried to create one SSA per employee × shift_type × date combo (over-counted to 1,758); correct is one SSA per unique employee × shift_type (420). Verify HRMS DocType JSON before drafting brief. |
+| Auto-name with autoname = `field:source` does NOT enforce uniqueness on display name | Multiple rows can share the same `department_name` (or any other display field) while having unique `name` PKs. Reconciling requires grouping by display name + keeping oldest (or matching CSV target count). Lesson #73 pattern: always diff `COUNT(*)` vs CSV row count before declaring master ingest done. |
+| `(no rows)` literal placeholder in CSV `## Data` section will be ingested as a real record | CSV empty-marker convention (some tools emit `(no rows)` instead of zero data lines) must be detected by pre-ingest script. Insert one naive line and you get a bogus master record (e.g., Shift Location named '(no rows)'). Reconciler caught this on Phase 3.5 — add explicit check in scripts/ingest_masters.py for any `(no rows)` or `<empty>` literal pattern. |
 
 ---
 
-*Last updated: 2026-08-26 09:30 IST — Phase 3 done. 3a masters (1,113 rows total), 3b Shift Type (25), 3c Employee (210), 3d-1 Shift Assignment (5,317), 3d-2 Attendance (6,300), 3d-3 Employee Checkin (12,562). 3e Leave skipped (source data empty). Awaiting Phase 4 (manual verify) or Phase 6 (docs).*
+*Last updated: 2026-08-26 22:10 IST — Phase 3.5 reconcile done (Nemotron). All 11 entities match CSV targets: Department 37, Designation 48, Leave Type 7, Employment Type 6, Holiday 14 (re-ingested after parent-verify). SS=5 templates, SR=8, SSA=420 (5,318 SA rows linked via shift_schedule_assignment FK). Bogus '(no rows)' Shift Location deleted. Cron regression at 10:06 IST Aug 26 — 3 backup lines dropped, awaiting user YES/NO on restore.*
