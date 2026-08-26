@@ -1,0 +1,5 @@
+# ERPClaw backup cron (every 6 hours)
+0 */6 * * * /home/vijay/scripts/dev_backup.sh >> /home/vijay/backups/logs/dev_cron.log 2>&1
+0 */6 * * * /home/vijay/scripts/qa_backup.sh >> /home/vijay/backups/logs/qa_cron.log 2>&1
+0 */6 * * * /home/vijay/scripts/pberpprod_backup.sh >> /home/vijay/backups/logs/pberpprod_cron.log 2>&1
+30 2 * * * /home/vijay/scripts/erpclaw-git-daily-backup.sh >> /home/vijay/backups/logs/erpclaw_git_daily.log 2>&1
