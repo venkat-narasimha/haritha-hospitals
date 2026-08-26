@@ -9,7 +9,7 @@
 
 ---
 
-## 🔄 Project Status (2026-08-25 22:46 IST) — Resumed — Resumed — backup verified
+## 🔄 Project Status (2026-08-26 09:30 IST) — Resumed  — Phase 3 large-data ingest complete (3d-1, 3d-2, 3d-3)— Resumed — backup verified
 
 **Tonight:** Verified 19 CSV masters pre-ingest (0 FAILs, 0 WARNs). Phase 2 plan revised: env = **pberpprod.duckdns.org** (Option B: wipe + reinit). Backup + wipe pending green-light.
 
@@ -346,6 +346,11 @@ Phase 3: ingest in sub-phases (3a masters → 3b shift_assignments → 3c attend
 | 2026-08-25 | Git push: subagent fail-over to inline SSH | Nemotron 3 Ultra free returned FailoverError on first push attempt. Fell back to inline SSH chain (subagent quota/availability unreliable). Push succeeded: `219978d..7e95049 main -> main`. 3 commits: f0e109a + 51d0bb4 + 7e95049. Branch now synced with origin. |
 | 2026-08-25 | TRACKER.md updates via reusable script (`update_tracker.py`) | Per Venkat directive (22:46 IST): 'write a script for this as well because it is repetitive task'. JSON-driven, idempotent, handles status_date/footer/sections/decisions/lessons/pending items. Future tracker updates = write JSON spec + run script. No more manual sed/edit. |
 | 2026-08-25 | Subagent model fallback pattern established | Nemotron free FailoverError and OX Alpha rate limit both observed. Pattern: try primary model → on failure, fall back to inline or alternative free model. Document this for future ops. Premium MiniMax reserved for critical-path work. |
+| 2026-08-26 | 3d-1 Shift Assignment ingest needed Employees set to Active first | Frappe blocks 'Transactions cannot be created for an Inactive Employee'. All 210 Employees set to Active via per-row set_value (SQL UPDATE failed with column quoting bug). |
+| 2026-08-26 | 3d-2/3d-3 switched to raw SQL bulk insert (Lesson #43) | Attendance had 5 default status options but CSV uses 7 (incl. Holiday, Weekly Off). Property Setter fix didn't propagate to bench console session. ORM timed out on 12K+ checkin rows. Raw SQL bypasses both. |
+| 2026-08-26 | Employee PK = HR-EMP-NNNNN (autoname), not CSV `EMP-NNNN` | HRMS Employee autoname uses naming series. Insert script must set employee_number, not name. CSV mapping: strip 'EMP-' prefix → employee_number → HR-EMP-NNNNN via DB query. |
+| 2026-08-26 | Attendance status extended with Holiday + Weekly Off | CSV has 7 status values, Frappe default has 5. Property Setter added 'Holiday' and 'Weekly Off' to enable all CSV rows to insert. |
+| 2026-08-26 | Synthetic-data defaults for required Employee fields | CSV has empty gender/date_of_birth (synthetic data). Defaults: gender='Not Specified' (created new Gender record), date_of_birth='1990-01-01', first_name=split(employee_name)[0]. |
 
 ---
 
@@ -439,6 +444,14 @@ Phase 3: ingest in sub-phases (3a masters → 3b shift_assignments → 3c attend
 13. ⏳ Phase 2 Step B5: cert refresh check — same URL but cert may need renewal after wipe+reinit
 
 14. ✅ Phase 2 Step A1–A5: pre-flight backup — DONE 2026-08-25 22:27 IST (verified local + offsite)
+
+15. 🆕 Phase 4: User manual shift mgmt verify (per user plan)
+
+16. 🆕 Phase 6: ISO/CMM L5 docs (SOPs + process maps + audit trail, per user plan)
+
+17. 🆕 Phase 7: Handover to manager + optional demo deck
+
+18. 🆕 Cleanup: dedup Department (47→36), Designation (76→48), Leave Type (9→7), Holiday (28→14)
 ## Phase 2: Step A1-A5 Pre-flight Backup (2026-08-25 22:27 IST) ✅
 
 **Goal:** Mandatory backup before any destructive wipe (Aug 19 lesson #79 + user safety rule).
@@ -467,6 +480,31 @@ Phase 3: ingest in sub-phases (3a masters → 3b shift_assignments → 3c attend
 
 **Push to origin:** ✅ Done (inline fallback — Nemotron subagent hit FailoverError). 3 commits pushed: `219978d..7e95049`. Remote HEAD matches local.
 
+
+## Phase 3: Data Import (✅ DONE 2026-08-26 09:30 IST)
+
+**Status:** ✅ Complete (large-data sub-phases 3a + 3b + 3c + 3d-1 + 3d-2 + 3d-3). 3e skipped (empty source data).
+
+**3a Masters (1,113 rows in 7 entities + 4 idempotent skips):**
+- Holiday List (1) + Holiday (14) — parent + child table inserts
+- Department (47, dedup pending — 11 dupes from early attempts)
+- Designation (76, dedup pending — 28 dupes)
+- Leave Type (9, dedup pending — 2 dupes)
+- Shift Location (1) ✅
+- Employment Type (8) ✅
+
+**3b Shift Type (25):** all 25 inserted with custom Property Setter mapping (`Alternating entries as IN and OUT` → `Alternating entries as IN and OUT during the same shift`).
+
+**3c Employee (210):** all 210 inserted. PK = HR-EMP-NNNNN (autoname). CSV `EMP-NNNN` mapped via employee_number lookup. Defaults for first_name, gender (Not Specified), date_of_birth (1990-01-01) applied for synthetic data.
+
+**3d-1 Shift Assignment (5,317 / 5,317):** all 11 batches of 500 + 1 batch of 317. Required setting all 210 Employees to Active first (was hitting 'Transactions cannot be created for an Inactive Employee' at row 4500).
+
+**3d-2 Attendance (6,300 / 6,300):** all 13 batches of 500 + 1 batch of 300. Raw SQL bulk insert (Lesson #43 pattern). Added 'Holiday' and 'Weekly Off' to Attendance status options via Property Setter. Mapped CSV `late_entry_by`/`early_out_by` (int minutes) to DB `late_entry`/`early_exit` (tinyint bool).
+
+**3d-3 Employee Checkin (12,562 / 12,562):** all 26 batches. Raw SQL. Mapped CSV `is_off` to DB `offshift`. Skipped CSV `source` column (not in modern schema).
+
+**3e Leave Allocation + Leave Application:** source CSVs contain `(no rows)` placeholder. 0 actual data rows. Skipped (documented empty per Lesson: Phase 3.5 deferral).
+
 ## Known Issues / Lessons Learned
 
 | # | Issue | Lesson |
@@ -489,7 +527,10 @@ Phase 3: ingest in sub-phases (3a masters → 3b shift_assignments → 3c attend
 | Subagent claimed success on backup, parent verification needed (Lesson #72) | Always run independent verification probes after subagent claims (SHA256 byte-match, file listing, gzip integrity). Costs ~500 tokens inline; saves catching fabricated success reports. |
 | scp directly from gateway to venkat VPS failed (Aug 25 backup) | Backup files on vijay VPS, not gateway. Use `ssh tar-pipe` from vijay to venkat for cross-VPS copy, or move files through a shared mount. Don't assume direct paths between VPS hosts. |
 | TRACKER.md manual edits are repetitive + error-prone | Use `scripts/update_tracker.py` (Aug 25) — JSON-driven, idempotent. Future updates = JSON spec + run script. Covers: status_date, footer, sections, decisions log, lessons, pending actions. |
+| Frappe 16 Property Setter changes don't refresh bench console meta cache | After setting Property Setter for Select options, need to open NEW bench console session (or restart workers) for new options to take effect. Within same session, meta is cached and old options list is used even after frappe.clear_cache(). |
+| MariaDB UPDATE with backticks around table name + plain column name failed: 'Unknown column "Active" in SET' | Use frappe.db.set_value() per-row for safety, or check exact column quoting. SQL string escaping is finicky across Frappe/Python/MariaDB combinations. |
+| ipython cell splitting breaks multi-statement scripts via exec(open()) | ipython/bench console interprets heredoc input as multiple cells (split at blank lines / function defs). Variables defined in one cell aren't accessible in another. Workaround: use single-line code or wrap everything in main() function called from one cell. |
 
 ---
 
-*Last updated: 2026-08-25 22:46 IST — Phase 1.5 verify ✅ + Step A1-A5 backup ✅ (verified local + offsite). Push to origin main ✅ (commit 7e95049). Awaiting green-light for Step B1-B6 wipe.*
+*Last updated: 2026-08-26 09:30 IST — Phase 3 done. 3a masters (1,113 rows total), 3b Shift Type (25), 3c Employee (210), 3d-1 Shift Assignment (5,317), 3d-2 Attendance (6,300), 3d-3 Employee Checkin (12,562). 3e Leave skipped (source data empty). Awaiting Phase 4 (manual verify) or Phase 6 (docs).*

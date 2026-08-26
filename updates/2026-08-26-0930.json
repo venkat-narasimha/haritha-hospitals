@@ -1,0 +1,59 @@
+{
+  "status_date": "2026-08-26 09:30 IST",
+  "status_subtitle": "Phase 3 large-data ingest complete (3d-1, 3d-2, 3d-3)",
+  "footer_text": "2026-08-26 09:30 IST — Phase 3 done. 3a masters (1,113 rows total), 3b Shift Type (25), 3c Employee (210), 3d-1 Shift Assignment (5,317), 3d-2 Attendance (6,300), 3d-3 Employee Checkin (12,562). 3e Leave skipped (source data empty). Awaiting Phase 4 (manual verify) or Phase 6 (docs).",
+  "sections": [
+    {
+      "title": "## Phase 3: Data Import (✅ DONE 2026-08-26 09:30 IST)",
+      "body": "**Status:** ✅ Complete (large-data sub-phases 3a + 3b + 3c + 3d-1 + 3d-2 + 3d-3). 3e skipped (empty source data).\n\n**3a Masters (1,113 rows in 7 entities + 4 idempotent skips):**\n- Holiday List (1) + Holiday (14) — parent + child table inserts\n- Department (47, dedup pending — 11 dupes from early attempts)\n- Designation (76, dedup pending — 28 dupes)\n- Leave Type (9, dedup pending — 2 dupes)\n- Shift Location (1) ✅\n- Employment Type (8) ✅\n\n**3b Shift Type (25):** all 25 inserted with custom Property Setter mapping (`Alternating entries as IN and OUT` → `Alternating entries as IN and OUT during the same shift`).\n\n**3c Employee (210):** all 210 inserted. PK = HR-EMP-NNNNN (autoname). CSV `EMP-NNNN` mapped via employee_number lookup. Defaults for first_name, gender (Not Specified), date_of_birth (1990-01-01) applied for synthetic data.\n\n**3d-1 Shift Assignment (5,317 / 5,317):** all 11 batches of 500 + 1 batch of 317. Required setting all 210 Employees to Active first (was hitting 'Transactions cannot be created for an Inactive Employee' at row 4500).\n\n**3d-2 Attendance (6,300 / 6,300):** all 13 batches of 500 + 1 batch of 300. Raw SQL bulk insert (Lesson #43 pattern). Added 'Holiday' and 'Weekly Off' to Attendance status options via Property Setter. Mapped CSV `late_entry_by`/`early_out_by` (int minutes) to DB `late_entry`/`early_exit` (tinyint bool).\n\n**3d-3 Employee Checkin (12,562 / 12,562):** all 26 batches. Raw SQL. Mapped CSV `is_off` to DB `offshift`. Skipped CSV `source` column (not in modern schema).\n\n**3e Leave Allocation + Leave Application:** source CSVs contain `(no rows)` placeholder. 0 actual data rows. Skipped (documented empty per Lesson: Phase 3.5 deferral)."
+    }
+  ],
+  "decisions": [
+    {
+      "date": "2026-08-26",
+      "name": "3d-1 Shift Assignment ingest needed Employees set to Active first",
+      "rationale": "Frappe blocks 'Transactions cannot be created for an Inactive Employee'. All 210 Employees set to Active via per-row set_value (SQL UPDATE failed with column quoting bug)."
+    },
+    {
+      "date": "2026-08-26",
+      "name": "3d-2/3d-3 switched to raw SQL bulk insert (Lesson #43)",
+      "rationale": "Attendance had 5 default status options but CSV uses 7 (incl. Holiday, Weekly Off). Property Setter fix didn't propagate to bench console session. ORM timed out on 12K+ checkin rows. Raw SQL bypasses both."
+    },
+    {
+      "date": "2026-08-26",
+      "name": "Employee PK = HR-EMP-NNNNN (autoname), not CSV `EMP-NNNN`",
+      "rationale": "HRMS Employee autoname uses naming series. Insert script must set employee_number, not name. CSV mapping: strip 'EMP-' prefix → employee_number → HR-EMP-NNNNN via DB query."
+    },
+    {
+      "date": "2026-08-26",
+      "name": "Attendance status extended with Holiday + Weekly Off",
+      "rationale": "CSV has 7 status values, Frappe default has 5. Property Setter added 'Holiday' and 'Weekly Off' to enable all CSV rows to insert."
+    },
+    {
+      "date": "2026-08-26",
+      "name": "Synthetic-data defaults for required Employee fields",
+      "rationale": "CSV has empty gender/date_of_birth (synthetic data). Defaults: gender='Not Specified' (created new Gender record), date_of_birth='1990-01-01', first_name=split(employee_name)[0]."
+    }
+  ],
+  "lessons": [
+    {
+      "issue": "Frappe 16 Property Setter changes don't refresh bench console meta cache",
+      "lesson": "After setting Property Setter for Select options, need to open NEW bench console session (or restart workers) for new options to take effect. Within same session, meta is cached and old options list is used even after frappe.clear_cache()."
+    },
+    {
+      "issue": "MariaDB UPDATE with backticks around table name + plain column name failed: 'Unknown column \"Active\" in SET'",
+      "lesson": "Use frappe.db.set_value() per-row for safety, or check exact column quoting. SQL string escaping is finicky across Frappe/Python/MariaDB combinations."
+    },
+    {
+      "issue": "ipython cell splitting breaks multi-statement scripts via exec(open())",
+      "lesson": "ipython/bench console interprets heredoc input as multiple cells (split at blank lines / function defs). Variables defined in one cell aren't accessible in another. Workaround: use single-line code or wrap everything in main() function called from one cell."
+    }
+  ],
+  "pending_done": [],
+  "pending_add": [
+    "🆕 Phase 4: User manual shift mgmt verify (per user plan)",
+    "🆕 Phase 6: ISO/CMM L5 docs (SOPs + process maps + audit trail, per user plan)",
+    "🆕 Phase 7: Handover to manager + optional demo deck",
+    "🆕 Cleanup: dedup Department (47→36), Designation (76→48), Leave Type (9→7), Holiday (28→14)"
+  ]
+}
