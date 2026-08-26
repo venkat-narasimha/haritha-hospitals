@@ -31,6 +31,12 @@ ENTITY = "Employee Checkin"
 JOB_TIMEOUT = 600  # seconds to wait for each batch's background job
 
 # ---- Init Frappe ----
+import os
+# Ensure CWD is bench dir so frappe.init() can find sites/
+BENCH_DIR = "/home/frappe/frappe-bench"
+if os.getcwd() != BENCH_DIR:
+    os.chdir(BENCH_DIR)
+
 import frappe
 
 frappe.init(site=SITE)
