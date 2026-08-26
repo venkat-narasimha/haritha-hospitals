@@ -39,7 +39,7 @@ if os.getcwd() != BENCH_DIR:
 
 import frappe
 
-frappe.init(site=SITE)
+frappe.init(site=SITE, sites_path="/home/frappe/frappe-bench/sites")
 frappe.connect()
 
 # ---- Read CSV ----
