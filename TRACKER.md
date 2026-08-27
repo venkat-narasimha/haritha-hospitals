@@ -9,7 +9,19 @@
 
 ---
 
-## 🔄 Project Status (2026-08-27 15:06 IST) — Resumed    — Phase 3.7 idempotent recreate script committed— Phase 3.5 reconcile complete (Nemotron) — all 11 entities match CSV after dedup + SS/SSA/SR synthesized— Phase 3 large-data ingest complete (3d-1, 3d-2, 3d-3)— Resumed — backup verified— **Phase 3.6: bulk-submit Draft → Submitted (✅ 6,314 docs, 14:45 IST)** — Holiday 14/14 + Attendance 6,300/6,300 (Shift Assignments were already submitted in Phase 3.5)
+## 🔄 Project Status (2026-08-27 21:02 IST) — End-of-day wrap-up
+
+**Phases closed today (6 phases, 1 backup script deploy):**
+- **Phase 3.6 ✅** — bulk-submit 6,314 Draft → Submitted (commit c13753b, 14:45 IST)
+- **Phase 3.7 ✅** — idempotent recreate_property_setters.py for env migration (commit ec9f989, Rule #9 gap)
+- **Phase 3.8 ✅** — Shift Attendance report linkage fix, 5 SQL UPDATEs (commit c7bf823)
+- **Phase 3.9 ✅** — populate Attendance.department + employee_name (commit 606cd90)
+- **Phase 3.10 ✅** — backup script bundle fix (silent 6-day offsite failure resolved, deploy 19:25 IST)
+- ✅ Cron regression (3 dropped backup lines) — commit 5f383b6
+
+**Carry-forward:** Phases 4 (manual shift mgmt workflow), 6 (ISO/CMM L5 docs), 7 (handover + demo).
+
+**Open tonight:** Browser verify Shift Attendance report + Phase 4 workflow verify (deferred — user offline ~215h, awaiting Venkat resume).
 
 **Tonight:** Verified 19 CSV masters pre-ingest (0 FAILs, 0 WARNs). Phase 2 plan revised: env = **pberpprod.duckdns.org** (Option B: wipe + reinit). Backup + wipe pending green-light.
 
@@ -18,11 +30,16 @@
 | Phase 0 — Schema Planning | ✅ done (preserved) |
 | Phase 1 — Schema Approval | ✅ done (preserved) |
 | Phase 1.5 — CSV Verification | ✅ done 2026-08-25 (0 FAILs) |
-| Phase 2 — Site Setup | 🔄 restart #2 — pberpprod.duckdns.org (wipe + reinit) |
-| Phase 3 — Data Import | ⏳ pending Phase 2 |
-| Phase 4 — Workflow Testing | ⏳ pending Phase 3.6 |
+| Phase 2 — Site Setup | ✅ done 2026-08-25 (pberpprod.duckdns.org) |
+| Phase 3 — Data Import | ✅ done 2026-08-26 (6 phases 3.5-3.10 closed today) |
+| Phase 3.6 — Bulk Submit | ✅ done 2026-08-27 (6,314 docs) |
+| Phase 3.7 — Property Setter | ✅ done 2026-08-27 (Rule #9 fix) |
+| Phase 3.8 — Attendance Linkage | ✅ done 2026-08-27 (5 SQL UPDATEs) |
+| Phase 3.9 — department + employee_name | ✅ done 2026-08-27 (FK-derived fields) |
+| Phase 3.10 — Backup Bundle Fix | ✅ done 2026-08-27 (silent 6-day offsite failure) |
+| Phase 4 — Workflow Testing | ⏳ next (browser verify + manual shift mgmt) |
 | Phase 5 — Production Readiness | ⏳ pending Phase 4 |
-| Phase 6 — ISO/CMM L5 Docs | ⏳ pending Phase 4 (NEW — per Venkat 2026-08-25) |
+| Phase 6 — ISO/CMM L5 Docs | ⏳ pending Phase 4 (per Venkat 2026-08-25) |
 | Phase 7 — Handover + Demo | ⏳ pending Phase 6 |
 
 ## 📜 Historical Project Status (2026-08-21) — Rollback
@@ -461,32 +478,42 @@ Phase 3: ingest in sub-phases (3a masters → 3b shift_assignments → 3c attend
 
 ## Pending Actions (Next Session)
 
-> **🔄 RESTART NOTE (2026-08-25 22:00 IST):** Resumed on `pberpprod.duckdns.org`. Backup (Step A1–A5) + wipe (Step B1–B6) gated by user ✅. Phase 1.5 verify ✅ done.
+> **📍 Session state (2026-08-27 21:02 IST):** Phases 3.6–3.10 closed today. Phase 4 browser verify + workflow test next. User offline (~215h). Wrap-up commit pending push from VPS.
 
-**IMMEDIATE (gated):**
-1. ✅ **Phase 1.5: CSV master verify** — DONE 2026-08-25 22:00 IST (0 FAILs, 0 WARNs)
-2. ⏳ **Phase 2 Step A1–A5: pre-flight backup** — awaiting user ✅ (OX Alpha subagent)
-3. ⏳ **Phase 2 Step B1–B6: wipe + reinit** — awaiting backup integrity ✅ (OX Alpha subagent)
-4. ⏳ **Phase 3a: master ingest** (Company → Dept → Designation → Employment Type → Holiday List → Holiday → Fiscal Year → Shift Location → Leave Type)
-5. ⏳ **Phase 3b: employee + shift assignment ingest** (210 + 5,317 rows)
-6. ⏳ **Phase 3c: attendance + checkin + leave ingest** (6,300 + 12,562 + 1)
-7. ⏳ **Verify post-ingest** — re-run verify_csvs.py against DB counts
+**🔴 Your turn now (Phase 4 kickoff):**
+- [ ] **Browser verify Shift Attendance report** — expect Late Entries >0, Early Exits >0, department column populated, employee_name populated
+- [ ] **Phase 4 manual shift mgmt workflow verify** — Roster, Attendance marking, Leave, Holiday skip
 
-**FOLLOWING:**
-8. ⏳ **Venkat manual shift mgmt verify** — shift assignment, attendance marking, leave, holiday skip
-9. ⏳ **Phase 6: ISO/CMM L5 docs** — SOPs + process maps + audit trail (per Venkat 21:30 IST)
-10. ⏳ **Phase 7: handover + optional demo deck** — manager walkthrough + customer pilot
+**Carry-forward (later phases / housekeeping):**
+- [ ] **Phase 6: ISO/CMM L5 docs** — SOPs + process maps + audit trail (per Venkat 2026-08-25)
+- [ ] **Phase 7: Handover + optional demo deck** — manager walkthrough + customer pilot
+- [ ] **Audit `dev_backup.sh` + `qa_backup.sh` for Lesson #113 pattern** — bundle + `set -e` + empty glob check (silent cron failure)
+- [ ] **Backfill lessons #107–#112** — subagents claimed to add but file only has up to #110 (#111, #112 in TRACKER; #107-#109 missing)
+- [ ] **Open retention bug** — `find -maxdepth 1 -type d -mtime +7` should be `find -name '*.tar.gz' -mtime +7 -delete` (file-level). Non-blocking, document post-cron-validation.
 
-**CARRY-FORWARD (non-Haritha):**
+**Defer (per Venkat 2026-08-27 21:01 IST):**
+- 🟡 **LEARNINGS.md git storage location** — currently pushed to orphan branch `lessons-2026-08-27`. Need to decide: merge to main (requires `git filter-repo` on sqlite files) / leave on orphan / move to haritha-hospitals repo. **Defer per Venkat — deal with later.**
+
+**Carry-forward (non-Haritha / wider stack):**
 - dev-erp scheduler MySQL 1045 grant fix (A/B/C/D candidates, awaiting YES/NO)
 - pberpDEV/QA sign-off on pb_material v1.0.1 install
 - git_backup root-perm fix (verified FAIL on 03:00 IST Aug 20 slot)
 - ⚠️ **UI verification in real browser** — needed before go-live
 - ⚠️ **nginx `Upgrade: websocket` force-set** — review/revert (prior env debugging)
 - ⚠️ **User `Administrator` default `desktop:home_page="setup-wizard"`** — clear before production?
-- **Activate Auto Attendance cron** — `enable_auto_attendance=1` on Shift Types
+- **Activate Auto Attendance cron** — `enable_auto_attendance=1` on Shift Types (Phase 4 follow-up)
 - **Disaster recovery test** — restore from backup
 - **User training** — for Haritha Hospital staff
+
+**✅ Already-resolved today (2026-08-27):**
+- ✅ Cron regression (3 dropped backup lines) — commit `5f383b6`
+- ✅ Property Setter Rule #9 gap — commit `ec9f989`
+- ✅ All submittable docs docstatus=1 — commit `c13753b` (Phase 3.6)
+- ✅ Attendance linkage fix — commit `c7bf823` (Phase 3.8)
+- ✅ Department + employee_name — commit `606cd90` (Phase 3.9)
+- ✅ Backup script bundle fix — script deployed md5 `8ee5d04e…` (Phase 3.10)
+
+**Next validation event:** Cron slot 2026-08-28 00:00 IST = first end-to-end test of bundled backup script (Phase 3.10).
 
 ---
 
@@ -791,3 +818,34 @@ A wrapper script in sites/ dir, copy-able to any container, that calls run() dir
 **Lesson #112 (new):** Any FK-derived field (employee_name, department, etc.) needs to be explicitly included in raw SQL INSERT, OR populated post-ingest via INNER JOIN. ORM auto-derives; raw SQL doesn't. This is the same root cause as Phase 3.6 naming_series issue (Lesson #104) and Phase 3.8 linkage-fix (Lessons #110/#111) — all symptoms of bypassing ORM hooks. Future raw-SQL ingest scripts should enumerate derived/FK fields explicitly in their column list.
 
 **Note on row-count extraction:** `frappe.db.sql("UPDATE ...")` returns `()` (empty tuple) in MariaDB — rowcount is not surfaced via the result tuple. The script computes "Estimated rows updated" by diffing the before/after counts instead of trusting the SQL result. Verified idempotent by re-running and confirming 0 matches.
+
+---
+
+## Phase 3.10: Backup Script Bundle Fix (✅ DONE 2026-08-27 19:25 IST)
+
+**Status:** ✅ Complete. `pberpprod_backup.sh` now bundles 4 loose files into ONE tar.gz per timestamp, integrity check via `tar -tzf` + `gunzip -t`, single-file rsync to offsite.
+
+**Bug found:** Original script's `TARFILE=$(ls $DEST/*.tar.gz)` glob matched nothing → `set -euo pipefail` silently exited at assignment → script ended after `copied 4 backup files` line in log. NO SHA256, NO offsite rsync.
+
+**Severity:** Lesson #79 violation. Offsite backup at venkat@135.125.196.35 was last successful push BEFORE 2026-08-21 rollback — **6 days of silent offsite failure**. If restore had been needed during this window, NO offsite copy existed.
+
+**Fix:**
+- Bundle 4 loose files into ONE tar.gz (`pberpprod_backup_<TIMESTAMP>.tar.gz`)
+- Integrity: `tar -tzf` + `gunzip -t` (loud failure on corruption)
+- SHA256 on bundle
+- Single-file rsync to offsite (was loose-files glob)
+- Remove loose files after bundle (2x storage savings)
+
+**Verified:**
+- `.bak` original at `pberpprod_backup.sh.bak-20260827-prebundlefix` (md5 `c2b34c4f…`)
+- New script md5 `8ee5d04e…` (matches workspace)
+- `bash -n` syntax passes
+- Cron entry unchanged: `0 */6 * * * /home/vijay/scripts/pberpprod_backup.sh ...`
+
+**Next validation:** Cron slot 2026-08-28 00:00 IST will be first end-to-end test.
+
+**Lessons added:**
+- #113: `set -euo pipefail` + empty glob + `$(ls *.tar.gz)` = silent script exit
+- #114: Silent cron failures hide for days — always read the actual log file
+
+**Pending follow-up:** Audit `dev_backup.sh` + `qa_backup.sh` for same `set -e + empty glob` pattern (Lesson #113 is generic).
