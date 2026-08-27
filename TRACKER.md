@@ -9,7 +9,7 @@
 
 ---
 
-## 🔄 Project Status (2026-08-27 14:48 IST) — Resumed   — Phase 3.5 reconcile complete (Nemotron) — all 11 entities match CSV after dedup + SS/SSA/SR synthesized— Phase 3 large-data ingest complete (3d-1, 3d-2, 3d-3)— Resumed — backup verified— **Phase 3.6: bulk-submit Draft → Submitted (✅ 6,314 docs, 14:45 IST)** — Holiday 14/14 + Attendance 6,300/6,300 (Shift Assignments were already submitted in Phase 3.5)
+## 🔄 Project Status (2026-08-27 15:06 IST) — Resumed    — Phase 3.7 idempotent recreate script committed— Phase 3.5 reconcile complete (Nemotron) — all 11 entities match CSV after dedup + SS/SSA/SR synthesized— Phase 3 large-data ingest complete (3d-1, 3d-2, 3d-3)— Resumed — backup verified— **Phase 3.6: bulk-submit Draft → Submitted (✅ 6,314 docs, 14:45 IST)** — Holiday 14/14 + Attendance 6,300/6,300 (Shift Assignments were already submitted in Phase 3.5)
 
 **Tonight:** Verified 19 CSV masters pre-ingest (0 FAILs, 0 WARNs). Phase 2 plan revised: env = **pberpprod.duckdns.org** (Option B: wipe + reinit). Backup + wipe pending green-light.
 
@@ -358,6 +358,7 @@ Phase 3: ingest in sub-phases (3a masters → 3b shift_assignments → 3c attend
 | 2026-08-26 | Cron regression at 10:06 IST Aug 26 — 3 backup lines dropped | Main VPS crontab now has only pberpprod_backup.sh line. dev_backup.sh, qa_backup.sh, erpclaw-git-daily-backup.sh were dropped (cause unknown — likely a `crontab -e` save gone wrong or an unrelated cron package reinstall). Streak 64/65 partial → 64/66 after slot 38 (18:00 IST Aug 26) missed. Restoring 3 lines gated on user YES/NO. |
 | 2026-08-27 | Phase 3.6 bulk-submit needed 3 runs due to 3-layer Frappe framework barriers | Lesson #106: raw-SQL docs need naming_series backfill (#104), Property Setter adds meta.options but not controller-level status checks (#105), HRMS Attendance.validate() has hardcoded 5-value status list. Pattern applies to any submittable doctype bulk-submitted after raw-SQL ingest. |
 | 2026-08-27 | Phase 3.6 scope was 6,314 docs, NOT 11,631 as estimated | Task brief assumed Shift Assignments were at docstatus=0. Reality: Phase 3.5 SSA synthesis script (commit 3f82928) submitted them as a side effect. User's list-view complaint was about Attendance + Holiday only. Always verify pre-state via Lesson #72 before estimating scope. |
+| 2026-08-27 | Property Setter export → scripted recreate (Option 2) | Custom app fixtures not viable (PROD has no custom app on bench, apps/hrms/ is third-party core read-only per SOUL NEVER rule #3, manual JSON would need parallel applier). Script is idempotent, version-controlled, no core edits, reusable on any env. Mirrors bulk_submit.py's importlib.util.spec_from_file_location() pattern. |
 
 ---
 
@@ -589,6 +590,80 @@ Phase 3: ingest in sub-phases (3a masters → 3b shift_assignments → 3c attend
 
 **Subagent:** Nemotron 3 Ultra (free) for reasoning-heavy reconcile + schema-discovery work. OX Alpha reserved for code-writing. Backup scripts untouched per task constraint.
 
+
+## Phase 3.7: Property Setter Recreate Script (✅ DONE 2026-08-27 15:06 IST)
+
+**Status:** ✅ Complete — idempotent `recreate_property_setters.py` committed + pushed.
+
+**Why this section exists:** Phase 3.6 bulk-submit (commit c13753b) created the `Attendance-status-options` Property Setter at runtime (added 'Holiday' + 'Weekly Off' to Attendance.meta.get_field('status').options). Per Rule #9 SOUL: ANY Custom Field / Property Setter / Custom DocType / Workflow / Print Format / Client Script / Server Script → `bench export-fixtures` → commit. But:
+
+1. `bench export-fixtures --app hrms` produced no `apps/hrms/fixtures/property_setter.json` because HRMS' `hooks.py` does NOT list 'Property Setter' as a fixture — the export silently skips it.
+2. Even if the fixture file existed, committing to `apps/hrms/` violates SOUL NEVER rule #3 (third-party code is read-only, would clobber on `bench update`).
+3. PROD bench has no custom app (`apps/` = {erpnext, frappe, hrms} only) — can't host fixtures under a custom app hooks.py.
+
+**Resolution (Option 2 — scripted recreate):**
+
+- Script: `scripts/recreate_property_setters.py` (7.2 KB)
+- Pattern: `frappe.make_property_setter(args_dict, validate_fields_for_doctype=False)` — the wrapper takes a dict with `doctype`/`fieldname`/`property`/`value`/`property_type` keys, NOT keyword args. The lower-level `frappe.custom.doctype.property_setter.property_setter.make_property_setter(doctype, fieldname, property, value, property_type, ...)` uses positional args + `for_doctype` kwarg — different signature.
+- `frappe.make_property_setter` is idempotent: it deletes existing (doctype, field, property) and creates fresh, OR overwrites if exists (verified).
+- Invoked via `bench --site <site> console < <(docker exec wrapper)` pattern with `importlib.util.spec_from_file_location()` to load the script (because `bench execute <name>` requires the module to live in an app dir, which scripts in /tmp are not).
+
+**Property Setters defined in script (PROPERTY_SETTERS list):**
+
+```python
+[
+    {
+        "doctype": "Attendance",
+        "field_name": "status",
+        "property": "options",
+        "value": "\nPresent\nAbsent\nOn Leave\nHalf Day\nWork From Home\nHoliday\nWeekly Off",
+        "property_type": "Text",
+    },
+]
+```
+
+**Idempotency test (passed on pberpprod 2026-08-27 15:05 IST):**
+
+| Step | Result |
+|---|---|
+| 1. Initial state: PS exists, meta.options = 7 values | ✅ |
+| 2. DELETE PS, meta falls back to default (5 values, no Holiday/Weekly Off) | ✅ confirms PS really controls meta |
+| 3. Run script → PS recreated, meta restored to 7 values | ✅ |
+| 4. Run script again → no duplicate rows, value unchanged | ✅ exactly 1 PS row, value identical |
+
+**How to apply on any env (migration recipe):**
+
+```bash
+# 1. Copy script into the bench container
+docker cp recreate_property_setters.py erp-<env>-backend-1:/tmp/
+
+# 2. Run via bench console + importlib pattern
+docker exec erp-<env>-backend-1 bash -c "cd /home/frappe/frappe-bench && \
+  bench --site <site> console < <(echo '
+import importlib.util
+spec = importlib.util.spec_from_file_location(\"rps\", \"/tmp/recreate_property_setters.py\")
+mod = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(mod)
+result = mod.run(dry_run=False)
+print(\"applied:\", result[\"applied\"], \"failed:\", result[\"failed\"])
+')"
+
+# 3. Verify
+docker exec erp-<env>-backend-1 bash -c "cd /home/frappe/frappe-bench && \
+  bench --site <site> console < <(echo '
+import frappe
+print(frappe.db.get_value(\"Property Setter\", {\"doc_type\": \"Attendance\", \"field_name\": \"status\", \"property\": \"options\"}, [\"name\", \"value\"]))
+')"
+```
+
+**Alternative invocation (cleaner, what we'll wire into env setup playbook):**
+
+A wrapper script in sites/ dir, copy-able to any container, that calls run() directly. Not done yet — current pattern is documented above.
+
+**Rule #9 status:** RESOLVED for this Property Setter. The DB-only Property Setter is now reproducible on any env via the script. Pattern: any future PS/Custom Field created at runtime on pberpprod should be added to `PROPERTY_SETTERS` / `CUSTOM_FIELDS` in `recreate_property_setters.py` (or split into a separate `recreate_custom_fields.py`).
+
+**Ref:** Lesson #105 (Property Setter doesn't bypass controller-level checks), #106 (3-run pattern), and the Rule #9 gap surfaced by Phase 3.6 bulk-submit 2026-08-27.
+
 ## Known Issues / Lessons Learned
 
 | # | Issue | Lesson |
@@ -620,7 +695,10 @@ Phase 3: ingest in sub-phases (3a masters → 3b shift_assignments → 3c attend
 | 104 | Raw SQL ingest bypasses Frappe's mandatory field defaults — submit() fails on `reqd=1` fields that auto-set during ORM insert (Phase 3.6, 2026-08-27) | Docs inserted via raw SQL (bypassing Frappe ORM) don't populate fields set by `validate()` or `before_insert()` hooks (e.g., `naming_series` on Attendance). When submit() runs, it re-validates and fails on the missing mandatory field. Workaround: `UPDATE tabX SET <field>='<series>' WHERE docstatus=0 AND (<field> IS NULL OR <field>='')` before bulk-submit. |
 | 105 | Property Setter for Select options does NOT bypass controller-level hardcoded status checks (Phase 3.6, 2026-08-27) | Adding 'Holiday' and 'Weekly Off' to Attendance's `status` options via Property Setter is necessary but NOT sufficient. HRMS `Attendance.validate()` calls `erpnext.controllers.status_updater.validate_status(self.status, [...])` with a hardcoded 5-value list at `apps/hrms/hrms/hr/doctype/attendance/attendance.py:49`. The controller-level check rejects values not in the hardcoded list, even if Property Setter has added them. Fix: monkey-patch `erpnext.controllers.status_updater.validate_status` before submit() — wrap to silently accept the extra statuses. Cannot fix at Property Setter level without editing HRMS core (SOUL NEVER rule). |
 | 106 | Bulk-submit of raw-SQL-inserted submittable docs may need 3 runs: (1) backfill mandatory fields, (2) add Property Setter, (3) monkey-patch controller-level checks (Phase 3.6, 2026-08-27) | Pattern observed for Haritha Attendance: 6,300 docs needed all three fixes. Each fix is fast (~10-60s for the run) but cumulatively adds 2 extra runs. Plan for 3 runs in time estimates. Total wall time: ~10 min for 6,300 docs on pberpprod. |
+| frappe.make_property_setter has TWO implementations with DIFFERENT signatures (Phase 3.7, 2026-08-27) | Top-level frappe.make_property_setter(args_dict, ignore_validate=False, validate_fields_for_doctype=True, is_system_generated=True, *, module=None) takes a dict-like args. Lower-level frappe.custom.doctype.property_setter.property_setter.make_property_setter(doctype, fieldname, property, value, property_type, for_doctype=False, validate_fields_for_doctype=True, is_system_generated=True) uses positional + for_doctype kwarg. The dict version does NOT accept for_doctype — it derives doctype_or_field from args.doctype_or_field (default 'DocField'). Calling the wrong signature raises TypeError: unexpected keyword argument. |
+| bench export-fixtures silently skips Property Setters for apps whose hooks.py doesn't list them (Phase 3.7, 2026-08-27) | export-fixtures iterates `frappe.get_hooks('fixtures', app_name=app)` per app. If hooks.py has no `fixtures = [...]` list containing 'Property Setter', the export produces no output (no error, no warning, exit 0). Property Setters live in DB only and don't migrate on env rebuild / bench update. For Haritha's HRMS Property Setter: hooks.py is third-party code (SOUL NEVER rule #3 forbids editing). Solution: scripted recreate, not fixture export. |
+| bench execute <name> requires module to be importable from cwd — /tmp/ scripts fail (Phase 3.7, 2026-08-27) | frappe.get_attr() first segment must be an installed app name (raises AppNotInstalledError otherwise). Fallback eval(code) needs the module already imported. Use bench console < /tmp/wrapper.py + importlib.util.spec_from_file_location() pattern (same as bulk_submit.py). The wrapper imports the /tmp/ script as a module then calls its run() function. |
 
 ---
 
-*Last updated: 2026-08-27 14:48 IST — Phase 3.6 bulk-submit done. 6,314 docs (14 Holiday + 6,300 Attendance) all at docstatus=1. Shift Assignments were already submitted by Phase 3.5 SSA synthesis. Property Setter Attendance-status-options added (Rule #9 fixture export pending). 3 new lessons (#104 raw-SQL mandatory backfill, #105 controller-level status check, #106 3-run pattern). Property Setter export to fixtures pending before next env migration.*
+*Last updated: Phase 3.7 idempotent recreate_property_setters.py added (15:06 IST). Fixes Rule #9 violation — Attendance-status-options Property Setter was DB-only, no fixture export possible (HRMS hooks.py doesn't list Property Setter). Tested: delete PS → run script → PS recreated → run again → no duplicate. Script path: scripts/recreate_property_setters.py. Cron regression also resolved (commit 5f383b6, 4 backup lines now active: dev/qa/pberpprod/git-daily).*
