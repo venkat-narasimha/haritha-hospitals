@@ -698,6 +698,9 @@ A wrapper script in sites/ dir, copy-able to any container, that calls run() dir
 | frappe.make_property_setter has TWO implementations with DIFFERENT signatures (Phase 3.7, 2026-08-27) | Top-level frappe.make_property_setter(args_dict, ignore_validate=False, validate_fields_for_doctype=True, is_system_generated=True, *, module=None) takes a dict-like args. Lower-level frappe.custom.doctype.property_setter.property_setter.make_property_setter(doctype, fieldname, property, value, property_type, for_doctype=False, validate_fields_for_doctype=True, is_system_generated=True) uses positional + for_doctype kwarg. The dict version does NOT accept for_doctype — it derives doctype_or_field from args.doctype_or_field (default 'DocField'). Calling the wrong signature raises TypeError: unexpected keyword argument. |
 | bench export-fixtures silently skips Property Setters for apps whose hooks.py doesn't list them (Phase 3.7, 2026-08-27) | export-fixtures iterates `frappe.get_hooks('fixtures', app_name=app)` per app. If hooks.py has no `fixtures = [...]` list containing 'Property Setter', the export produces no output (no error, no warning, exit 0). Property Setters live in DB only and don't migrate on env rebuild / bench update. For Haritha's HRMS Property Setter: hooks.py is third-party code (SOUL NEVER rule #3 forbids editing). Solution: scripted recreate, not fixture export. |
 | bench execute <name> requires module to be importable from cwd — /tmp/ scripts fail (Phase 3.7, 2026-08-27) | frappe.get_attr() first segment must be an installed app name (raises AppNotInstalledError otherwise). Fallback eval(code) needs the module already imported. Use bench console < /tmp/wrapper.py + importlib.util.spec_from_file_location() pattern (same as bulk_submit.py). The wrapper imports the /tmp/ script as a module then calls its run() function. |
+| 112 | Raw SQL bulk INSERT bypasses ORM auto-derivation of FK fields (Phase 3.9, 2026-08-27) | Frappe ORM `frappe.get_doc().insert()` auto-derives FK-derived fields like `employee_name` and `department` from the linked parent DocType at insert time. Raw SQL `INSERT INTO tabAttendance (...) VALUES (...)` does NOT — the FK-derived columns end up NULL/empty. Same root cause as Lesson #104 (naming_series) and Lesson #110 (linkage fix). Future raw-SQL ingest scripts must either enumerate derived fields explicitly in the column list, OR plan a post-ingest populate script. Lesson #111's pattern of "verify pre-state then post-state counts" applies here too. |
+| frappe.db.sql() returns empty tuple for UPDATE statements in MariaDB (Phase 3.9, 2026-08-27) | `cursor.rowcount` carries the affected-row count, but the SQL result tuple is `()`. Code that does `result = frappe.db.sql("UPDATE ..."); matched = result[0][0]` always reads `0`. Workaround: compute the diff between pre-state and post-state counts, OR check `frappe.db._cursor.rowcount` directly. Affects idempotency verification — re-running UPDATE on already-populated rows will return matched=0 from SQL but show actual 0 rows changed only if you verify via WHERE-matched count separately. |
+| `frappe.db.commit()` after raw SQL UPDATE is required (Phase 3.9, 2026-08-27) | MariaDB connector default is autocommit OFF in bench. UPDATE rows are only persisted after explicit `frappe.db.commit()`. Without it, a follow-up `frappe.db.sql("SELECT COUNT(*)")` from a fresh bench console session will still see the old state. Same pattern as Phase 3.8 (Lesson #111). |
 
 ---
 
@@ -755,3 +758,36 @@ A wrapper script in sites/ dir, copy-able to any container, that calls run() dir
 **Lesson #110 (new):** When Phase 3 ingest uses raw SQL to bypass ORM hooks, downstream HRMS reports (Shift Attendance, Roster, Auto Attendance) need a "linkage fix" script as part of Phase 3.9. Plan this into future migrations.
 
 **Lesson #111 (new):** Subagent reports that say "data already populated, 0 rows needed update" can be misleading — they may have run the fix successfully, then re-run as idempotency test, then reported the 2nd-run result. Always Lesson #72 parent-verify the actual row counts before claiming success.
+
+---
+
+## Phase 3.9: Populate Attendance.department + employee_name (✅ DONE 2026-08-27 19:12 IST)
+
+**Status:** ✅ Complete. Both columns now populated for all 6,300 Attendance rows.
+
+**Why:** Phase 3 raw SQL bulk ingest skipped FK-derived fields. ORM `frappe.get_doc().insert()` would have auto-derived `employee_name` and `department` from the Employee FK; raw SQL does NOT. Result: Shift Attendance report's department column was empty for all 6,300 rows.
+
+**Fix:** Single SQL UPDATE pass via INNER JOIN to `tabEmployee`. Both columns populated atomically in one query.
+
+**Before → After:**
+
+| Field | Before | After |
+|---|---:|---:|
+| department populated | 0 | 6,300 |
+| employee_name populated | 0 | 6,300 |
+| Orphan FK (attendance without Employee match) | 0 | 0 |
+| docstatus=1 (Phase 3.6 preserved) | 6,300 | 6,300 |
+
+**Backup:** `pberpprod_backup_20260827_191033/` — 4 files (database.sql.gz 1.8 MiB, files.tar, private-files.tar, site_config_backup.json) + sha256 byte-match local ↔ offsite (venkat@135.125.196.35). DB SHA256 first 16: `7a113f9c852e4c37`.
+
+**Script:** `scripts/populate_attendance_meta.py` — idempotent (WHERE only matches empty rows). Re-run as sanity check returned 0 matches.
+
+**Sample row (HR-ATT-20250526-00001):**
+- attendance.employee_name = `'Manager-1001'` = employee.employee_name ✅
+- attendance.department = `'Maintenance - HH'` = employee.department ✅
+
+**Side effects:** None. Direct SQL UPDATE on Attendance; no controller hooks fired; docstatus=1 preserved on all rows; Phase 3.6/3.7/3.8 untouched. Property Setters (status options, Attendance-status-options) untouched.
+
+**Lesson #112 (new):** Any FK-derived field (employee_name, department, etc.) needs to be explicitly included in raw SQL INSERT, OR populated post-ingest via INNER JOIN. ORM auto-derives; raw SQL doesn't. This is the same root cause as Phase 3.6 naming_series issue (Lesson #104) and Phase 3.8 linkage-fix (Lessons #110/#111) — all symptoms of bypassing ORM hooks. Future raw-SQL ingest scripts should enumerate derived/FK fields explicitly in their column list.
+
+**Note on row-count extraction:** `frappe.db.sql("UPDATE ...")` returns `()` (empty tuple) in MariaDB — rowcount is not surfaced via the result tuple. The script computes "Estimated rows updated" by diffing the before/after counts instead of trusting the SQL result. Verified idempotent by re-running and confirming 0 matches.
