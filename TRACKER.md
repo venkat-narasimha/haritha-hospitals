@@ -517,29 +517,6 @@ Phase 3: ingest in sub-phases (3a masters → 3b shift_assignments → 3c attend
 
 ---
 
-
-
-11. 🆕 Reusable update_tracker.py script (Aug 25) — JSON spec + run for future TRACKER updates
-
-12. ⏳ Phase 2 Step B1–B6: wipe + reinit — backup verified, awaiting green-light (OX Alpha subagent)
-
-13. ⏳ Phase 2 Step B5: cert refresh check — same URL but cert may need renewal after wipe+reinit
-
-14. ✅ Phase 2 Step A1–A5: pre-flight backup — DONE 2026-08-25 22:27 IST (verified local + offsite)
-
-15. 🆕 Phase 4: User manual shift mgmt verify (per user plan)
-
-16. 🆕 Phase 6: ISO/CMM L5 docs (SOPs + process maps + audit trail, per user plan)
-
-17. 🆕 Phase 7: Handover to manager + optional demo deck
-
-18. 🆕 Cleanup: dedup Department (47→36), Designation (76→48), Leave Type (9→7), Holiday (28→14)
-
-19. ⏳ Cron fix (3 dropped lines: dev_backup.sh, qa_backup.sh, erpclaw-git-daily-backup.sh) — AWAITING USER YES/NO on restore
-
-20. 🆕 Phase 6: ISO/CMM L5 docs (ISO 9001 + 27001 scope, customer + manager audience)
-
-21. 🆕 Cleanup: scripts/dedup_masters.py v1 (broken logic; v2 reconcile_masters.py supersedes — leave for now, archive after Phase 4)
 ## Phase 2: Step A1-A5 Pre-flight Backup (2026-08-25 22:27 IST) ✅
 
 **Goal:** Mandatory backup before any destructive wipe (Aug 19 lesson #79 + user safety rule).
