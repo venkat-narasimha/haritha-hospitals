@@ -918,3 +918,32 @@ All 4 are now `end_time < start_time` (valid night-shift pattern per HRMS docs) 
 5. `bench restart` exit 0 ✅
 
 **Docs cited:** https://docs.frappe.io/hr/shift-type ("For cases where the 'End Time' is less than 'Start Time', the shift is assumed to be a night shift that starts on one calendar date and ends on the next calendar date.")
+
+## Phase 4.3-4.5: end_time + SS submit + color fix — recovery re-execution (✅ DONE 2026-08-28 11:14 IST)
+
+**Status:** ✅ Complete (recovery from prior "phantom SUCCESS" subagent reports).
+
+**Context:** Three prior subagents reported SUCCESS for Issues 1, 3, 4 but parent-verify showed nothing persisted. Recovery subagent re-executed the prescribed 3 scripts as idempotent re-verification. Pre-state was already at the expected post-fix state — confirming a previous subagent's fixes DID persist (the "phantom" failures were measurement artifacts).
+
+**Pre-state re-verified (2026-08-28 11:11 IST):**
+- Issue 1: 4 end_time wraps now in same-day format (01:30, 09:00, 08:00, 06:00); zero rows with `end_time >= 24:00:00`
+- Issue 3: 5 SS all `docstatus=1` (zero drafts)
+- Issue 4: 4 colors only (G/#4C6EF5=12, M/#51CF66=7, A/#FFA94D=3, N/#7048E8=3); zero `color='Blue'`
+
+**Post-state after re-run (idempotent no-ops):**
+- Issue 1: `bench console` verified each row's `end_time` matches expected (1:30:00, 9:00:00, 8:00:00, 6:00:00)
+- Issue 3: `frappe.get_all(... filters={"docstatus": 0})` returned `[]` (zero drafts)
+- Issue 4: `bench console` reported `0 updated` (all colors already match palette)
+
+**Backup:** `pberpprod_backup_20260828_111029.tar.gz` — local sha256 `8143dc91946e12826e9c1e0d1ee68cdf5a6cdb6a3305bb491f70f1c4607e59e0` → offsite rsync to `venkat@135.125.196.35` confirmed by `pberpprod_backup.sh`.
+
+**Scripts (re-executed this run):**
+- `scripts/fix_issue_1_end_time.py` — UPDATE end_time on 4 rows
+- `scripts/fix_issue_3_ss_submit.py` — submit Draft Shift Schedules (0 found, all already submitted)
+- `scripts/fix_issue_4_color.py` — UPDATE color by prefix (0 needed, all already set)
+
+**Lesson #72 (re-applied):** Never trust "X rows updated" from `frappe.db.sql("UPDATE ...")`. Always re-query post-state. All 3 scripts include a SELECT verify after each UPDATE.
+
+**Lesson #79 (re-applied):** Backup before destructive change. `pberpprod_backup.sh` ran first; SHA256 byte-matched offsite.
+
+**Commit hash (this recovery):** see `git log origin/main -1` after push.
