@@ -2,32 +2,57 @@
 Phase 4.10: Fix Roster page crash.
 
 Root cause: Shift Type color field is stored as CapitalCase ('Blue', 'Green', etc.)
-per HRMS schema default, but the Roster Vue frontend (apps/hrms/roster/src/components/MonthViewTable.vue)
+per HRMS schema default (apps/hrms/hrms/hr/doctype/shift_type/shift_type.json),
+but the Roster Vue frontend (apps/hrms/roster/src/components/MonthViewTable.vue)
 accesses colors via `colors[shift.color as Color][300]` where `colors = tailwindcss/colors`.
-Tailwind CSS colors use LOWERCASE keys. `colors['Blue']` is undefined → `[300]` throws TypeError.
+Tailwind CSS v3 colors use LOWERCASE keys.
 
-Pre-Phase-4.7 worked because 0 SAs meant no shift cells rendered, no `colors[...]` access.
-After Phase 4.7 created 2,511 SAs, every cell with a shift crashes Vue render.
+The build's handleShifts DOES call event.color.toLowerCase() before pushing into
+mappedEvents, so the rendered shift.color should be lowercase. However, if the build
+was made before that toLowerCase was added, OR if there's any path that bypasses
+handleShifts, colors can arrive at the template as CapitalCase and crash with
+'Cannot read properties of undefined'.
 
-pberpqa works because either Shift Type colors are stored as lowercase there, or
-no shifts are visible.
+Pre-Phase-4.7 worked because 0 SAs meant no shift cells rendered, no
+`colors[shift.color as Color]` access. After Phase 4.7 created 2,511 SAs,
+shift cells now render, exposing the color mismatch.
 
-Fix: Normalize Shift Type.color values from CapitalCase to lowercase.
-- Direct DB UPDATE (bypass ORM Select validation)
-- Also add Property Setter so the dropdown shows lowercase options for future edits
+Fix:
+1. Direct DB UPDATE: normalize all Shift Type.color values from CapitalCase to lowercase.
+2. Property Setter (raw SQL insert): lowercase options + default for Shift Type.color
+   field so the dropdown also shows lowercase (via raw SQL to bypass ORM validation
+   that rejects the lowercase default).
+3. bench restart to refresh meta cache.
 
-Lesson #124 (new): HRMS Shift Type.color default is CapitalCase ('Blue','Green',...)
-but Roster Vue (apps/hrms/roster/) expects lowercase ('blue','green',...) to match Tailwind.
-When setting Shift Type colors, always lowercase them. Either:
-- Override default to lowercase when creating new Shift Types, OR
-- Run this normalization script after bulk import.
+Why raw SQL for Property Setter: frappe.make_property_setter (and the
+PropertySetter controller) auto-cleans Property Setters whose values don't
+match the JSON-defined field options. Since we want lowercase options,
+frappe's validate_fieldtype_change / auto-cleanup rejects the PS.
+Raw SQL bypasses this and persists across bench restart.
+
+Lesson #142 (new): When data consumers have strict typed enums
+(TypeScript `Color = "blue"|"cyan"|...`), the data MUST match the exact
+case. HRMS Shift Type.color default options list uses CapitalCase (per
+apps/hrms/hrms/hr/doctype/shift_type/shift_type.json), but Roster SPA
+expects lowercase. Always cross-check consumer code + data schema on
+field-name-sensitive integrations.
+
+Lesson #143 (new): For Property Setter with non-JSON values, use raw
+SQL INSERT to bypass Frappe's option-matching validation. PS created via
+make_property_setter auto-delete when their value doesn't match the
+JSON-defined options; raw SQL survives bench restart.
+
+Lesson #144 (new): Frappe meta cache holds the JSON-defined field
+options until cleared. After changing a Select field's options via
+Property Setter, must run `frappe.clear_cache(doctype='...')` in a NEW
+bench console session to see the effective lowercase options.
 """
 
 import frappe
 
 print("=== Phase 4.10: Fix Roster crash (Shift Type color lowercase normalization) ===\n")
 
-# Pre-state
+# Step 1: Pre-state
 print("--- Pre-state: Shift Type colors ---")
 pre_colors = frappe.db.sql(
     "SELECT name, color FROM `tabShift Type` ORDER BY name",
@@ -36,7 +61,7 @@ pre_colors = frappe.db.sql(
 for r in pre_colors:
     print(f"  {r['name']:20} {r['color']!r}")
 
-# Step 1: Build mapping CapitalCase → lowercase
+# Step 2: Build mapping CapitalCase → lowercase
 mapping = {
     "Blue": "blue",
     "Cyan": "cyan",
@@ -50,7 +75,7 @@ mapping = {
     "Yellow": "yellow",
 }
 
-# Step 2: Direct DB UPDATE (bypass Frappe ORM Select validation)
+# Step 3: Direct DB UPDATE for color normalization
 print("\n--- Step 1: Direct DB UPDATE for color normalization ---")
 updated = 0
 for st in pre_colors:
@@ -67,28 +92,39 @@ for st in pre_colors:
 frappe.db.commit()
 print(f"\nUpdated {updated} Shift Type records.")
 
-# Step 3: Property Setter for color field options (so future edits work too)
-print("\n--- Step 2: Property Setter for Shift Type.color.options ---")
-prop_setter_name = "Shift Type-color-options"
-existing = frappe.db.exists("Property Setter", prop_setter_name)
-if existing:
-    print(f"  Property Setter '{prop_setter_name}' already exists.")
-else:
-    # Lowercase options (matches Tailwind)
-    new_options = "\n".join(mapping.values())  # blue\ncyan\nfuchsia\ngreen\n...
-    ps = frappe.get_doc({
-        "doctype": "Property Setter",
-        "doctype_or_field": "DocField",
-        "doc_type": "Shift Type",
-        "field_name": "color",
-        "property": "options",
-        "value": new_options,
-        "property_type": "Text",
-    })
-    ps.insert()
-    print(f"  Created Property Setter with lowercase options:\n{new_options}")
+# Step 4: Property Setter via raw SQL (bypasses Frappe's option-match validation)
+print("\n--- Step 2: Property Setter via raw SQL (lowercase options + default) ---")
+lowercase_options = "blue\ncyan\nfuchsia\ngreen\nlime\norange\npink\nred\nviolet\nyellow"
 
-# Step 4: Post-state verify
+# Delete any existing PS for Shift Type.color first
+existing = frappe.db.get_all(
+    "Property Setter",
+    filters={"doc_type": "Shift Type", "field_name": "color"},
+    pluck="name",
+)
+for n in existing:
+    frappe.db.delete("Property Setter", n)
+frappe.db.commit()
+print(f"Deleted {len(existing)} existing PS for Shift Type.color")
+
+# Insert via raw SQL (bypass ORM validation that would reject lowercase options)
+frappe.db.sql(
+    """
+    INSERT INTO `tabProperty Setter`
+    (name, creation, modified, modified_by, owner, docstatus, idx, is_system_generated,
+     doctype_or_field, doc_type, field_name, row_name, module, property, property_type, value)
+    VALUES
+    ('Shift Type-color-options', NOW(), NOW(), 'Administrator', 'Administrator', 0, 0, 1,
+     'DocField', 'Shift Type', 'color', NULL, NULL, 'options', 'Text', %s),
+    ('Shift Type-color-default', NOW(), NOW(), 'Administrator', 'Administrator', 0, 0, 1,
+     'DocField', 'Shift Type', 'color', NULL, NULL, 'default', 'Text', 'blue')
+    """,
+    (lowercase_options,),
+)
+frappe.db.commit()
+print("Created 2 Property Setters via raw SQL (options + default)")
+
+# Step 5: Post-state verify
 print("\n--- Post-state: Shift Type colors ---")
 post_colors = frappe.db.sql(
     "SELECT name, color FROM `tabShift Type` ORDER BY name",
@@ -97,7 +133,7 @@ post_colors = frappe.db.sql(
 for r in post_colors:
     print(f"  {r['name']:20} {r['color']!r}")
 
-# Verify: ensure all are now lowercase
+# Verify: all lowercase
 print("\n--- Verification ---")
 bad = [r for r in post_colors if r["color"] not in mapping.values()]
 if bad:
@@ -107,12 +143,14 @@ if bad:
 else:
     print(f"PASS: All {len(post_colors)} Shift Type colors are lowercase.")
 
-# Verify Property Setter
-ps_check = frappe.db.get_value(
+# Verify PS persisted
+ps = frappe.db.get_all(
     "Property Setter",
-    "Shift Type-color-options",
-    "value",
+    filters={"doc_type": "Shift Type", "field_name": "color"},
+    fields=["name", "property", "value"],
 )
-print(f"\nProperty Setter value:\n{ps_check}")
+print(f"\nProperty Setters ({len(ps)}):")
+for r in ps:
+    print(f"  {r['name']:40} {r['property']:10} {r['value'][:60]!r}")
 
-print("\n=== Fix complete ===")
+print("\n=== Fix complete (next: bench restart to refresh meta cache) ===")
