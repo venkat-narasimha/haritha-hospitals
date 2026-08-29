@@ -1,0 +1,684 @@
+
+======================================================================
+Installed apps
+======================================================================
+['frappe', 'erpnext', 'hrms']
+
+======================================================================
+App → Module mapping (from Module Def.app_name)
+======================================================================
+  erpnext         Accounts
+  erpnext         Assets
+  erpnext         Bulk Transaction
+  erpnext         Buying
+  erpnext         Communication
+  erpnext         CRM
+  erpnext         EDI
+  erpnext         ERPNext Integrations
+  erpnext         Maintenance
+  erpnext         Manufacturing
+  erpnext         Portal
+  erpnext         Projects
+  erpnext         Quality Management
+  erpnext         Regional
+  erpnext         Selling
+  erpnext         Setup
+  erpnext         Stock
+  erpnext         Subcontracting
+  erpnext         Support
+  erpnext         Telephony
+  erpnext         Utilities
+  frappe          Automation
+  frappe          Contacts
+  frappe          Core
+  frappe          Custom
+  frappe          Desk
+  frappe          Email
+  frappe          Geo
+  frappe          Integrations
+  frappe          Printing
+  frappe          Website
+  frappe          Workflow
+  hrms            HR
+  hrms            Payroll
+
+======================================================================
+STEP A — Customization counts
+======================================================================
+  Custom Fields                  78
+  Property Setters               189
+  Workflows                      0
+  Client Scripts                 0
+  Server Scripts                 0
+  Print Formats                  48
+  Web Forms                      7
+  Notifications                  8
+  Custom DocTypes                0
+  Custom DocPerm                 1388
+  Workspaces (all)               28
+  Dashboard Charts (all)         82
+  Number Cards (all)             82
+  Reports (all)                  220
+  Letter Heads                   2
+
+======================================================================
+Sub-counts: custom vs standard
+======================================================================
+  ---
+  Print Formats: standard=47, custom_format=1: 30, disabled=1: 4
+  Notifications: is_standard=1: 6, is_standard=0: 2
+  Web Forms: is_standard=1: 7, is_standard=0: 0
+  Reports: is_standard=1: 0, is_standard=0: 220
+  Dashboard Charts: is_standard=1: 82, is_standard=0: 0
+  Number Cards: is_standard=1: 82, is_standard=0: 0
+  Workspaces: module='Custom': 0, public (for_user NULL/empty): 28, user-private: 0, total: 28
+
+======================================================================
+STEP B1 — Custom Fields
+======================================================================
+Total: 78
+
+  [custom] 78
+    Address                        is_your_company_address        (Check) mod=''
+    Address                        tax_category                   (Link) mod=''
+    Communication                  company                        (Link) mod=''
+    Company                        arrear_component               (Link) mod=''
+    Company                        basic_component                (Link) mod=''
+    Company                        column_break_10                (Column Break) mod=''
+    Company                        default_employee_advance_account (Link) mod=''
+    Company                        default_expense_claim_payable_account (Link) mod=''
+    Company                        default_payroll_payable_account (Link) mod=''
+    Company                        hr_and_payroll_tab             (Tab Break) mod=''
+    Company                        hr_settings_section            (Section Break) mod=''
+    Company                        hra_column_break               (Column Break) mod=''
+    Company                        hra_component                  (Link) mod=''
+    Company                        hra_section                    (Section Break) mod=''
+    Contact                        is_billing_contact             (Check) mod=''
+    Custom DocPerm                 impersonate                    (Check) mod=''
+    Customer                       crm_deal                       (Data) mod=''
+    Department                     approvers                      (Section Break) mod=''
+    Department                     column_break_9                 (Column Break) mod=''
+    Department                     expense_approvers              (Table) mod=''
+    Department                     leave_approvers                (Table) mod=''
+    Department                     leave_block_list               (Link) mod=''
+    Department                     payroll_cost_center            (Link) mod=''
+    Department                     section_break_4                (Section Break) mod=''
+    Department                     shift_request_approver         (Table) mod=''
+    Designation                    appraisal_template             (Link) mod=''
+    Designation                    required_skills_section        (Section Break) mod=''
+    Designation                    skills                         (Table) mod=''
+    DocPerm                        impersonate                    (Check) mod=''
+    DocShare                       impersonate                    (Check) mod=''
+    Email Account                  company                        (Link) mod=''
+    Employee                       approvers_section              (Section Break) mod=''
+    Employee                       bank_cb                        (Column Break) mod=''
+    Employee                       column_break_45                (Column Break) mod=''
+    Employee                       default_shift                  (Link) mod=''
+    Employee                       employee_advance_account       (Link) mod=''
+    Employee                       employment_type                (Link) mod=''
+    Employee                       expense_approver               (Link) mod=''
+    Employee                       grade                          (Link) mod=''
+    Employee                       health_insurance_no            (Data) mod=''
+    Employee                       health_insurance_provider      (Link) mod=''
+    Employee                       health_insurance_section       (Section Break) mod=''
+    Employee                       ifsc_code                      (Data) mod=''
+    Employee                       job_applicant                  (Link) mod=''
+    Employee                       leave_approver                 (Link) mod=''
+    Employee                       micr_code                      (Data) mod=''
+    Employee                       pan_number                     (Data) mod=''
+    Employee                       payroll_cost_center            (Link) mod=''
+    Employee                       provident_fund_account         (Data) mod=''
+    Employee                       salary_cb                      (Column Break) mod=''
+    Employee                       shift_request_approver         (Link) mod=''
+    Employee Tax Exemption Declaration annual_hra_exemption           (Currency) mod=''
+    Employee Tax Exemption Declaration hra_column_break               (Column Break) mod=''
+    Employee Tax Exemption Declaration hra_section                    (Section Break) mod=''
+    Employee Tax Exemption Declaration monthly_house_rent             (Currency) mod=''
+    Employee Tax Exemption Declaration monthly_hra_exemption          (Currency) mod=''
+    Employee Tax Exemption Declaration rented_in_metro_city           (Check) mod=''
+    Employee Tax Exemption Declaration salary_structure_hra           (Currency) mod=''
+    Employee Tax Exemption Proof Submission house_rent_payment_amount      (Currency) mod=''
+    Employee Tax Exemption Proof Submission hra_column_break               (Column Break) mod=''
+    ... +18 more
+
+======================================================================
+STEP B2 — Property Setters
+======================================================================
+Total: 189
+
+  [custom] 189
+    Account Closing Balance        accounting_dimensions_section hidden               -> 1
+    Advance Taxes and Charges      accounting_dimensions_section hidden               -> 1
+    Asset                          accounting_dimensions_section hidden               -> 1
+    Asset Capitalization           accounting_dimensions_section hidden               -> 1
+    Asset Depreciation Schedule    accounting_dimensions_section hidden               -> 1
+    Asset Movement Item            accounting_dimensions_section hidden               -> 1
+    Asset Repair                   accounting_dimensions_section hidden               -> 1
+    Asset Value Adjustment         accounting_dimensions_section hidden               -> 1
+    Attendance                     status             options              -> 
+Present
+Absent
+On Leave
+Half Day
+W
+    Budget                         accounting_dimensions_section hidden               -> 1
+    Customer                       naming_series      hidden               -> 1
+    Customer                       naming_series      reqd                 -> 0
+    Delivery Note                  (13 property setters)
+    Delivery Note Item             accounting_dimensions_section hidden               -> 1
+    Delivery Note Item             barcode            hidden               -> 0
+    Delivery Note Item             discount_and_margin hidden               -> 1
+    Employee                       employee_number    hidden               -> 1
+    Employee                       employee_number    reqd                 -> 0
+    Employee                       naming_series      hidden               -> 0
+    Employee                       naming_series      reqd                 -> 1
+    GL Entry                       accounting_dimensions_section hidden               -> 1
+    Item                           (5 property setters)
+    Item Barcode                   barcode            hidden               -> 0
+    Job Card                       barcode            hidden               -> 0
+    Journal Entry Account          accounting_dimensions_section hidden               -> 1
+    Journal Entry Template Account accounting_dimensions_section hidden               -> 1
+    Landed Cost Item               accounting_dimensions_section hidden               -> 1
+    Lead                           utm_analytics_section hidden               -> 0
+    Loyalty Program                accounting_dimensions_section hidden               -> 1
+    Material Request               scan_barcode       hidden               -> 0
+    Material Request Item          accounting_dimensions_section hidden               -> 1
+    Opening Invoice Creation Tool  accounting_dimensions_section hidden               -> 1
+    Opening Invoice Creation Tool Item accounting_dimensions_section hidden               -> 1
+    Opportunity                    utm_analytics_section hidden               -> 0
+    POS Invoice                    (6 property setters)
+    POS Invoice Item               accounting_dimensions_section hidden               -> 1
+    POS Invoice Item               barcode            hidden               -> 0
+    POS Invoice Item               discount_and_margin hidden               -> 1
+    POS Profile                    accounting_dimensions_section hidden               -> 1
+    POS Profile                    utm_analytics_section hidden               -> 0
+    Packed Item                    rate               read_only            -> 1
+    Payment Entry                  accounting_dimensions_section hidden               -> 1
+    Payment Entry Deduction        accounting_dimensions_section hidden               -> 1
+    Payment Ledger Entry           accounting_dimensions_section hidden               -> 1
+    Payment Reconciliation         accounting_dimensions_section hidden               -> 1
+    Payment Reconciliation Allocation accounting_dimensions_section hidden               -> 1
+    Payment Request                accounting_dimensions_section hidden               -> 1
+    Payment Request                subscription_section hidden               -> 0
+    Pick List                      scan_barcode       hidden               -> 0
+    Purchase Invoice               (11 property setters)
+    Purchase Invoice Item          accounting_dimensions_section hidden               -> 1
+    Purchase Order                 (10 property setters)
+    Purchase Order Item            accounting_dimensions_section hidden               -> 1
+    Purchase Receipt               (9 property setters)
+    Purchase Receipt Item          accounting_dimensions_section hidden               -> 1
+    Purchase Receipt Item          barcode            hidden               -> 0
+    Purchase Taxes and Charges     accounting_dimensions_section hidden               -> 1
+    Quotation                      (10 property setters)
+    Quotation Item                 discount_and_margin hidden               -> 1
+    Request for Quotation          -                  default_print_format -> Request for Quotation with Item Ima
+    Salary Slip                    rounded_total      hidden               -> 0
+    Salary Slip                    rounded_total      print_hide           -> 0
+    Sales Invoice                  (20 property setters)
+    Sales Invoice Item             (5 property setters)
+    Sales Order                    (15 property setters)
+    Sales Order Item               accounting_dimensions_section hidden               -> 1
+    Sales Order Item               discount_and_margin hidden               -> 1
+    Sales Taxes and Charges        accounting_dimensions_section hidden               -> 1
+    Shift Type                     color              default              -> blue
+    Shift Type                     color              options              -> blue
+cyan
+fuchsia
+green
+lime
+orange
+    Shipping Rule                  accounting_dimensions_section hidden               -> 1
+    Stock Entry                    accounting_dimensions_section hidden               -> 1
+    Stock Entry                    scan_barcode       hidden               -> 0
+    Stock Entry Detail             accounting_dimensions_section hidden               -> 1
+    Stock Entry Detail             barcode            hidden               -> 0
+    Stock Reconciliation           accounting_dimensions_section hidden               -> 1
+    Stock Reconciliation           scan_barcode       hidden               -> 0
+    Stock Reconciliation Item      barcode            hidden               -> 0
+    Subcontracting Order           accounting_dimensions_section hidden               -> 1
+    Subcontracting Order Item      accounting_dimensions_section hidden               -> 1
+    Subcontracting Receipt         accounting_dimensions_section hidden               -> 1
+    Subcontracting Receipt Item    accounting_dimensions_section hidden               -> 1
+    Subscription                   accounting_dimensions_section hidden               -> 1
+    Subscription Plan              accounting_dimensions_section hidden               -> 1
+    Supplier                       naming_series      hidden               -> 1
+    Supplier                       naming_series      reqd                 -> 0
+    Supplier Quotation             (8 property setters)
+    Supplier Quotation Item        accounting_dimensions_section hidden               -> 1
+
+======================================================================
+STEP B3 — Workflows
+======================================================================
+Total: 0
+
+======================================================================
+STEP B4 — Client Scripts
+======================================================================
+Total: 0
+
+======================================================================
+STEP B5 — Server Scripts
+======================================================================
+Total: 0
+
+======================================================================
+STEP B6 — Print Formats
+======================================================================
+Total: 48
+
+  [core-erpnext] 1
+    IRS 1099 Form                            dt=Supplier                       CUSTOM          mod='Regional'
+
+  [core-standard] 47
+    Accounts Payable Standard                dt=-                              STD,CUSTOM      mod='Accounts'
+    Accounts Payable Summary Standard        dt=-                              STD,CUSTOM      mod='Accounts'
+    Accounts Receivable Standard             dt=-                              STD,CUSTOM      mod='Accounts'
+    Accounts Receivable Summary Standard     dt=-                              STD,CUSTOM      mod='Accounts'
+    Balance Sheet Standard                   dt=-                              STD,CUSTOM      mod='Accounts'
+    Cash Flow Statement Standard             dt=-                              STD,CUSTOM      mod='Accounts'
+    General Ledger Standard                  dt=-                              STD,CUSTOM      mod='Accounts'
+    P&L Statement Standard                   dt=-                              STD,CUSTOM      mod='Accounts'
+    Trial Balance Standard                   dt=-                              STD,CUSTOM      mod='Accounts'
+    Standard Appointment Letter              dt=Appointment Letter             STD             mod='HR'
+    Delivery Note Standard                   dt=Delivery Note                  STD,CUSTOM      mod='Stock'
+    Delivery Note with Item Image            dt=Delivery Note                  STD,CUSTOM      mod='Stock'
+    Dunning Letter                           dt=Dunning                        STD             mod='Accounts'
+    Job Offer                                dt=Job Offer                      STD,CUSTOM      mod='HR'
+    Cheque Printing Format                   dt=Journal Entry                  STD,CUSTOM      mod=''
+    Credit Note                              dt=Journal Entry                  STD             mod='Accounts'
+    Journal Auditing Voucher                 dt=Journal Entry                  STD             mod='Accounts'
+    Payment Receipt Voucher                  dt=Journal Entry                  STD             mod=''
+    Bank and Cash Payment Voucher            dt=Payment Entry                  STD             mod='Accounts'
+    Pick List                                dt=Pick List                      STD             mod='Stock'
+    POS Invoice                              dt=POS Invoice                    STD,CUSTOM      mod='Selling'
+    POS Invoice Standard                     dt=POS Invoice                    STD,CUSTOM      mod='Accounts'
+    POS Invoice with Item Image              dt=POS Invoice                    STD,CUSTOM      mod='Accounts'
+    Return POS Invoice                       dt=POS Invoice                    STD,CUSTOM      mod='Selling'
+    Purchase Auditing Voucher                dt=Purchase Invoice               STD             mod='Accounts'
+    Purchase eInvoice                        dt=Purchase Invoice               STD,DISABLED    mod='Regional'
+    Purchase Invoice Standard                dt=Purchase Invoice               STD,CUSTOM      mod='Accounts'
+    Purchase Invoice with Item Image         dt=Purchase Invoice               STD,CUSTOM      mod='Accounts'
+    Drop Shipping Format                     dt=Purchase Order                 STD,CUSTOM      mod=''
+    Purchase Order Standard                  dt=Purchase Order                 STD,CUSTOM      mod='Buying'
+    Purchase Order with Item Image           dt=Purchase Order                 STD,CUSTOM      mod='Buying'
+    Purchase Receipt Serial and Batch Bundle Print dt=Purchase Receipt               STD             mod='Stock'
+    Quotation Standard                       dt=Quotation                      STD,CUSTOM      mod='Selling'
+    Quotation with Item Image                dt=Quotation                      STD,CUSTOM      mod='Selling'
+    Request for Quotation with Item Image    dt=Request for Quotation          STD,CUSTOM      mod='Buying'
+    Salary Slip based on Timesheet           dt=Salary Slip                    STD             mod='Payroll'
+    Salary Slip Standard                     dt=Salary Slip                    STD             mod='Payroll'
+    Salary Slip with Year to Date            dt=Salary Slip                    STD             mod='Payroll'
+    Detailed Tax Invoice                     dt=Sales Invoice                  STD,DISABLED    mod='Regional'
+    Sales Auditing Voucher                   dt=Sales Invoice                  STD             mod='Accounts'
+    Sales Invoice Return                     dt=Sales Invoice                  STD             mod='Accounts'
+    Sales Invoice Standard                   dt=Sales Invoice                  STD,CUSTOM      mod='Accounts'
+    Sales Invoice with Item Image            dt=Sales Invoice                  STD,CUSTOM      mod='Accounts'
+    Simplified Tax Invoice                   dt=Sales Invoice                  STD,DISABLED    mod='Regional'
+    Tax Invoice                              dt=Sales Invoice                  STD,DISABLED    mod='Regional'
+    Sales Order Standard                     dt=Sales Order                    STD,CUSTOM      mod='Selling'
+    Sales Order with Item Image              dt=Sales Order                    STD,CUSTOM      mod='Selling'
+
+======================================================================
+STEP B7 — Notifications
+======================================================================
+Total: 8
+  Error Log                                dt=Error Log                      event=New          enabled=0 channel=Email    std=0 mod=''
+  Exit Interview Scheduled                 dt=Exit Interview                 event=Days Before  enabled=1 channel=Email    std=1 mod='HR'
+  Notification for new fiscal year         dt=Fiscal Year                    event=New          enabled=1 channel=Email    std=1 mod='Accounts'
+  Integration Request                      dt=Integration Request            event=Save         enabled=0 channel=Email    std=0 mod=''
+  Material Request Receipt Notification    dt=Material Request               event=Value Change enabled=1 channel=Email    std=1 mod='Manufacturing'
+  Retention Bonus                          dt=Retention Bonus                event=Days Before  enabled=1 channel=Email    std=1 mod='Payroll'
+  Training Scheduled                       dt=Training Event                 event=Submit       enabled=1 channel=Email    std=1 mod='HR'
+  Training Feedback                        dt=Training Result                event=Submit       enabled=1 channel=Email    std=1 mod='HR'
+
+======================================================================
+STEP B8 — Web Forms
+======================================================================
+Total: 7
+  addresses                      dt=Address                        route=address                                  std=1 mod='Utilities'
+  issues                         dt=Issue                          route=issues                                   std=1 mod='Support'
+  job-application                dt=Job Applicant                  route=job_application                          std=1 mod='HR'
+  request-to-delete-data         dt=Personal Data Deletion Request route=request-for-account-deletion             std=1 mod='Website'
+  request-data                   dt=Personal Data Download Request route=request-data                             std=1 mod='Website'
+  tasks                          dt=Task                           route=tasks                                    std=1 mod='Projects'
+  edit-profile                   dt=User                           route=update-profile                           std=1 mod='Core'
+
+======================================================================
+STEP B9 — Custom DocTypes
+======================================================================
+Total: 0
+
+======================================================================
+STEP B10 — DocPerm (all)
+======================================================================
+Total: 1388
+Distinct DocTypes with DocPerm: 565
+
+DocPerms grouped by parent (top 30):
+  Contact                                  12 perms, roles=['Accounts Manager', 'Accounts User', 'All', 'Maintenance Manager', 'Maintenance User', 'Purchase Manager', 'Purchase Master Manager', 'Purchase User', 'Sales Manager', 'Sales Master Manager', 'Sales User', 'System Manager']
+  Company                                  11 perms, roles=['Accounts Manager', 'Accounts User', 'Auditor', 'Employee', 'HR Manager', 'HR User', 'Projects User', 'Purchase User', 'Sales User', 'Stock User', 'System Manager']
+  Customer                                 9 perms, roles=['Accounts Manager', 'Accounts User', 'Sales Manager', 'Sales Master Manager', 'Sales User', 'Stock Manager', 'Stock User']
+  Fiscal Year                              9 perms, roles=['Accounts Manager', 'Accounts User', 'Auditor', 'Employee', 'Purchase User', 'Sales User', 'Stock Manager', 'Stock User', 'System Manager']
+  Item                                     9 perms, roles=['Accounts User', 'Desk User', 'Item Manager', 'Maintenance User', 'Manufacturing User', 'Purchase User', 'Sales User', 'Stock Manager', 'Stock User']
+  Serial and Batch Bundle                  9 perms, roles=['Delivery Manager', 'Delivery User', 'Manufacturing Manager', 'Manufacturing User', 'Purchase Manager', 'Purchase User', 'Stock Manager', 'Stock User', 'System Manager']
+  Terms and Conditions                     9 perms, roles=['Accounts Manager', 'Accounts User', 'HR Manager', 'HR User', 'Purchase User', 'Sales Master Manager', 'Sales User', 'Stock User', 'System Manager']
+  Cost Center                              8 perms, roles=['Accounts Manager', 'Accounts User', 'Auditor', 'Employee', 'HR Manager', 'HR User', 'Purchase User', 'Sales User']
+  Customer Group                           8 perms, roles=['Accounts User', 'Customer', 'Sales Manager', 'Sales Master Manager', 'Sales User']
+  Employee Checkin                         8 perms, roles=['Employee', 'HR Manager', 'HR User', 'System Manager']
+  Expense Claim                            8 perms, roles=['All', 'Employee', 'Expense Approver', 'HR Manager', 'HR User']
+  Incoterm                                 8 perms, roles=['Accounts Manager', 'Accounts User', 'Purchase Manager', 'Purchase User', 'Sales Manager', 'Sales User', 'Stock Manager', 'Stock User']
+  Leave Application                        8 perms, roles=['All', 'Employee', 'HR Manager', 'HR User', 'Leave Approver']
+  Quotation                                8 perms, roles=['Maintenance Manager', 'Maintenance User', 'Sales Manager', 'Sales User']
+  Warehouse Type                           8 perms, roles=['Accounts User', 'Item Manager', 'Manufacturing User', 'Purchase User', 'Sales User', 'Stock Manager', 'Stock User', 'System Manager']
+  Account                                  7 perms, roles=['Accounts Manager', 'Accounts User', 'Auditor', 'HR Manager', 'HR User', 'Purchase User', 'Sales User']
+  Buying Settings                          7 perms, roles=['Accounts Manager', 'Accounts User', 'Purchase Manager', 'Purchase User', 'Stock Manager', 'Stock User', 'System Manager']
+  Delivery Note                            7 perms, roles=['Accounts User', 'Delivery Manager', 'Delivery User', 'Sales User', 'Stock Manager', 'Stock User']
+  Employee Referral                        7 perms, roles=['Employee', 'HR Manager', 'HR User', 'System Manager']
+  Item Group                               7 perms, roles=['Accounts User', 'Desk User', 'Item Manager', 'Purchase User', 'Sales User', 'Stock Manager', 'Stock User']
+  Project                                  7 perms, roles=['Desk User', 'Employee', 'HR Manager', 'HR User', 'Projects Manager', 'Projects User']
+  Stock Reservation Entry                  7 perms, roles=['Purchase Manager', 'Purchase User', 'Sales Manager', 'Sales User', 'Stock Manager', 'Stock User', 'System Manager']
+  Supplier                                 7 perms, roles=['Accounts Manager', 'Accounts User', 'Purchase Manager', 'Purchase Master Manager', 'Purchase User', 'Stock Manager', 'Stock User']
+  Supplier Group                           7 perms, roles=['Accounts User', 'Purchase Manager', 'Purchase Master Manager', 'Purchase User']
+  Territory                                7 perms, roles=['Accounts User', 'Customer', 'Maintenance User', 'Sales Manager', 'Sales Master Manager', 'Sales User', 'Stock User']
+  Timesheet                                7 perms, roles=['Accounts User', 'Employee', 'HR Manager', 'HR User', 'Manufacturing User', 'Projects User']
+  Address                                  6 perms, roles=['Accounts User', 'All', 'Maintenance User', 'Purchase User', 'Sales User', 'System Manager']
+  Bin                                      6 perms, roles=['Purchase Manager', 'Purchase User', 'Sales Manager', 'Sales User', 'Stock Manager', 'Stock User']
+  Lead                                     6 perms, roles=['Desk User', 'Sales Manager', 'Sales User', 'System Manager']
+  Note                                     6 perms, roles=['Desk User', 'System Manager']
+
+======================================================================
+STEP B11 — Workspaces
+======================================================================
+Total: 28
+  Financial Reports                   module=Accounts             app=erpnext         public=1 for_user=''
+  Invoicing                           module=Accounts             app=erpnext         public=1 for_user=''
+  Assets                              module=Assets               app=erpnext         public=1 for_user=''
+  Buying                              module=Buying               app=erpnext         public=1 for_user=''
+  Build                               module=Core                 app=frappe          public=1 for_user=''
+  Users                               module=Core                 app=frappe          public=1 for_user=''
+  Welcome Workspace                   module=Core                 app=-               public=1 for_user=''
+  CRM                                 module=CRM                  app=erpnext         public=1 for_user=''
+  Expenses                            module=HR                   app=hrms            public=1 for_user=''
+  HR Setup                            module=HR                   app=hrms            public=1 for_user=''
+  Leaves                              module=HR                   app=hrms            public=1 for_user=''
+  Performance                         module=HR                   app=hrms            public=1 for_user=''
+  Recruitment                         module=HR                   app=hrms            public=1 for_user=''
+  Shift & Attendance                  module=HR                   app=hrms            public=1 for_user=''
+  Tenure                              module=HR                   app=hrms            public=1 for_user=''
+  Integrations                        module=Integrations         app=frappe          public=1 for_user=''
+  Manufacturing                       module=Manufacturing        app=erpnext         public=1 for_user=''
+  Payroll                             module=Payroll              app=hrms            public=1 for_user=''
+  Tax & Benefits                      module=Payroll              app=hrms            public=1 for_user=''
+  Projects                            module=Projects             app=erpnext         public=1 for_user=''
+  Quality                             module=Quality Management   app=erpnext         public=1 for_user=''
+  Selling                             module=Selling              app=erpnext         public=1 for_user=''
+  ERPNext Settings                    module=Setup                app=erpnext         public=1 for_user=''
+  Home                                module=Setup                app=erpnext         public=1 for_user=''
+  Stock                               module=Stock                app=erpnext         public=1 for_user=''
+  Subcontracting                      module=Subcontracting       app=erpnext         public=1 for_user=''
+  Support                             module=Support              app=erpnext         public=1 for_user=''
+  Website                             module=Website              app=frappe          public=1 for_user=''
+
+======================================================================
+STEP B12 — Dashboard Charts (is_standard=0)
+======================================================================
+Total: 0
+
+======================================================================
+STEP B13 — Number Cards (is_standard=0)
+======================================================================
+Total: 0
+
+======================================================================
+STEP B14 — Reports (is_standard=0)
+======================================================================
+Total: 220
+  Account Balance                                    type=Script Report dt=Bank Account                   mod='Accounts'
+  Accounts Payable                                   type=Script Report dt=Purchase Invoice               mod='Accounts'
+  Accounts Payable Summary                           type=Script Report dt=Purchase Invoice               mod='Accounts'
+  Accounts Receivable                                type=Script Report dt=Sales Invoice                  mod='Accounts'
+  Accounts Receivable Summary                        type=Script Report dt=Sales Invoice                  mod='Accounts'
+  Asset Depreciation Ledger                          type=Script Report dt=Asset                          mod='Accounts'
+  Asset Depreciations and Balances                   type=Script Report dt=Asset                          mod='Accounts'
+  Balance Sheet                                      type=Script Report dt=GL Entry                       mod='Accounts'
+  Bank Clearance Summary                             type=Script Report dt=Journal Entry                  mod='Accounts'
+  Bank Reconciliation Statement                      type=Script Report dt=Journal Entry                  mod='Accounts'
+  Billed Items To Be Received                        type=Script Report dt=Purchase Invoice               mod='Accounts'
+  Budget Variance Report                             type=Script Report dt=Cost Center                    mod='Accounts'
+  Calculated Discount Mismatch                       type=Script Report dt=Version                        mod='Accounts'
+  Cash Flow                                          type=Script Report dt=GL Entry                       mod='Accounts'
+  Cheques and Deposits Incorrectly cleared           type=Script Report dt=Payment Entry                  mod='Accounts'
+  Consolidated Financial Statement                   type=Script Report dt=Account                        mod='Accounts'
+  Consolidated Trial Balance                         type=Script Report dt=GL Entry                       mod='Accounts'
+  Custom Financial Statement                         type=Script Report dt=GL Entry                       mod='Accounts'
+  Customer Ledger Summary                            type=Script Report dt=Sales Invoice                  mod='Accounts'
+  Deferred Revenue and Expense                       type=Script Report dt=GL Entry                       mod='Accounts'
+  Delivered Items To Be Billed                       type=Script Report dt=Sales Invoice                  mod='Accounts'
+  Dimension-wise Accounts Balance Report             type=Script Report dt=GL Entry                       mod='Accounts'
+  Financial Ratios                                   type=Script Report dt=Account                        mod='Accounts'
+  General and Payment Ledger Comparison              type=Script Report dt=GL Entry                       mod='Accounts'
+  General Ledger                                     type=Script Report dt=GL Entry                       mod='Accounts'
+  Gross and Net Profit Report                        type=Script Report dt=GL Entry                       mod='Accounts'
+  Gross Profit                                       type=Script Report dt=Sales Invoice                  mod='Accounts'
+  Inactive Sales Items                               type=Script Report dt=Sales Invoice                  mod='Accounts'
+  Invalid Ledger Entries                             type=Script Report dt=GL Entry                       mod='Accounts'
+  Item-wise Purchase Register                        type=Script Report dt=Purchase Invoice               mod='Accounts'
+  Item-wise Sales Register                           type=Script Report dt=Sales Invoice                  mod='Accounts'
+  Payment Ledger                                     type=Script Report dt=Payment Ledger Entry           mod='Accounts'
+  Payment Period Based On Invoice Date               type=Script Report dt=Journal Entry                  mod='Accounts'
+  POS Register                                       type=Script Report dt=POS Invoice                    mod='Accounts'
+  Profit and Loss Statement                          type=Script Report dt=GL Entry                       mod='Accounts'
+  Profitability Analysis                             type=Script Report dt=GL Entry                       mod='Accounts'
+  Purchase Invoice Trends                            type=Script Report dt=Purchase Invoice               mod='Accounts'
+  Purchase Register                                  type=Script Report dt=Purchase Invoice               mod='Accounts'
+  Received Items To Be Billed                        type=Script Report dt=Purchase Invoice               mod='Accounts'
+  Sales Invoice Trends                               type=Script Report dt=Sales Invoice                  mod='Accounts'
+  Sales Partners Commission                          type=Query Report dt=Sales Invoice                  mod='Accounts'
+  Sales Payment Summary                              type=Script Report dt=Sales Invoice                  mod='Accounts'
+  Sales Register                                     type=Script Report dt=Sales Invoice                  mod='Accounts'
+  Share Balance                                      type=Script Report dt=Share Transfer                 mod='Accounts'
+  Share Ledger                                       type=Script Report dt=Share Transfer                 mod='Accounts'
+  Supplier Ledger Summary                            type=Script Report dt=Purchase Invoice               mod='Accounts'
+  Tax Withholding Details                            type=Script Report dt=Purchase Invoice               mod='Accounts'
+  TDS Computation Summary                            type=Script Report dt=Purchase Invoice               mod='Accounts'
+  Trial Balance                                      type=Script Report dt=GL Entry                       mod='Accounts'
+  Trial Balance (Simple)                             type=Query Report dt=GL Entry                       mod='Accounts'
+  Trial Balance for Party                            type=Script Report dt=GL Entry                       mod='Accounts'
+  Voucher-wise Balance                               type=Script Report dt=GL Entry                       mod='Accounts'
+  Asset Activity                                     type=Report Builder dt=Asset Activity                 mod='Assets'
+  Asset Maintenance                                  type=Report Builder dt=Asset Maintenance              mod='Assets'
+  Fixed Asset Register                               type=Script Report dt=Asset                          mod='Assets'
+  Item-wise Purchase History                         type=Script Report dt=Purchase Order                 mod='Buying'
+  Procurement Tracker                                type=Script Report dt=Purchase Order                 mod='Buying'
+  Purchase Analytics                                 type=Script Report dt=Purchase Order                 mod='Buying'
+  Purchase Order Analysis                            type=Script Report dt=Purchase Order                 mod='Buying'
+  Purchase Order Trends                              type=Script Report dt=Purchase Order                 mod='Buying'
+  Requested Items to Order and Receive               type=Script Report dt=Material Request               mod='Buying'
+  Subcontract Order Summary                          type=Script Report dt=Subcontracting Order           mod='Buying'
+  Subcontracted Item To Be Received                  type=Script Report dt=Subcontracting Order           mod='Buying'
+  Subcontracted Raw Materials To Be Transferred      type=Script Report dt=Subcontracting Order           mod='Buying'
+  Supplier Quotation Comparison                      type=Script Report dt=Supplier Quotation             mod='Buying'
+  Addresses And Contacts                             type=Script Report dt=Address                        mod='Contacts'
+  Database Storage Usage By Tables                   type=Script Report dt=Error Log                      mod='Core'
+  Document Share Report                              type=Report Builder dt=DocShare                       mod='Core'
+  Permitted Documents For User                       type=Script Report dt=User                           mod='Core'
+  Prepared Report Analytics                          type=Script Report dt=Prepared Report                mod='Core'
+  User Doctype Permissions                           type=Script Report dt=User                           mod='Core'
+  Campaign Efficiency                                type=Script Report dt=Lead                           mod='CRM'
+  First Response Time for Opportunity                type=Script Report dt=Opportunity                    mod='CRM'
+  Lead Conversion Time                               type=Script Report dt=Communication                  mod='CRM'
+  Lead Details                                       type=Script Report dt=Lead                           mod='CRM'
+  Lead Owner Efficiency                              type=Script Report dt=Lead                           mod='CRM'
+  Lost Opportunity                                   type=Script Report dt=Opportunity                    mod='CRM'
+  Opportunity Summary by Sales Stage                 type=Script Report dt=Opportunity                    mod='CRM'
+  Prospects Engaged But Not Converted                type=Script Report dt=Lead                           mod='CRM'
+  Sales Pipeline Analytics                           type=Script Report dt=Opportunity                    mod='CRM'
+  Audit System Hooks                                 type=Script Report dt=Property Setter                mod='Custom'
+  ToDo                                               type=Script Report dt=ToDo                           mod='Desk'
+  Appraisal Overview                                 type=Script Report dt=Appraisal                      mod='HR'
+  Daily Work Summary Replies                         type=Script Report dt=Daily Work Summary             mod='HR'
+  Employee Advance Summary                           type=Script Report dt=Employee Advance               mod='HR'
+  Employee Analytics                                 type=Script Report dt=Employee                       mod='HR'
+  Employee Birthday                                  type=Script Report dt=Employee                       mod='HR'
+  Employee Exits                                     type=Script Report dt=Exit Interview                 mod='HR'
+  Employee Hours Utilization Based On Timesheet      type=Script Report dt=Timesheet                      mod='HR'
+  Employee Information                               type=Report Builder dt=Employee                       mod='HR'
+  Employee Leave Balance                             type=Script Report dt=Employee                       mod='HR'
+  Employee Leave Balance Summary                     type=Script Report dt=Employee                       mod='HR'
+  Employees working on a holiday                     type=Script Report dt=Attendance                     mod='HR'
+  Leave Ledger                                       type=Script Report dt=Leave Ledger Entry             mod='HR'
+  Monthly Attendance Sheet                           type=Script Report dt=Attendance                     mod='HR'
+  Project Profitability                              type=Script Report dt=Timesheet                      mod='HR'
+  Recruitment Analytics                              type=Script Report dt=Staffing Plan                  mod='HR'
+  Shift Attendance                                   type=Script Report dt=Attendance                     mod='HR'
+  Unpaid Expense Claim                               type=Script Report dt=Expense Claim                  mod='HR'
+  Vehicle Expenses                                   type=Script Report dt=Vehicle                        mod='HR'
+  Maintenance Schedules                              type=Query Report dt=Maintenance Schedule           mod='Maintenance'
+  BOM Explorer                                       type=Script Report dt=BOM                            mod='Manufacturing'
+  BOM Operations Time                                type=Script Report dt=BOM                            mod='Manufacturing'
+  BOM Stock Analysis                                 type=Script Report dt=BOM                            mod='Manufacturing'
+  BOM Variance Report                                type=Script Report dt=Stock Entry                    mod='Manufacturing'
+  Completed Work Orders                              type=Query Report dt=Work Order                     mod='Manufacturing'
+  Cost of Poor Quality Report                        type=Script Report dt=Job Card                       mod='Manufacturing'
+  Downtime Analysis                                  type=Script Report dt=Downtime Entry                 mod='Manufacturing'
+  Exponential Smoothing Forecasting                  type=Script Report dt=Sales Order                    mod='Manufacturing'
+  Issued Items Against Work Order                    type=Query Report dt=Work Order                     mod='Manufacturing'
+  Job Card Summary                                   type=Script Report dt=Job Card                       mod='Manufacturing'
+  Material Requirements Planning Report              type=Script Report dt=Master Production Schedule     mod='Manufacturing'
+  Open Work Orders                                   type=Query Report dt=Work Order                     mod='Manufacturing'
+  Process Loss Report                                type=Script Report dt=Work Order                     mod='Manufacturing'
+  Production Analytics                               type=Script Report dt=Work Order                     mod='Manufacturing'
+  Production Plan Summary                            type=Script Report dt=Production Plan                mod='Manufacturing'
+  Production Planning Report                         type=Script Report dt=Work Order                     mod='Manufacturing'
+  Quality Inspection Summary                         type=Script Report dt=Quality Inspection             mod='Manufacturing'
+  Work Order Consumed Materials                      type=Script Report dt=Work Order                     mod='Manufacturing'
+  Work Order Stock Report                            type=Script Report dt=Work Order                     mod='Manufacturing'
+  Work Order Summary                                 type=Script Report dt=Work Order                     mod='Manufacturing'
+  Work Orders in Progress                            type=Query Report dt=Work Order                     mod='Manufacturing'
+  Accrued Earnings Report                            type=Script Report dt=Employee Benefit Ledger        mod='Payroll'
+  Bank Remittance                                    type=Script Report dt=Payroll Entry                  mod='Payroll'
+  Income Tax Computation                             type=Script Report dt=Salary Slip                    mod='Payroll'
+  Income Tax Deductions                              type=Script Report dt=Salary Slip                    mod='Payroll'
+  Professional Tax Deductions                        type=Script Report dt=Salary Slip                    mod='Payroll'
+  Provident Fund Deductions                          type=Script Report dt=Salary Slip                    mod='Payroll'
+  Salary Payments Based On Payment Mode              type=Script Report dt=Salary Slip                    mod='Payroll'
+  Salary Payments via ECS                            type=Script Report dt=Salary Slip                    mod='Payroll'
+  Salary Register                                    type=Script Report dt=Salary Slip                    mod='Payroll'
+  Daily Timesheet Summary                            type=Script Report dt=Timesheet                      mod='Projects'
+  Delayed Tasks Summary                              type=Script Report dt=Task                           mod='Projects'
+  Project Summary                                    type=Script Report dt=Project                        mod='Projects'
+  Project wise Stock Tracking                        type=Script Report dt=Project                        mod='Projects'
+  Timesheet Billing Summary                          type=Script Report dt=Timesheet                      mod='Projects'
+  Review                                             type=Query Report dt=Quality Action                 mod='Quality Management'
+  Electronic Invoice Register                        type=Script Report dt=Sales Invoice                  mod='Regional'
+  IRS 1099                                           type=Script Report dt=Supplier                       mod='Regional'
+  UAE VAT 201                                        type=Script Report dt=GL Entry                       mod='Regional'
+  VAT Audit Report                                   type=Script Report dt=GL Entry                       mod='Regional'
+  Address And Contacts                               type=Script Report dt=Address                        mod='Selling'
+  Available Stock for Packing Items                  type=Script Report dt=Product Bundle                 mod='Selling'
+  Customer Acquisition and Loyalty                   type=Script Report dt=Customer                       mod='Selling'
+  Customer Credit Balance                            type=Script Report dt=Customer                       mod='Selling'
+  Customer-wise Item Price                           type=Script Report dt=Customer                       mod='Selling'
+  Customers Without Any Sales Transactions           type=Query Report dt=Sales Invoice                  mod='Selling'
+  Inactive Customers                                 type=Script Report dt=Sales Order                    mod='Selling'
+  Item-wise Sales History                            type=Script Report dt=Sales Order                    mod='Selling'
+  Lost Quotations                                    type=Script Report dt=Quotation                      mod='Selling'
+  Payment Terms Status for Sales Order               type=Script Report dt=Sales Order                    mod='Selling'
+  Pending SO Items For Purchase Request              type=Script Report dt=Sales Order                    mod='Selling'
+  Quotation Trends                                   type=Script Report dt=Quotation                      mod='Selling'
+  Sales Analytics                                    type=Script Report dt=Sales Order                    mod='Selling'
+  Sales Order Analysis                               type=Script Report dt=Sales Order                    mod='Selling'
+  Sales Order Trends                                 type=Script Report dt=Sales Order                    mod='Selling'
+  Sales Partner Commission Summary                   type=Script Report dt=Sales Order                    mod='Selling'
+  Sales Partner Target Variance based on Item Group  type=Script Report dt=Sales Order                    mod='Selling'
+  Sales Partner Transaction Summary                  type=Script Report dt=Sales Order                    mod='Selling'
+  Sales Person Commission Summary                    type=Script Report dt=Sales Order                    mod='Selling'
+  Sales Person Target Variance Based On Item Group   type=Script Report dt=Sales Order                    mod='Selling'
+  Sales Person-wise Transaction Summary              type=Script Report dt=Sales Order                    mod='Selling'
+  Territory Target Variance Based On Item Group      type=Script Report dt=Sales Order                    mod='Selling'
+  Territory-wise Sales                               type=Script Report dt=Opportunity                    mod='Selling'
+  Available Batch Report                             type=Script Report dt=Stock Ledger Entry             mod='Stock'
+  Available Serial No                                type=Script Report dt=Stock Ledger Entry             mod='Stock'
+  Batch Item Expiry Status                           type=Script Report dt=Stock Ledger Entry             mod='Stock'
+  Batch-Wise Balance History                         type=Script Report dt=Stock Ledger Entry             mod='Stock'
+  BOM Search                                         type=Script Report dt=BOM                            mod='Stock'
+  COGS By Item Group                                 type=Script Report dt=GL Entry                       mod='Stock'
+  Delayed Item Report                                type=Script Report dt=Delivery Note                  mod='Stock'
+  Delayed Order Report                               type=Script Report dt=Delivery Note                  mod='Stock'
+  Delivery Note Trends                               type=Script Report dt=Delivery Note                  mod='Stock'
+  FIFO Queue vs Qty After Transaction Comparison     type=Script Report dt=Stock Ledger Entry             mod='Stock'
+  Incorrect Balance Qty After Transaction            type=Script Report dt=Stock Ledger Entry             mod='Stock'
+  Incorrect Serial and Batch Bundle                  type=Script Report dt=Serial and Batch Bundle        mod='Stock'
+  Incorrect Serial No Valuation                      type=Script Report dt=Stock Ledger Entry             mod='Stock'
+  Incorrect Stock Value Report                       type=Script Report dt=Stock Ledger Entry             mod='Stock'
+  Item Balance (Simple)                              type=Query Report dt=Bin                            mod='Stock'
+  Item Price Stock                                   type=Script Report dt=Item                           mod='Stock'
+  Item Prices                                        type=Script Report dt=Stock Ledger Entry             mod='Stock'
+  Item Shortage Report                               type=Script Report dt=Bin                            mod='Stock'
+  Item Variant Details                               type=Script Report dt=Item                           mod='Stock'
+  Item Where Used                                    type=Script Report dt=Item                           mod='Stock'
+  Item Wise Consumption                              type=Script Report dt=Stock Ledger Entry             mod='Stock'
+  Item-wise Price List Rate                          type=Report Builder dt=Item Price                     mod='Stock'
+  Items To Be Requested                              type=Query Report dt=Material Request               mod='Stock'
+  Itemwise Recommended Reorder Level                 type=Script Report dt=Item                           mod='Stock'
+  Landed Cost Report                                 type=Script Report dt=Landed Cost Voucher            mod='Stock'
+  Material Requests for which Supplier Quotations are not created type=Query Report dt=Material Request               mod='Stock'
+  Negative Batch Report                              type=Script Report dt=Serial and Batch Bundle        mod='Stock'
+  Product Bundle Balance                             type=Script Report dt=Stock Ledger Entry             mod='Stock'
+  Purchase Receipt Trends                            type=Script Report dt=Purchase Receipt               mod='Stock'
+  Requested Items To Be Transferred                  type=Query Report dt=Stock Entry                    mod='Stock'
+  Reserved Stock                                     type=Script Report dt=Stock Reservation Entry        mod='Stock'
+  Serial and Batch Summary                           type=Script Report dt=Serial and Batch Bundle        mod='Stock'
+  Serial No and Batch Traceability                   type=Script Report dt=Serial and Batch Bundle        mod='Stock'
+  Serial No Ledger                                   type=Script Report dt=Stock Ledger Entry             mod='Stock'
+  Serial No Service Contract Expiry                  type=Report Builder dt=Serial No                      mod='Stock'
+  Serial No Status                                   type=Report Builder dt=Serial No                      mod='Stock'
+  Serial No Warranty Expiry                          type=Report Builder dt=Serial No                      mod='Stock'
+  Stock Ageing                                       type=Script Report dt=Item                           mod='Stock'
+  Stock Analytics                                    type=Script Report dt=Stock Entry                    mod='Stock'
+  Stock and Account Value Comparison                 type=Script Report dt=Stock Ledger Entry             mod='Stock'
+  Stock Balance                                      type=Script Report dt=Stock Ledger Entry             mod='Stock'
+  Stock Ledger                                       type=Script Report dt=Stock Ledger Entry             mod='Stock'
+  Stock Ledger Invariant Check                       type=Script Report dt=Stock Ledger Entry             mod='Stock'
+  Stock Ledger Variance                              type=Script Report dt=Stock Ledger Entry             mod='Stock'
+  Stock Projected Qty                                type=Script Report dt=Item                           mod='Stock'
+  Stock Qty vs Batch Qty                             type=Script Report dt=Item                           mod='Stock'
+  Stock Qty vs Serial No Count                       type=Script Report dt=Item                           mod='Stock'
+  Total Stock Summary                                type=Script Report dt=Stock Entry                    mod='Stock'
+  Warehouse wise Item Balance Age and Value          type=Script Report dt=Stock Ledger Entry             mod='Stock'
+  Warehouse Wise Stock Balance                       type=Script Report dt=Stock Ledger Entry             mod='Stock'
+  First Response Time for Issues                     type=Script Report dt=Issue                          mod='Support'
+  Issue Analytics                                    type=Script Report dt=Issue                          mod='Support'
+  Issue Summary                                      type=Script Report dt=Issue                          mod='Support'
+  Support Hour Distribution                          type=Script Report dt=Issue                          mod='Support'
+  YouTube Interactions                               type=Script Report dt=Video                          mod='Utilities'
+  Website Analytics                                  type=Script Report dt=Web Page View                  mod='Website'
+
+======================================================================
+STEP B15 — Letter Heads
+======================================================================
+Total: 2
+  Company Letterhead                       title='Company Letterhead' default=0 disabled=0
+  Company Letterhead - Grey                title='Company Letterhead - Grey' default=1 disabled=0
+
+======================================================================
+STEP C — Categorization summary
+======================================================================
+Custom Field + Property Setter totals by category:
+  custom                    267
+
+Print Formats: total=48, standard=47, custom=1
+Notifications: total=8, standard=6, custom=2
+Web Forms: total=7, standard=7, custom=0
+Custom DocTypes: 0
+Workspaces: 28 (Custom module: 0, public: 28)
+Custom Dashboard Charts: 0
+Custom Number Cards: 0
+Custom Reports: 220
+Letter Heads: 2
+DocPerm: 1388 on 565 DocTypes
+Workflows: 0
+Client Scripts: 0
+Server Scripts: 0
+
+---DONE---

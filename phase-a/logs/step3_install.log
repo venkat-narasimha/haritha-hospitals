@@ -1,0 +1,6 @@
+
+Installing haritha_hospital...
+Creating Workspace Sidebars
+Creating Desktop Icons
+frappe.core.doctype.duckdb_sync.duckdb_sync.cleanup_old_syncs is not a valid method: module 'frappe.core.doctype.duckdb_sync.duckdb_sync' has no attribute 'cleanup_old_syncs'
+Updating Dashboard for haritha_hospital

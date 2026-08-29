@@ -1,0 +1,15 @@
+App Title [Haritha Hospital]: App Description: App Publisher: App Email: App License (agpl-3.0, apache-2.0, bsd-2-clause, bsd-3-clause, bsl-1.0, cc0-1.0, epl-2.0, gpl-2.0, gpl-3.0, lgpl-2.1, mit, mpl-2.0, unlicense) [mit]: Create GitHub Workflow action for unittests [y/N]: Branch Name []: 'haritha_hospital' created at /home/frappe/frappe-bench/apps/haritha_hospital
+Installing haritha_hospital
+$ uv pip install --quiet -e /home/frappe/frappe-bench/apps/haritha_hospital  --python /home/frappe/frappe-bench/env/bin/python
+$ bench build --app haritha_hospital
+Linking /home/frappe/frappe-bench/apps/frappe/frappe/public to ./assets/frappe  Linking /home/frappe/frappe-bench/apps/frappe/node_modules to ./assets/frappe/node_modules                                                                                Linking /home/frappe/frappe-bench/apps/erpnext/erpnext/public to ./assets/erpnext                                                                                Linking /home/frappe/frappe-bench/apps/erpnext/node_modules to ./assets/erpnext/node_modules                                                                                Linking /home/frappe/frappe-bench/apps/hrms/hrms/public to ./assets/hrms        Linking /home/frappe/frappe-bench/apps/hrms/node_modules to ./assets/hrms/node_modules                                                                                Linking /home/frappe/frappe-bench/apps/haritha_hospital/haritha_hospital/public to ./assets/haritha_hospital                                                                                ✔ Application Assets Linked                                            
+
+
+yarn run v1.22.22
+$ node esbuild --production --apps haritha_hospital --run-build-command
+File                                                        Size
+
+ DONE  Total Build Time: 207.63ms
+
+Done in 1.48s.
+Compiling translations for haritha_hospital

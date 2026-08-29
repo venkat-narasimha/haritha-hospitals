@@ -1,0 +1,519 @@
+
+======================================================================
+ALL 78 Custom Fields (full list)
+======================================================================
+  Address                             is_your_company_address             (Check)  label='Is Your Company Address'
+  Address                             tax_category                        (Link)  label='Tax Category'
+  Communication                       company                             (Link)  label='Company'
+  Company                             arrear_component                    (Link)  label='Arrear Component'
+  Company                             basic_component                     (Link)  label='Basic Component'
+  Company                             column_break_10                     (Column Break)  label=''
+  Company                             default_employee_advance_account    (Link)  label='Default Employee Advance Account'
+  Company                             default_expense_claim_payable_account (Link)  label='Default Expense Claim Payable Account'
+  Company                             default_payroll_payable_account     (Link)  label='Default Payroll Payable Account'
+  Company                             hr_and_payroll_tab                  (Tab Break)  label='HR & Payroll'
+  Company                             hr_settings_section                 (Section Break)  label='HR & Payroll Settings'
+  Company                             hra_column_break                    (Column Break)  label=''
+  Company                             hra_component                       (Link)  label='HRA Component'
+  Company                             hra_section                         (Section Break)  label='HRA Settings'
+  Contact                             is_billing_contact                  (Check)  label='Is Billing Contact'
+  Custom DocPerm                      impersonate                         (Check)  label='Impersonate'
+  Customer                            crm_deal                            (Data)  label='Frappe CRM Deal'
+  Department                          approvers                           (Section Break)  label='Approvers'
+  Department                          column_break_9                      (Column Break)  label=''
+  Department                          expense_approvers                   (Table)  label='Expense Approver'
+  Department                          leave_approvers                     (Table)  label='Leave Approver'
+  Department                          leave_block_list                    (Link)  label='Leave Block List'
+  Department                          payroll_cost_center                 (Link)  label='Payroll Cost Center'
+  Department                          section_break_4                     (Section Break)  label=''
+  Department                          shift_request_approver              (Table)  label='Shift Request Approver'
+  Designation                         appraisal_template                  (Link)  label='Appraisal Template'
+  Designation                         required_skills_section             (Section Break)  label='Required Skills'
+  Designation                         skills                              (Table)  label='Skills'
+  DocPerm                             impersonate                         (Check)  label='Impersonate'
+  DocShare                            impersonate                         (Check)  label='Impersonate'
+  Email Account                       company                             (Link)  label='Company'
+  Employee                            approvers_section                   (Section Break)  label='Approvers'
+  Employee                            bank_cb                             (Column Break)  label=''
+  Employee                            column_break_45                     (Column Break)  label=''
+  Employee                            default_shift                       (Link)  label='Default Shift'
+  Employee                            employee_advance_account            (Link)  label='Employee Advance Account'
+  Employee                            employment_type                     (Link)  label='Employment Type'
+  Employee                            expense_approver                    (Link)  label='Expense Approver'
+  Employee                            grade                               (Link)  label='Grade'
+  Employee                            health_insurance_no                 (Data)  label='Health Insurance No'
+  Employee                            health_insurance_provider           (Link)  label='Health Insurance Provider'
+  Employee                            health_insurance_section            (Section Break)  label='Health Insurance'
+  Employee                            ifsc_code                           (Data)  label='IFSC Code'
+  Employee                            job_applicant                       (Link)  label='Job Applicant'
+  Employee                            leave_approver                      (Link)  label='Leave Approver'
+  Employee                            micr_code                           (Data)  label='MICR Code'
+  Employee                            pan_number                          (Data)  label='PAN Number'
+  Employee                            payroll_cost_center                 (Link)  label='Payroll Cost Center'
+  Employee                            provident_fund_account              (Data)  label='Provident Fund Account'
+  Employee                            salary_cb                           (Column Break)  label=''
+  Employee                            shift_request_approver              (Link)  label='Shift Request Approver'
+  Employee Tax Exemption Declaration  annual_hra_exemption                (Currency)  label='Annual HRA Exemption'
+  Employee Tax Exemption Declaration  hra_column_break                    (Column Break)  label=''
+  Employee Tax Exemption Declaration  hra_section                         (Section Break)  label='HRA Exemption'
+  Employee Tax Exemption Declaration  monthly_house_rent                  (Currency)  label='Monthly House Rent'
+  Employee Tax Exemption Declaration  monthly_hra_exemption               (Currency)  label='Monthly HRA Exemption'
+  Employee Tax Exemption Declaration  rented_in_metro_city                (Check)  label='Rented in Metro City'
+  Employee Tax Exemption Declaration  salary_structure_hra                (Currency)  label='HRA as per Salary Structure'
+  Employee Tax Exemption Proof Submission house_rent_payment_amount           (Currency)  label='House Rent Payment Amount'
+  Employee Tax Exemption Proof Submission hra_column_break                    (Column Break)  label=''
+  Employee Tax Exemption Proof Submission hra_section                         (Section Break)  label='HRA Exemption'
+  Employee Tax Exemption Proof Submission monthly_house_rent                  (Currency)  label='Monthly House Rent'
+  Employee Tax Exemption Proof Submission monthly_hra_exemption               (Currency)  label='Monthly Eligible Amount'
+  Employee Tax Exemption Proof Submission rented_from_date                    (Date)  label='Rented From Date'
+  Employee Tax Exemption Proof Submission rented_in_metro_city                (Check)  label='Rented in Metro City'
+  Employee Tax Exemption Proof Submission rented_to_date                      (Date)  label='Rented To Date'
+  Employee Tax Exemption Proof Submission total_eligible_hra_exemption        (Currency)  label='Total Eligible HRA Exemption'
+  Income Tax Slab                     marginal_relief_limit               (Currency)  label='Marginal Relief Threshold Limit'
+  Print Settings                      compact_item_print                  (Check)  label='Compact Item Print'
+  Print Settings                      print_taxes_with_zero_amount        (Check)  label='Print taxes with zero amount'
+  Print Settings                      print_uom_after_quantity            (Check)  label='Print UOM after Quantity'
+  Project                             total_expense_claim                 (Currency)  label='Total Expense Claim (via Expense Claims)'
+  Quotation                           crm_deal                            (Data)  label='Frappe CRM Deal'
+  Salary Component                    component_type                      (Select)  label='Component Type'
+  Task                                total_expense_claim                 (Currency)  label='Total Expense Claim (via Expense Claim)'
+  Terms and Conditions                hr                                  (Check)  label='HR'
+  Timesheet                           salary_slip                         (Link)  label='Salary Slip'
+  UTM Campaign                        crm_campaign                        (Link)  label='Messaging CRM Campaign'
+
+======================================================================
+Property Setters — full list grouped by DocType
+======================================================================
+
+  [Account Closing Balance] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Advance Taxes and Charges] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Asset] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Asset Capitalization] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Asset Depreciation Schedule] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Asset Movement Item] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Asset Repair] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Asset Value Adjustment] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Attendance] 1 property setters
+    status               options                   -> \nPresent\nAbsent\nOn Leave\nHalf Day\nWork From Home\nH
+
+  [Budget] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Customer] 2 property setters
+    naming_series        hidden                    -> 1
+    naming_series        reqd                      -> 0
+
+  [Delivery Note] 13 property setters
+    -                    default_print_format      -> Delivery Note with Item Image
+    accounting_dimensions_section hidden                    -> 1
+    base_rounded_total   hidden                    -> 0
+    base_rounded_total   print_hide                -> 1
+    disable_rounded_total default                   -> 0
+    in_words             hidden                    -> 0
+    in_words             print_hide                -> 0
+    rounded_total        hidden                    -> 0
+    rounded_total        print_hide                -> 0
+    scan_barcode         hidden                    -> 0
+    tax_id               hidden                    -> 0
+    tax_id               print_hide                -> 0
+    utm_analytics_section hidden                    -> 0
+
+  [Delivery Note Item] 3 property setters
+    accounting_dimensions_section hidden                    -> 1
+    barcode              hidden                    -> 0
+    discount_and_margin  hidden                    -> 1
+
+  [Employee] 4 property setters
+    employee_number      hidden                    -> 1
+    employee_number      reqd                      -> 0
+    naming_series        hidden                    -> 0
+    naming_series        reqd                      -> 1
+
+  [GL Entry] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Item] 5 property setters
+    barcodes             hidden                    -> 0
+    item_code            hidden                    -> 0
+    item_code            reqd                      -> 1
+    naming_series        hidden                    -> 1
+    naming_series        reqd                      -> 0
+
+  [Item Barcode] 1 property setters
+    barcode              hidden                    -> 0
+
+  [Job Card] 1 property setters
+    barcode              hidden                    -> 0
+
+  [Journal Entry Account] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Journal Entry Template Account] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Landed Cost Item] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Lead] 1 property setters
+    utm_analytics_section hidden                    -> 0
+
+  [Loyalty Program] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Material Request] 1 property setters
+    scan_barcode         hidden                    -> 0
+
+  [Material Request Item] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Opening Invoice Creation Tool] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Opening Invoice Creation Tool Item] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Opportunity] 1 property setters
+    utm_analytics_section hidden                    -> 0
+
+  [POS Invoice] 6 property setters
+    -                    default_print_format      -> POS Invoice with Item Image
+    accounting_dimensions_section hidden                    -> 1
+    loyalty_points_redemption hidden                    -> 1
+    scan_barcode         hidden                    -> 0
+    subscription_section hidden                    -> 0
+    utm_analytics_section hidden                    -> 0
+
+  [POS Invoice Item] 3 property setters
+    accounting_dimensions_section hidden                    -> 1
+    barcode              hidden                    -> 0
+    discount_and_margin  hidden                    -> 1
+
+  [POS Profile] 2 property setters
+    accounting_dimensions_section hidden                    -> 1
+    utm_analytics_section hidden                    -> 0
+
+  [Packed Item] 1 property setters
+    rate                 read_only                 -> 1
+
+  [Payment Entry] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Payment Entry Deduction] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Payment Ledger Entry] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Payment Reconciliation] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Payment Reconciliation Allocation] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Payment Request] 2 property setters
+    accounting_dimensions_section hidden                    -> 1
+    subscription_section hidden                    -> 0
+
+  [Pick List] 1 property setters
+    scan_barcode         hidden                    -> 0
+
+  [Purchase Invoice] 11 property setters
+    -                    default_print_format      -> Purchase Invoice with Item Image
+    accounting_dimensions_section hidden                    -> 1
+    base_rounded_total   hidden                    -> 0
+    base_rounded_total   print_hide                -> 1
+    disable_rounded_total default                   -> 0
+    in_words             hidden                    -> 0
+    in_words             print_hide                -> 0
+    rounded_total        hidden                    -> 0
+    rounded_total        print_hide                -> 0
+    scan_barcode         hidden                    -> 0
+    subscription_section hidden                    -> 0
+
+  [Purchase Invoice Item] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Purchase Order] 10 property setters
+    -                    default_print_format      -> Purchase Order with Item Image
+    accounting_dimensions_section hidden                    -> 1
+    base_rounded_total   hidden                    -> 0
+    base_rounded_total   print_hide                -> 1
+    disable_rounded_total default                   -> 0
+    in_words             hidden                    -> 0
+    in_words             print_hide                -> 0
+    rounded_total        hidden                    -> 0
+    rounded_total        print_hide                -> 0
+    scan_barcode         hidden                    -> 0
+
+  [Purchase Order Item] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Purchase Receipt] 9 property setters
+    accounting_dimensions_section hidden                    -> 1
+    base_rounded_total   hidden                    -> 0
+    base_rounded_total   print_hide                -> 1
+    disable_rounded_total default                   -> 0
+    in_words             hidden                    -> 0
+    in_words             print_hide                -> 0
+    rounded_total        hidden                    -> 0
+    rounded_total        print_hide                -> 0
+    scan_barcode         hidden                    -> 0
+
+  [Purchase Receipt Item] 2 property setters
+    accounting_dimensions_section hidden                    -> 1
+    barcode              hidden                    -> 0
+
+  [Purchase Taxes and Charges] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Quotation] 10 property setters
+    -                    default_print_format      -> Quotation with Item Image
+    base_rounded_total   hidden                    -> 0
+    base_rounded_total   print_hide                -> 1
+    disable_rounded_total default                   -> 0
+    in_words             hidden                    -> 0
+    in_words             print_hide                -> 0
+    rounded_total        hidden                    -> 0
+    rounded_total        print_hide                -> 0
+    scan_barcode         hidden                    -> 0
+    utm_analytics_section hidden                    -> 0
+
+  [Quotation Item] 1 property setters
+    discount_and_margin  hidden                    -> 1
+
+  [Request for Quotation] 1 property setters
+    -                    default_print_format      -> Request for Quotation with Item Image
+
+  [Salary Slip] 2 property setters
+    rounded_total        hidden                    -> 0
+    rounded_total        print_hide                -> 0
+
+  [Sales Invoice] 20 property setters
+    -                    default_print_format      -> Sales Invoice with Item Image
+    accounting_dimensions_section hidden                    -> 1
+    additional_discount_account hidden                    -> 1
+    additional_discount_account mandatory_depends_on      -> 
+    additional_discount_section hidden                    -> 1
+    base_rounded_total   hidden                    -> 0
+    base_rounded_total   print_hide                -> 1
+    commission_section   hidden                    -> 0
+    disable_rounded_total default                   -> 0
+    in_words             hidden                    -> 0
+    in_words             print_hide                -> 0
+    loyalty_points_redemption hidden                    -> 1
+    rounded_total        hidden                    -> 0
+    rounded_total        print_hide                -> 0
+    sales_team_section   hidden                    -> 0
+    scan_barcode         hidden                    -> 0
+    subscription_section hidden                    -> 0
+    tax_id               hidden                    -> 0
+    tax_id               print_hide                -> 0
+    utm_analytics_section hidden                    -> 0
+
+  [Sales Invoice Item] 5 property setters
+    accounting_dimensions_section hidden                    -> 1
+    barcode              hidden                    -> 0
+    discount_account     hidden                    -> 1
+    discount_account     mandatory_depends_on      -> 
+    discount_and_margin  hidden                    -> 1
+
+  [Sales Order] 15 property setters
+    -                    default_print_format      -> Sales Order with Item Image
+    accounting_dimensions_section hidden                    -> 1
+    additional_discount_section hidden                    -> 1
+    base_rounded_total   hidden                    -> 0
+    base_rounded_total   print_hide                -> 1
+    disable_rounded_total default                   -> 0
+    in_words             hidden                    -> 0
+    in_words             print_hide                -> 0
+    loyalty_points_redemption hidden                    -> 1
+    rounded_total        hidden                    -> 0
+    rounded_total        print_hide                -> 0
+    scan_barcode         hidden                    -> 0
+    tax_id               hidden                    -> 0
+    tax_id               print_hide                -> 0
+    utm_analytics_section hidden                    -> 0
+
+  [Sales Order Item] 2 property setters
+    accounting_dimensions_section hidden                    -> 1
+    discount_and_margin  hidden                    -> 1
+
+  [Sales Taxes and Charges] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Shift Type] 2 property setters
+    color                default                   -> blue
+    color                options                   -> blue\ncyan\nfuchsia\ngreen\nlime\norange\npink\nred\nviole
+
+  [Shipping Rule] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Stock Entry] 2 property setters
+    accounting_dimensions_section hidden                    -> 1
+    scan_barcode         hidden                    -> 0
+
+  [Stock Entry Detail] 2 property setters
+    accounting_dimensions_section hidden                    -> 1
+    barcode              hidden                    -> 0
+
+  [Stock Reconciliation] 2 property setters
+    accounting_dimensions_section hidden                    -> 1
+    scan_barcode         hidden                    -> 0
+
+  [Stock Reconciliation Item] 1 property setters
+    barcode              hidden                    -> 0
+
+  [Subcontracting Order] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Subcontracting Order Item] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Subcontracting Receipt] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Subcontracting Receipt Item] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Subscription] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Subscription Plan] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+  [Supplier] 2 property setters
+    naming_series        hidden                    -> 1
+    naming_series        reqd                      -> 0
+
+  [Supplier Quotation] 8 property setters
+    accounting_dimensions_section hidden                    -> 1
+    base_rounded_total   hidden                    -> 0
+    base_rounded_total   print_hide                -> 1
+    disable_rounded_total default                   -> 0
+    in_words             hidden                    -> 0
+    in_words             print_hide                -> 0
+    rounded_total        hidden                    -> 0
+    rounded_total        print_hide                -> 0
+
+  [Supplier Quotation Item] 1 property setters
+    accounting_dimensions_section hidden                    -> 1
+
+======================================================================
+DocPerm — DocType distribution by parent app
+======================================================================
+Top 30 DocTypes by DocPerm count:
+  Contact                             12
+  Company                             11
+  Fiscal Year                         9
+  Item                                9
+  Customer                            9
+  Serial and Batch Bundle             9
+  Terms and Conditions                9
+  Incoterm                            8
+  Warehouse Type                      8
+  Expense Claim                       8
+  Cost Center                         8
+  Employee Checkin                    8
+  Leave Application                   8
+  Customer Group                      8
+  Quotation                           8
+  Territory                           7
+  Timesheet                           7
+  Delivery Note                       7
+  Account                             7
+  Supplier                            7
+  Supplier Group                      7
+  Buying Settings                     7
+  Item Group                          7
+  Employee Referral                   7
+  Project                             7
+  Stock Reservation Entry             7
+  Request for Quotation               6
+  Warehouse                           6
+  Bin                                 6
+  Share Type                          6
+
+======================================================================
+DocPerm — total DocPerm count and distribution
+======================================================================
+Total DocPerm records: 1388
+Distinct DocTypes with DocPerm: 565
+
+======================================================================
+Custom Field search — Haritha-specific markers
+======================================================================
+
+  Pattern 'impersonate': 3 matches
+    Custom DocPerm                 impersonate                    'Impersonate'
+    DocPerm                        impersonate                    'Impersonate'
+    DocShare                       impersonate                    'Impersonate'
+
+  Pattern 'lab': 1 matches
+    Income Tax Slab                marginal_relief_limit          'Marginal Relief Threshold Limit'
+
+======================================================================
+Custom DocPerm
+======================================================================
+  Custom DocPerm rows: (('1j6ob4pqt1',), ('1j6vr3gpf4',), ('1kic8ho7r3',), ('1kij8gspi3',), ('1kf6l6dkjm',))
+
+======================================================================
+Letter Heads full info
+======================================================================
+  Company Letterhead                       name='Company Letterhead' img='' default=0 disabled=0
+  Company Letterhead - Grey                name='Company Letterhead - Grey' img='' default=1 disabled=0
+
+======================================================================
+Workspace details (28 workspaces)
+======================================================================
+Total: 28
+  Welcome Workspace              mod=Core                 app=-               title='Welcome Workspace'
+  Financial Reports              mod=Accounts             app=erpnext         title='Financial Reports'
+  Invoicing                      mod=Accounts             app=erpnext         title='Invoicing'
+  Assets                         mod=Assets               app=erpnext         title='Assets'
+  Buying                         mod=Buying               app=erpnext         title='Buying'
+  CRM                            mod=CRM                  app=erpnext         title='CRM'
+  Manufacturing                  mod=Manufacturing        app=erpnext         title='Manufacturing'
+  Projects                       mod=Projects             app=erpnext         title='Projects'
+  Quality                        mod=Quality Management   app=erpnext         title='Quality'
+  Selling                        mod=Selling              app=erpnext         title='Selling'
+  ERPNext Settings               mod=Setup                app=erpnext         title='ERPNext Settings'
+  Home                           mod=Setup                app=erpnext         title='Home'
+  Stock                          mod=Stock                app=erpnext         title='Stock'
+  Subcontracting                 mod=Subcontracting       app=erpnext         title='Subcontracting'
+  Support                        mod=Support              app=erpnext         title='Support'
+  Build                          mod=Core                 app=frappe          title='Build'
+  Users                          mod=Core                 app=frappe          title='Users'
+  Integrations                   mod=Integrations         app=frappe          title='Integrations'
+  Website                        mod=Website              app=frappe          title='Website'
+  Expenses                       mod=HR                   app=hrms            title='Expenses'
+  HR Setup                       mod=HR                   app=hrms            title='HR Setup'
+  Leaves                         mod=HR                   app=hrms            title='Leaves'
+  Performance                    mod=HR                   app=hrms            title='Performance'
+  Recruitment                    mod=HR                   app=hrms            title='Recruitment'
+  Shift & Attendance             mod=HR                   app=hrms            title='Shift & Attendance'
+  Tenure                         mod=HR                   app=hrms            title='Tenure'
+  Payroll                        mod=Payroll              app=hrms            title='Payroll'
+  Tax & Benefits                 mod=Payroll              app=hrms            title='Tax & Benefits'
+
+======================================================================
+Custom Module Def check
+======================================================================
+Custom Module Defs: 0
+
+---DONE---
