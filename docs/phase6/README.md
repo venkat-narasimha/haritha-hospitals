@@ -1,6 +1,6 @@
 # Phase 6 — Process & Maturity Documentation
 
-Last updated: 2026-08-29
+Last updated: 2026-08-29 (Phase 6 complete)
 
 This directory contains Haritha Hospitals ERPNext deployment documentation.
 Organized in tiers for incremental review.
@@ -35,10 +35,25 @@ Organized in tiers for incremental review.
 - [05.2 Post-Mortem Template + Example](05-process/05.2-post-mortem.md)
 
 ### Tier 7 — User / Admin Manuals
-- (Batch 4)
+- [07.1 Employee User Guide](07-user-manuals/07.1-employee-user-guide.md)
+- [07.2 Manager User Guide](07-user-manuals/07.2-manager-user-guide.md)
+- [07.3 Admin User Guide](07-user-manuals/07.3-admin-user-guide.md)
 
 ### Tier 8 — Testing
-- (Batch 4)
+- [08.1 Test Plan](08-testing/08.1-test-plan.md)
+- [08.2 Test Cases](08-testing/08.2-test-cases.md)
+- [08.3 Regression Test Script](08-testing/08.3-regression-script.md)
+
+## Status
+
+**Phase 6 complete** (2026-08-29). All 8 tiers delivered:
+
+| Batch | Tiers | Status |
+|---|---|---|
+| 1 | Tier 0 + Tier 1 | ✅ |
+| 2 | Tier 2 + Tier 3 | ✅ |
+| 3 | Tier 4 + Tier 5 | ✅ |
+| 4 (final) | Tier 7 + Tier 8 | ✅ |
 
 ## Source
 
