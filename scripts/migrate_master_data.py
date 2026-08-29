@@ -154,21 +154,38 @@ GOTCHAS DISCOVERED (first run: 2026-08-29)
     Request — to keep that one green, ``Shift Request`` must be migrated
     BEFORE ``Shift Assignment`` in ``MIGRATION_ORDER``.
 
-10. Shift Request ``validate_approver()`` is unconditional.
-    ``ShiftRequest.validate()`` runs ``validate_approver()`` regardless
-    of ``docstatus``. The check requires the record's ``approver`` to
-    appear in the department's ``shift_request_approver`` list. The
-    production records have ``approver="Administrator"`` but the dev
-    site's Department Approver rows are empty, so a naive insert raises
-    ``Only Approvers can Approve this Request.``.
-    *Fix:* for every department referenced by the source JSON, add a
-    ``Department Approver`` child row with ``approver="Administrator"``
-    and ``parentfield="shift_request_approver"`` BEFORE inserting the
-    Shift Request records. Then insert each SR with
-    ``docstatus=0, status="Draft"`` (bypasses workflow) and use
-    ``frappe.db.set_value(..., update_modified=False)`` to promote the
-    record to its source ``docstatus``/``status`` without re-running
-    ``validate()``.
+10. Shift Request ``validate_approver()`` is unconditional *and* the
+    autoname series silently overrides an explicit ``name``.
+    Two distinct obstacles:
+
+    (a) ``ShiftRequest.validate()`` runs ``validate_approver()``
+        regardless of ``docstatus``. The check requires the record's
+        ``approver`` to appear in the department's
+        ``shift_request_approver`` list. The production records have
+        ``approver="Administrator"`` but the dev site's Department
+        Approver rows are empty, so a naive insert raises
+        ``Only Approvers can Approve this Request.``.
+        *Fix:* for every department referenced by the source JSON, add
+        a ``Department Approver`` child row with
+        ``approver="Administrator"`` and
+        ``parentfield="shift_request_approver"`` BEFORE inserting the
+        Shift Request records. Then insert each SR with
+        ``docstatus=0, status="Draft"`` (bypasses workflow) and use
+        ``frappe.db.set_value(..., update_modified=False)`` to promote
+        the record to its source ``docstatus``/``status`` without
+        re-running ``validate()``.
+
+    (b) Shift Request declares
+        ``autoname = "HR-SHR-.YY.-.MM.-.#####"``. Passing the prod
+        ``name`` in the constructor dict does NOT pin it: if the
+        Series counter is below that number, Frappe silently
+        discards the explicit name and uses the next series number
+        instead. Downstream links (e.g. ``Shift Assignment.shift_request``)
+        then break.
+        *Fix:* pre-bump ``tabSeries.current`` to
+        ``target_number - 1`` for the matching ``HR-SHR-YY-MM-``
+        prefix BEFORE inserting. See
+        ``_pre_set_shift_request_series()``.
 
 IDEMPOTENCY
 -----------
@@ -475,14 +492,56 @@ def _migrate_shift_schedule(rec):
     return "inserted"
 
 
+def _pre_set_shift_request_series(target_name):
+    """Bump the autoname Series counter so Frappe honours an explicit
+    ``name`` on insert.
+
+    Shift Request declares ``autoname = "HR-SHR-.YY.-.MM.-.#####"`` which
+    uses a Series counter. When the caller passes an explicit ``name`` in
+    the constructor dict, Frappe *only* keeps that name if the Series
+    counter has already advanced past it; otherwise it silently
+    discards the explicit name and uses the next series number. To force
+    the prod name to stick we pre-bump the counter to ``target_number -
+    1`` here, before ``frappe.get_doc(...).insert()``.
+    """
+    import re as _re
+
+    m = _re.match(r"^(HR-SHR-\d{2}-\d{2}-)0*(\d+)$", target_name)
+    if not m:
+        return
+    prefix, number = m.group(1), int(m.group(2))
+    rows = frappe.db.sql(
+        "SELECT current FROM `tabSeries` WHERE name = %s", (prefix,), as_dict=True
+    )
+    current = rows[0]["current"] if rows else 0
+    needed = number - 1
+    if needed <= current:
+        return
+    if not rows:
+        frappe.db.sql(
+            "INSERT INTO `tabSeries` (name, current) VALUES (%s, %s)",
+            (prefix, needed),
+        )
+    else:
+        frappe.db.sql(
+            "UPDATE `tabSeries` SET current = %s WHERE name = %s",
+            (needed, prefix),
+        )
+
+
 def _migrate_shift_request(rec, dev_emp_by_name):
     """Upsert a single Shift Request — see GOTCHA #10.
 
-    Inserts as ``docstatus=0, status="Draft"`` to skip
-    ``validate_approver`` (the Department Approver pre-seed handles the
-    actual approver lookup), then promotes the record to its source
-    ``docstatus``/``status`` via ``frappe.db.set_value`` to bypass
-    validation entirely.
+    Three things are special-cased here:
+
+    1.  The ``autoname`` series is pre-bumped to honour the prod ``name``
+        (see ``_pre_set_shift_request_series``).
+    2.  Insert as ``docstatus=0, status="Draft"`` to skip
+        ``validate_approver`` (Department Approver pre-seed handles the
+        actual approver lookup).
+    3.  Promote to the source's final ``docstatus``/``status`` via
+        ``frappe.db.set_value`` to bypass ``validate()`` entirely on the
+        submit/cancel transition.
     """
     name = rec["name"]
     rec = dict(rec)  # do not mutate caller's dict
@@ -502,6 +561,7 @@ def _migrate_shift_request(rec, dev_emp_by_name):
         doc.update(payload)
         doc.save()
     else:
+        _pre_set_shift_request_series(name)
         np = {"doctype": "Shift Request"}
         np.update(payload)
         np["name"] = name
