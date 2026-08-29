@@ -25,10 +25,14 @@ Organized in tiers for incremental review.
 - [03.3 FAQ](03-client/03.3-faq.md)
 
 ### Tier 4 — Run Books
-- (Batch 3)
+- [04.1 Deployment Runbook](04-runbooks/04.1-deployment.md)
+- [04.2 Daily Ops Runbook](04-runbooks/04.2-daily-ops.md)
+- [04.3 Disaster Recovery Runbook](04-runbooks/04.3-disaster-recovery.md)
+- [04.4 Incident Response Plan](04-runbooks/04.4-incident-response.md)
 
 ### Tier 5 — Process
-- (Batch 3)
+- [05.1 Change Management Policy](05-process/05.1-change-management.md)
+- [05.2 Post-Mortem Template + Example](05-process/05.2-post-mortem.md)
 
 ### Tier 7 — User / Admin Manuals
 - (Batch 4)
