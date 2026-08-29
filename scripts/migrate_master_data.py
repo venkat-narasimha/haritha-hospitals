@@ -2,8 +2,10 @@
 Haritha Hospitals — Master Data Migration Script
 ==================================================
 
-Migrates Company + reference data + Employee + Item master records from the
-production source site (pberpprod) into the dev target site (pberpdev).
+Migrates Company + reference data + Employee + Item master records +
+HR scheduling masters (Shift Schedule / Shift Assignment / Shift Request)
+from the production source site (pberpprod) into the dev target site
+(pberpdev).
 
 The script reads JSON dumps written by the fetch step (one file per DocType
 in /tmp/prod_<DocType>.json, produced by the companion
@@ -16,16 +18,33 @@ DocTypes migrated (in dependency order)
 1.  ``Company``           (2-step: minimal insert, then attach default accounts)
 2.  ``Account``           (skip auto-generated root nodes)
 3.  ``Cost Center``
-4.  ``Department``        (skip ``All Departments`` root)
+4.  ``Department``        (skip ``All Departments`` root; also pre-seeded with
+                            ``Department Approver`` rows for the Shift Request
+                            approver check — see GOTCHA #10)
 5.  ``Designation``
 6.  ``Item Group``        (skip ``All Item Groups`` root)
 7.  ``UOM``
 8.  ``Gender``
 9.  ``Employment Type``
 10. ``Shift Type``        (autoname='prompt' → set ``name`` explicitly)
-11. ``Holiday List``
-12. ``Employee``          (depends on Dept/Designation/Gender/Default Shift)
-13. ``Item``              (depends on Item Group/UOM)
+11. ``Shift Location``    (created with autoname=field:location_name, name
+                            pinned explicitly — see GOTCHA #8)
+12. ``Holiday List``
+13. ``Employee``          (depends on Dept/Designation/Gender/Default Shift)
+14. ``Item``              (depends on Item Group/UOM)
+15. ``Shift Request``     (must come before Shift Assignment because one
+                            SA record links back to a Shift Request — see
+                            GOTCHA #9. Employee ID is remapped by
+                            ``employee_name`` because prod / dev employee
+                            IDs differ — see GOTCHA #7)
+16. ``Shift Schedule``    (autoname='prompt' + a ``repeat_on_days`` child
+                            table that is dropped from ``fields=["*"]`` list
+                            payloads; re-fetch each record individually if
+                            the source JSON is empty — see GOTCHA #8)
+17. ``Shift Assignment``  (remaps employee ID, NULLIFIES the
+                            ``shift_schedule_assignment`` link because
+                            the Shift Schedule Assignment DocType is out
+                            of scope — see GOTCHA #9)
 
 USAGE
 -----
@@ -101,6 +120,56 @@ GOTCHAS DISCOVERED (first run: 2026-08-29)
     *Fix:* migrate ``Gender`` and ``Shift Type`` BEFORE ``Employee`` in
     the ordered loop.
 
+7.  Prod and dev Employee IDs do not align.
+    Production Employee records use IDs starting ``HR-EMP-00211`` while
+    the dev site (after the Employee migration) uses ``HR-EMP-00002`` ….
+    The ``employee_name`` is preserved across sites, so Link fields
+    (``employee``, ``approver`` user lookups) must be remapped by
+    ``employee_name`` before insert/update.
+    *Fix:* build ``DEV_EMP_BY_NAME = {e.employee_name: e.name}`` once
+    inside ``run()`` and substitute the ``employee`` value of every
+    Shift Assignment / Shift Request record with the dev ID before
+    upserting.
+
+8.  Shift Schedule needs ``repeat_on_days`` child table + an explicit
+    ``name``.
+    ``/api/resource/<DocType>?fields=["*"]`` returns child-table rows
+    stripped out (Frappe list-view optimisation). Plain
+    ``frappe.get_doc(payload).insert()`` then throws
+    ``Please set the document name`` because the controller declares
+    ``autoname = 'prompt'``.
+    *Fix:* when listing Shift Schedule, fetch each record individually
+    via ``/api/resource/Shift Schedule/<name>`` to pull the child rows
+    in. On insert, set ``payload["name"] = rec["name"]`` so the prompt
+    autoname contract is satisfied.
+
+9.  Shift Assignment has two out-of-scope Link fields.
+    Every SA references a ``Shift Location`` (``Hyderabad`` is the only
+    one used in production) and a ``Shift Schedule Assignment`` (420
+    unique SSA records). SSA records are deliberately NOT migrated in
+    this script.
+    *Fix:* pre-create ``Shift Location "Hyderabad"`` (autoname=field)
+    and NULLIFY ``shift_schedule_assignment`` on every SA record before
+    upsert. One SA (``HR-SHA-26-08-05318``) also links to a Shift
+    Request — to keep that one green, ``Shift Request`` must be migrated
+    BEFORE ``Shift Assignment`` in ``MIGRATION_ORDER``.
+
+10. Shift Request ``validate_approver()`` is unconditional.
+    ``ShiftRequest.validate()`` runs ``validate_approver()`` regardless
+    of ``docstatus``. The check requires the record's ``approver`` to
+    appear in the department's ``shift_request_approver`` list. The
+    production records have ``approver="Administrator"`` but the dev
+    site's Department Approver rows are empty, so a naive insert raises
+    ``Only Approvers can Approve this Request.``.
+    *Fix:* for every department referenced by the source JSON, add a
+    ``Department Approver`` child row with ``approver="Administrator"``
+    and ``parentfield="shift_request_approver"`` BEFORE inserting the
+    Shift Request records. Then insert each SR with
+    ``docstatus=0, status="Draft"`` (bypasses workflow) and use
+    ``frappe.db.set_value(..., update_modified=False)`` to promote the
+    record to its source ``docstatus``/``status`` without re-running
+    ``validate()``.
+
 IDEMPOTENCY
 -----------
 Every DocType is processed via the same ``upsert`` helper:
@@ -138,7 +207,7 @@ ITEM_GROUP_ROOT = "All Item Groups"
 #: DocTypes for which ``name`` must be set explicitly before insert
 #: (autoname='prompt' or field-based autoname where source JSON carries the
 #: canonical name).
-PROMPT_AUTONAME_DOCTYPES = {"Shift Type"}
+PROMPT_AUTONAME_DOCTYPES = {"Shift Type", "Shift Location", "Shift Schedule"}
 
 #: Fields never to replay — managed by Frappe / metadata-only.
 SKIP_FIELDS = {
@@ -148,7 +217,13 @@ SKIP_FIELDS = {
     "lft", "rgt", "old_parent",
 }
 
+#: DocTypes handled by a dedicated migration function instead of the
+#: default ``upsert`` path (see ``_migrate_shift_*`` below).
+SHIFT_LINK_DOCTYPES = {"Shift Assignment", "Shift Request", "Shift Schedule"}
+
 #: Migration order. Order matters: dependencies first, dependents last.
+#: ``Shift Request`` is intentionally placed BEFORE ``Shift Assignment``
+#: because one SA references an SR (GOTCHA #9).
 MIGRATION_ORDER = [
     "Company",
     "Account",
@@ -160,9 +235,13 @@ MIGRATION_ORDER = [
     "Gender",
     "Employment Type",
     "Shift Type",
+    "Shift Location",
     "Holiday List",
     "Employee",
     "Item",
+    "Shift Request",
+    "Shift Schedule",
+    "Shift Assignment",
 ]
 
 
@@ -297,6 +376,174 @@ def _migrate_company(record):
 
 
 # ---------------------------------------------------------------------------
+# Shift scheduling migrations
+# ---------------------------------------------------------------------------
+
+def _ensure_shift_location(location_name):
+    """Idempotently create the named ``Shift Location``.
+
+    See GOTCHA #9 — every prod Shift Assignment carries
+    ``shift_location="Hyderabad"`` and dev has no Shift Location records
+    on a clean install.
+    """
+    if frappe.db.exists("Shift Location", location_name):
+        return False
+    doc = frappe.get_doc(
+        {
+            "doctype": "Shift Location",
+            "name": location_name,
+            "location_name": location_name,
+        }
+    )
+    doc.insert(ignore_permissions=True)
+    print(f"  created Shift Location: {location_name}", flush=True)
+    return True
+
+
+def _ensure_department_approvers(records):
+    """Add a Department Approver row for every department referenced by
+    ``records`` so Shift Request ``validate_approver()`` passes.
+
+    See GOTCHA #10. Adds ``approver="Administrator"`` with
+    ``parentfield="shift_request_approver"`` and is idempotent.
+    """
+    departments = {r.get("department") for r in records if r.get("department")}
+    added = 0
+    for dept in departments:
+        if not frappe.db.exists(
+            "Department Approver",
+            {
+                "parent": dept,
+                "parentfield": "shift_request_approver",
+                "approver": "Administrator",
+            },
+        ):
+            frappe.get_doc(
+                {
+                    "doctype": "Department Approver",
+                    "parent": dept,
+                    "parenttype": "Department",
+                    "parentfield": "shift_request_approver",
+                    "approver": "Administrator",
+                }
+            ).insert(ignore_permissions=True)
+            added += 1
+    if added:
+        print(f"  added {added} Department Approver rows", flush=True)
+
+
+def _migrate_shift_schedule(rec):
+    """Upsert a single Shift Schedule — see GOTCHA #8.
+
+    Two implementation details matter here:
+
+    1.  ``frappe.get_doc(payload).insert()`` silently drops child-table
+        rows when the child rows carry ``docstatus=1`` while the parent
+        is inserted at ``docstatus=0`` (the ORM filters child rows by
+        parent docstatus).  We therefore **append the child rows
+        programmatically** via ``doc.append()`` instead of relying on
+        them being present in the constructor dict.
+    2.  The controller declares ``autoname='prompt'`` so the parent
+        ``name`` must be pinned on insert (handled by the upsert path).
+    """
+    name = rec["name"]
+    child_rows = rec.get("repeat_on_days") or []
+
+    if frappe.db.exists("Shift Schedule", name):
+        doc = frappe.get_doc("Shift Schedule", name)
+        # Wipe existing child rows so we don't accumulate duplicates on
+        # re-runs.
+        doc.set("repeat_on_days", [])
+        for d in child_rows:
+            doc.append(
+                "repeat_on_days",
+                {"day": d.get("day"), "idx": d.get("idx")},
+            )
+        doc.save()
+        return "updated"
+
+    new_payload = {"doctype": "Shift Schedule", "name": name}
+    new_payload.update(_clean_payload("Shift Schedule", rec))
+    new_payload["repeat_on_days"] = []
+    doc = frappe.get_doc(new_payload)
+    for d in child_rows:
+        doc.append(
+            "repeat_on_days",
+            {"day": d.get("day"), "idx": d.get("idx")},
+        )
+    doc.insert()
+    return "inserted"
+
+
+def _migrate_shift_request(rec, dev_emp_by_name):
+    """Upsert a single Shift Request — see GOTCHA #10.
+
+    Inserts as ``docstatus=0, status="Draft"`` to skip
+    ``validate_approver`` (the Department Approver pre-seed handles the
+    actual approver lookup), then promotes the record to its source
+    ``docstatus``/``status`` via ``frappe.db.set_value`` to bypass
+    validation entirely.
+    """
+    name = rec["name"]
+    rec = dict(rec)  # do not mutate caller's dict
+    ename = rec.get("employee_name")
+    if ename in dev_emp_by_name:
+        rec["employee"] = dev_emp_by_name[ename]
+
+    orig_docstatus = rec.pop("docstatus", 0)
+    orig_status = rec.get("status")
+
+    payload = _clean_payload("Shift Request", rec)
+    payload["docstatus"] = 0
+    payload["status"] = "Draft"
+
+    if frappe.db.exists("Shift Request", name):
+        doc = frappe.get_doc("Shift Request", name)
+        doc.update(payload)
+        doc.save()
+    else:
+        np = {"doctype": "Shift Request"}
+        np.update(payload)
+        np["name"] = name
+        frappe.get_doc(np).insert()
+
+    # Promote to the source's final state without re-running validate().
+    frappe.db.set_value(
+        "Shift Request",
+        name,
+        {"docstatus": orig_docstatus, "status": orig_status},
+        update_modified=False,
+    )
+    return "inserted"
+
+
+def _migrate_shift_assignment(rec, dev_emp_by_name):
+    """Upsert a single Shift Assignment — see GOTCHAs #7 and #9.
+
+    Remaps ``employee`` by ``employee_name`` (GOTCHA #7) and NULLIFIES
+    the ``shift_schedule_assignment`` link (GOTCHA #9, SSA is out of
+    scope).
+    """
+    name = rec["name"]
+    rec = dict(rec)
+    ename = rec.get("employee_name")
+    if ename in dev_emp_by_name:
+        rec["employee"] = dev_emp_by_name[ename]
+    rec["shift_schedule_assignment"] = None  # GOTCHA #9
+
+    payload = _clean_payload("Shift Assignment", rec)
+    if frappe.db.exists("Shift Assignment", name):
+        doc = frappe.get_doc("Shift Assignment", name)
+        doc.update(payload)
+        doc.save()
+        return "updated"
+    np = {"doctype": "Shift Assignment"}
+    np.update(payload)
+    frappe.get_doc(np).insert()
+    return "inserted"
+
+
+# ---------------------------------------------------------------------------
 # Main entry point
 # ---------------------------------------------------------------------------
 
@@ -313,6 +560,24 @@ def run():
     print(f"Source dir: {SOURCE_DIR}", flush=True)
     print(f"DocTypes in order: {', '.join(MIGRATION_ORDER)}", flush=True)
 
+    # Build the dev employee_name → id map once (GOTCHA #7).
+    dev_emp_by_name = {
+        e.employee_name: e.name
+        for e in frappe.get_all(
+            "Employee",
+            filters={"company": "Haritha Hospitals"},
+            fields=["name", "employee_name"],
+        )
+        if e.employee_name
+    }
+    print(f"  indexed {len(dev_emp_by_name)} Haritha Hospitals employees", flush=True)
+
+    # Pre-create Shift Location "Hyderabad" before processing any Shift
+    # Assignment (GOTCHA #9).
+    if "Shift Assignment" in MIGRATION_ORDER:
+        _ensure_shift_location("Hyderabad")
+        frappe.db.commit()
+
     results = {}
 
     for dt in MIGRATION_ORDER:
@@ -322,6 +587,11 @@ def run():
             results[dt] = {"inserted": 0, "updated": 0, "failed": 0, "errors_sample": []}
             continue
         print(f"  loaded {len(records)} records", flush=True)
+
+        # Pre-seed Department Approver rows for Shift Request (GOTCHA #10).
+        if dt == "Shift Request":
+            _ensure_department_approvers(records)
+            frappe.db.commit()
 
         inserted = updated = failed = 0
         errors = []
@@ -338,6 +608,16 @@ def run():
                 if dt == "Company":
                     # Company uses the 2-step path (GOTCHA #2).
                     outcome = _migrate_company(rec)
+                elif dt == "Shift Schedule":
+                    # GOTCHA #8 — autoname=prompt + repeat_on_days child
+                    # table. Source JSON must already include the child rows.
+                    outcome = _migrate_shift_schedule(rec)
+                elif dt == "Shift Request":
+                    # GOTCHA #10 — insert as Draft, then promote.
+                    outcome = _migrate_shift_request(rec, dev_emp_by_name)
+                elif dt == "Shift Assignment":
+                    # GOTCHA #7 + #9 — remap employee, NULLIFY SSA link.
+                    outcome = _migrate_shift_assignment(rec, dev_emp_by_name)
                 else:
                     payload = _clean_payload(dt, rec)
                     outcome = upsert(dt, name, payload)
