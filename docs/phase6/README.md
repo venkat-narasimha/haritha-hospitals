@@ -16,10 +16,13 @@ Organized in tiers for incremental review.
 - [01.2 Schema Diagram](01-schema/01.2-schema-diagram.md) (ERD)
 
 ### Tier 2 — Shift Workflow
-- (Batch 2)
+- [02.1 Shift Management Workflow](02-workflow/02.1-shift-management-workflow.md)
+- [02.2 Process Diagram](02-workflow/02.2-process-diagram.md)
 
 ### Tier 3 — Client Presentation
-- (Batch 2)
+- [03.1 Client Overview (1-pager)](03-client/03.1-client-overview.md)
+- [03.2 Demo Script](03-client/03.2-demo-script.md)
+- [03.3 FAQ](03-client/03.3-faq.md)
 
 ### Tier 4 — Run Books
 - (Batch 3)
