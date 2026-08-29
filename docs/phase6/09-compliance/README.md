@@ -11,10 +11,10 @@ ISO 27001-aligned policies + CMM L5 process docs for Haritha Hospitals.
 2. [Access Control Policy](02-access-control.md) — HH-ISMS-02
 3. [Asset Management Policy](03-asset-management.md) — HH-ISMS-03
 4. [Cryptography / Key Management Policy](04-cryptography.md) — HH-ISMS-04
-5. [Operations Security Policy](05-operations-security.md) — HH-ISMS-05 (Batch 2)
-6. [Communications Security Policy](06-communications-security.md) — HH-ISMS-06 (Batch 2)
-7. [Incident Management Policy](07-incident-management.md) — HH-ISMS-07 (Batch 2)
-8. [Business Continuity Policy](08-business-continuity.md) — HH-ISMS-08 (Batch 2)
+5. [Operations Security Policy](05-operations-security.md) — HH-ISMS-05
+6. [Communications Security Policy](06-communications-security.md) — HH-ISMS-06
+7. [Incident Management Policy](07-incident-management.md) — HH-ISMS-07
+8. [Business Continuity Policy](08-business-continuity.md) — HH-ISMS-08
 
 ### CMM L5 Maturity
 9. [CMM L5 Maturity Assessment](09-cmm-maturity-assessment.md) (Batch 3)
