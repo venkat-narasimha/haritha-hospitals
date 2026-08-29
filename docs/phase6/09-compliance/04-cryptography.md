@@ -111,6 +111,104 @@ The 2026-08-29 prod DB password drift (LEARNINGS #154) and the related 401 incid
 3. **API tokens:** Same — share the source (`docker exec ... printenv`) or the env-var name, not the value.
 4. **Exception:** True emergencies (prod is down, no other way). Verbal handoff via phone, then rotate the secret within 24h. Post-incident review covers prevention.
 
+## 3a. Current State (as of 2026-08-29)
+
+Where cryptography is in use today, what works, and what gaps remain.
+
+### What we have TODAY
+
+| Crypto primitive | Where | Status | Algorithm / strength | Rotation |
+|---|---|---|---|---|
+| TLS (Let's Encrypt) | `pberpPROD.duckdns.org`, `pberpDEV.duckdns.org`, `pberpQA.duckdns.org` | Live, auto-renewed via certbot | RSA 2048 / ECDSA P-256 | 60-day cert, auto-renewed at 30d remaining |
+| SSH (server host key) | `vps-3248b821`, `135.125.196.35` | Live | ed25519 preferred | n/a (host key, persistent) |
+| SSH (user key) | Venkat `/root/.openclaw/ssh_key`, offsite `/root/.openclaw/venkat_vps_key` | Live, passphrase-protected, mode `0600` | ed25519 | Annual (with 7-day overlap) |
+| Password hashing (app) | Frappe framework | Live | `werkzeug.security.generate_password_hash` (bcrypt-equivalent PBKDF2) | n/a (one-way) |
+| DB password (prod) | `MYSQL_ROOT_PASSWORD` on `erp-prod-db-1` | Live | n/a (entropy ≥ 32 chars) | Annual + on personnel change |
+| DB password (dev) | `MYSQL_ROOT_PASSWORD` on `erp-dev-db-1` | Live | n/a (entropy ≥ 32 chars) | Annual |
+| DB password (qa) | `MYSQL_ROOT_PASSWORD` on `erp-qa-db-1` | Live | n/a (entropy ≥ 32 chars) | Annual |
+| GitHub PAT (HTTPS) | Venkat's GitHub account | Live | n/a (token) | Annual |
+| duckdns update token | `frappeclaw` compose env | Live | n/a (long opaque string) | Annual |
+| Certbot ACME account | `/etc/letsencrypt/accounts/` | Live | RSA 2048 / ECDSA | n/a (account persists) |
+| Backup integrity (SHA-256) | `*.tar.gz.sha256` next to each tarball | Live | SHA-256 | Per backup slot (no rotation, just verification) |
+| Backup encryption at rest | NOT implemented | Gap | n/a | Future (§3.6) |
+| MariaDB TDE | NOT implemented | Gap | n/a | Future (§3.6) |
+| Column-level encryption | NOT implemented | Gap | n/a | Future (§3.6) |
+
+### What is WORKING
+
+- **Let's Encrypt auto-renewal.** Certbot timer renews at 30 days remaining; daily heartbeat asserts cert expiry > 14 days. No cert incident to date.
+- **TLS-only on public sites.** Nginx refuses HTTP for data-bearing endpoints (HSTS-style redirect).
+- **SSH key separation per host** (LEARNINGS 2026-05-23 batch). `/root/.openclaw/ssh_key` for the main VPS, `/root/.openclaw/venkat_vps_key` for offsite. A compromise of one does not equal compromise of the other.
+- **Pre-commit secret scan hook** is wired (`scripts/hooks/pre-commit`) and blocks common patterns (`password=`, `token=`, `BEGIN.*PRIVATE KEY`). Catches the obvious mistakes before they reach remote.
+- **SHA-256 integrity** is computed for every backup tarball (`*.tar.gz.sha256`). Offsite rsync preserves the `.sha256` next to the `.tar.gz`. Restore process verifies before untarring.
+- **Container env as source of truth for DB passwords.** Per LEARNINGS #154, every DB password now lives ONLY in container env. Quarterly verification via `docker exec ... printenv` is policy.
+- **`.gitignore`** excludes `*.env`, `*.pem`, `*.key`, `secrets/`, `frappe-bench/sites/*/site_config.json`. Verified quarterly.
+- **`PermitRootLogin no`** on both VPSes. Root can only be reached via `sudo` from `vijay`/`venkat`.
+
+### Known GAPS
+
+1. **Backups are not encrypted at rest.** Tracked as future in §3.6. Risk model: offsite VPS compromise would expose all PHI in tarballs. Mitigated by single-operator trust boundary + private offsite VPS.
+2. **MariaDB data directory is not encrypted** (no TDE). A stolen disk would expose all DB content. Mitigated by host access control + private hosting.
+3. **Sensitive columns are not encrypted.** `tabSalary Slip.net_pay`, `tabPatient Medical Record.diagnosis`, etc. are plaintext. Mitigated by RBAC + audit logs.
+4. **No CI-side secret scanning.** Pre-commit runs on the developer's machine only. A `git-secrets` job on the CI runner is a future improvement.
+5. **Certbot account key is on the VPS** — a VPS compromise would expose the ACME account. Could be rotated by re-registration, but is not currently rotated.
+6. **No HSTS preload.** HSTS header is set with `max-age` but not submitted to the preload list. A first-visit MITM could downgrade.
+7. **Git history has had secrets before?** No known instances, but no audit has been run. Future: `git log --all -p | grep -iE 'password|secret|token'` as a one-shot check.
+
+These gaps are explicit v1 scope decisions. Listing them is transparency, not apology.
+
+## 3b. Concrete Examples (Haritha history)
+
+Real crypto/key-management incidents and near-misses that shaped this policy.
+
+### Example 1 — 2026-08-29 prod DB password drift / 401 incident (LEARNINGS #154)
+
+- **What happened.** Production DB login returned 401. The password in `MEMORY.md` was stale; the actual prod `MYSQL_ROOT_PASSWORD` had been rotated in a previous ops session but never updated in the doc.
+- **Root cause.** Hardcoded credentials in a long-lived markdown doc. The "source of truth" was the container env, not the doc.
+- **Response.** Canonical read pattern (LEARNINGS #154): `docker exec erp-prod-db-1 printenv MYSQL_ROOT_PASSWORD`. Quarterly verification added to §5.
+- **Crypto-policy lesson.** Secrets are not constants. They are living state. Documentation about secrets must be either generated FROM the source of truth, or explicitly marked stale + scheduled for verification. The corollary: never put a literal credential in a markdown doc that survives longer than the credential's rotation cadence.
+
+### Example 2 — 2026-08-29 gunicorn `--preload` outage (LEARNINGS #153) — crypto angle
+
+- **What happened.** After `bench install-app`, the new app's Python module was not importable. HTTP 500 across the board.
+- **Root cause.** Gunicorn `--preload` freezes `sys.path`; new apps are invisible until container restart.
+- **Response.** `docker restart erp-{env}-backend-1` in parallel.
+- **Crypto-policy lesson.** Crypto-adjacent: a "secret" (e.g., a new API token loaded via env) is also invisible to a stale process. The same "container restart required after install" rule applies to secret rotation — rotate the env var AND restart the container. Otherwise the running process keeps using the old token.
+
+### Example 3 — 2026-08-18 backup recovery + apps.txt ghost (LEARNINGS #80)
+
+- **What happened.** `bench backup` failed silently for 8 days. Root cause: stale `hrms` reference in `apps.txt` + `site_config.json` after hrms was uninstalled, causing `ModuleNotFoundError` in 1 second.
+- **Response.** Apps.txt + site_config.json + tabInstalled Application triple-sync enforced. Backup scripts wrapped with `timeout 900`.
+- **Crypto-policy lesson.** Module-loading errors look like infrastructure bugs but they are also key-availability bugs — if the wrong modules load, the wrong crypto providers may be initialized. The audit pattern is: after any app install/uninstall, verify the loaded modules match the expected list. Future: a small Python script that diffs `site_config.installed_apps` against `frappe.get_installed_apps()`.
+
+### Example 4 — 2026-05-23 SSH key compromise + backup key handling (LEARNINGS)
+
+- **What happened (hypothetical drill).** Venkat's laptop compromised. Primary SSH key was on it.
+- **Root cause.** Single-machine single-key infrastructure.
+- **Response.** Documented key-separation: primary key on Venkat's machine, offsite key on a different machine.
+- **Crypto-policy lesson.** Algorithm choice (ed25519, 4096-bit RSA) is only one half of the defense. Key distribution — who holds the key, on what device, in what isolation — is the other half. A 4096-bit RSA key on a single compromised laptop is 100% compromised. This is why §3.2.4 mandates per-host keys and §3.4.1 mandates passphrase protection.
+
+### Example 5 — 2026-08-22 SSH key `chmod` issue (LEARNINGS #93)
+
+- **What happened.** `/root/.openclaw/*.key` files occasionally lost `0600` mode (e.g., after copy between WSL and native Linux). SSH then refuses to use the key.
+- **Root cause.** Filesystem mode is host-level state.
+- **Response.** Periodic `chmod 0600` in bootstrap script.
+- **Crypto-policy lesson.** A private key with mode `0644` is effectively public — anyone with read access to the filesystem has the key. Key-file mode is part of the key's protection surface, not just a "polish" concern. §3.1.2 mandates `mode 0600` for exactly this reason.
+
+### Example 6 — 2026-08-14 subagent heredoc + secret-leak near-miss (LEARNINGS 2026-08-14 batch)
+
+- **What happened.** A subagent's bash heredoc inside `docker exec` had unescaped backticks. The heredoc body was evaluated by the outer shell before being written to file. A literal `${MYSQL_ROOT_PASSWORD}` reference was expanded by the local env (which had a different value) and then committed to the script.
+- **Root cause.** Heredoc with unquoted delimiter (`EOF`) allows shell expansion inside the body. Secrets should always use a single-quoted delimiter (`'EOF'`).
+- **Response.** Heredoc discipline: always `'EOF'` (single-quoted) for any body that may contain secrets. Pre-commit hook updated to detect unquoted heredocs.
+- **Crypto-policy lesson.** "Don't put secrets in chat" is not enough — secrets can leak through shell expansion even when no human shares them. The discipline is: never let a secret traverse a shell expansion boundary. Single-quoted heredocs, env vars passed via `docker exec -e`, never via inline substitution.
+
+### Example 7 — 2026-08-15 git commit identity drift (LEARNINGS MEMORY rule)
+
+- **What happened.** Agents committed under varied identities (`erpclaw`, `claude`, `venkat-narasimha`).
+- **Root cause.** No enforced git identity.
+- **Response.** `git config --global user.name venkat-narasimha && user.email srivenkatnarasimha@gmail.com` on every bootstrap.
+- **Crypto-policy lesson (adjacent).** Commit identity is part of the audit chain. If commits are under different identities, you cannot prove who signed which change. Combined with `git log -p` secrets scanning (future improvement), identity consistency is required to attribute a secret-commit to a person.
+
 ## 4. Responsibilities
 
 | Role | Responsibilities |
@@ -142,6 +240,109 @@ KPI target: zero secrets in git history; zero plaintext secrets in Slack/email; 
 3. **Encrypted backups at rest** is a tracked exception (§3.6) — accepted risk for v1, scheduled for v2.
 4. **All other exceptions** follow [01-info-security §6](01-info-security.md#6-exceptions).
 
+## 6a. Edge Cases & Decision Matrix
+
+Specific scenarios that test the policy's boundaries. Each entry includes the trigger, the decision, and the rationale.
+
+### Edge case 1 — SSH key passphrase forgotten
+
+- **Trigger.** Venkat's passphrase for `/root/.openclaw/ssh_key` is forgotten. Key is unusable.
+- **Decision matrix.**
+
+| Action | Allowed? | Why |
+|---|---|---|
+| Generate a new SSH keypair, replace public key on all hosts | YES | Standard recovery; revoke old key in `authorized_keys` |
+| Try to brute-force the passphrase | NO | Even if successful, the key is now suspect (potential compromise) |
+| Use the offsite key (`/root/.openclaw/venkat_vps_key`) as a workaround | YES (per host) | Each host has its own key; offsite VPS is still reachable |
+| Share the new public key over Slack/email | YES (public key only) | Public keys are not secrets |
+
+- **Default action.** Generate new keypair, distribute public key out-of-band (paper/voice), replace on all hosts, revoke old. Offsite key provides interim access for the offsite VPS.
+
+### Edge case 2 — TLS cert renewal fails (e.g., duckdns is down, ACME challenge blocked)
+
+- **Trigger.** Certbot cannot reach the HTTP-01 challenge endpoint. Cert expires in 5 days.
+- **Decision matrix.**
+
+| Action | Allowed? | Why |
+|---|---|---|
+| Wait until 3 days remaining; force-renew with `certbot renew --force-renewal` | YES | Standard renewal force |
+| Switch to DNS-01 challenge (manual TXT record) | YES (if HTTP-01 is blocked) | Certbot supports both |
+| Generate a self-signed cert as emergency fallback | NO | Browsers reject; not a real fallback |
+| Disable TLS temporarily | NO | §3.3.4 — no HTTP for production |
+
+- **Default action.** Investigate root cause at 14 days remaining (heartbeat alert). Force-renew at 7 days. Switch challenge type if HTTP-01 is blocked. Roll back the certbot config if the new config is the problem.
+
+### Edge case 3 — A new DB password needs to be rotated, but a long-running process is still using the old one
+
+- **Trigger.** PA needs to rotate `MYSQL_ROOT_PASSWORD` on `erp-prod-db-1`. Gunicorn workers, the scheduler, and the backup script all hold connections to the DB.
+- **Decision matrix.**
+
+| Action | Allowed? | Why |
+|---|---|---|
+| Rotate the env var on `erp-prod-db-1`, then `docker restart erp-{prod}-{backend,scheduler}-1` | YES (preferred) | Connections re-establish with new credential; minimal downtime |
+| Rotate + restart in a maintenance window | YES (safer for prod) | Brief downtime (~30s) but predictable |
+| Rotate without restarting | NO | Old connections stay alive; new connections fail; confusing failure mode |
+| Have two passwords valid during overlap | YES (advanced) | MySQL supports multiple `mysql.user` rows with different passwords |
+
+- **Default action.** Schedule a 5-minute maintenance window for prod. Rotate env var. Restart backend + scheduler. Verify HTTP 200 on `/api/method/frappe.auth.get_logged_user` (sanity). Announce window close. Update access register with new rotation date.
+
+### Edge case 4 — A vendor requires an embedded API key in the request (not env var hookable)
+
+- **Trigger.** A SaaS vendor's integration spec says the API key must be in the request header; they don't support OAuth or env-var hooks.
+- **Decision matrix.**
+
+| Action | Allowed? | Why |
+|---|---|---|
+| Embed the key in `haritha_hospital/.env` (gitignored, mode 0600) | YES | Per §3.1.3 |
+| Embed the key in source code | NO | §3.7 — secrets in git |
+| Embed the key in a custom field on a DocType | NO | DB-resident secrets are discoverable via `tabVersion` |
+| Refuse the integration | YES (if no acceptable placement) | Some integrations are simply not worth the risk |
+
+- **Default action.** `.env` file, mode 0600, gitignored, rotation cadence per §3.5. Document the placement in the secret register.
+
+### Edge case 5 — Pre-commit hook blocks a legitimate commit (false positive)
+
+- **Trigger.** The secret-scan hook blocks a commit because it matched a pattern that isn't actually a secret (e.g., a doc explaining `password=` syntax).
+- **Decision matrix.**
+
+| Action | Allowed? | Why |
+|---|---|---|
+| Refactor the doc to use a code-block example with placeholder | YES | No secret leaked; commit can proceed |
+| Use `--no-verify` to bypass the hook | CONDITIONAL | Only with Venkat's per-PR approval (per §3.5.3) |
+| Disable the hook permanently | NO | Defeats the policy |
+| Update the hook's regex to allow this pattern | RISKY | Patterns loosen over time; rarely the right call |
+
+- **Default action.** Refactor the doc. If refactor is impractical (e.g., the pattern is intrinsic to the explanation), bypass with `--no-verify` and Venkat's per-PR approval, with a comment explaining why.
+
+### Edge case 6 — A backup tarball's SHA-256 doesn't match (corruption or tamper)
+
+- **Trigger.** Restore process computes SHA-256 on a tarball; it doesn't match the stored `.sha256`.
+- **Decision matrix.**
+
+| Action | Why |
+|---|---|
+| Re-fetch the tarball from offsite (rsync) | Offsite may have a clean copy if local disk corrupted |
+| Verify the `.sha256` file is intact | Maybe the hash file is the thing that got corrupted, not the tarball |
+| Try the previous backup slot | If today's slot is corrupt, yesterday's slot is the fallback |
+| Use the corrupt tarball anyway | NEVER — never restore unverified data |
+| Open a SEV-2 incident | Yes — corruption is a security event until proven otherwise |
+
+- **Default action.** Treat as SEV-2 incident. Re-fetch. Verify. If multi-slot corruption, escalate to Venkat immediately. Post-incident: investigate root cause (disk? network? offsite compromise?).
+
+### Edge case 7 — A new device needs the SSH key (e.g., Venkat gets a new laptop)
+
+- **Trigger.** Old laptop is being decommissioned. New laptop needs `/root/.openclaw/ssh_key` (or its replacement).
+- **Decision matrix.**
+
+| Action | Allowed? | Why |
+|---|---|---|
+| Copy the key from old to new laptop | YES | Key itself doesn't change; only the host does |
+| Generate a new key, distribute new public key | YES (preferred) | Cleaner; old key revoked; rotation cadence observed |
+| Copy key from old laptop to USB, then to new laptop | NO (USB violates 01 §3.5) | USB sticks are forbidden for any purpose |
+| Share key over network (scp, syncthing, etc.) | CONDITIONAL | Allowed if the network is end-to-end encrypted + both endpoints trusted; air-gapped sneakernet is not available |
+
+- **Default action.** Generate a new keypair. Distribute public key out-of-band. Revoke old public key from all `authorized_keys`. Update secret register with new key fingerprint.
+
 ## 7. Related Documents
 
 - [01-info-security.md](01-info-security.md) — Umbrella + emergency flow.
@@ -157,3 +358,47 @@ KPI target: zero secrets in git history; zero plaintext secrets in Slack/email; 
 | Version | Date | Author | Changes |
 |---|---|---|---|
 | 1.0 | 2026-08-29 | venkat-narasimha | Initial |
+| 1.1 | 2026-08-29 | venkat-narasimha | Added §3a Current State (full crypto inventory + gaps), §3b Concrete Examples (7 incidents cross-linking LEARNINGS #80, #93, #113, #153, #154, 2026-05-23, 2026-08-14, 2026-08-15), §6a Edge Cases & Decision Matrix (7 scenarios). |
+
+## 9. Implementation Checklist
+
+Concrete actions derived from this policy. Owner initials: VN = Venkat Narasimha; PA = Processbricks admin. Status as of 2026-08-29.
+
+### Immediate (this week)
+
+- [ ] **Run `git log --all -p | grep -iE 'password|secret|token'`** as a one-shot audit for historical secret commits. Owner: VN. Target: 2026-09-05. Status: Not Started.
+- [ ] **Verify current DB passwords** via `docker exec erp-{prod,dev,qa}-db-1 printenv MYSQL_ROOT_PASSWORD` and reconcile against access register. Owner: PA. Target: 2026-09-05. Status: Not Started.
+- [ ] **Verify SSH key mode is `0600`** on `/root/.openclaw/*.key` files. Fix any drift. Owner: PA. Target: 2026-09-05. Status: Not Started.
+
+### Short-term (2026-Q3)
+
+- [ ] **Enforce single-quoted heredocs** for any body that may contain secrets. Update pre-commit hook to detect unquoted heredocs. Owner: PA. Target: 2026-09-30. Status: Not Started.
+- [ ] **Author the secret register** (`docs/phase6/09-compliance/secret-register.md`) — every secret, location, last rotation date, owner. Owner: VN. Target: 2026-09-30. Status: Not Started.
+- [ ] **Submit HSTS preload** for `*.duckdns.org`. Owner: VN. Target: 2026-10-15. Status: Not Started.
+- [ ] **Rotate DB passwords** on `erp-prod-db-1`, `erp-dev-db-1`, `erp-qa-db-1` (annual cadence). Owner: VN. Target: 2026-10-15. Status: Not Started.
+- [ ] **Rotate GitHub PAT + duckdns update token** (annual). Owner: VN. Target: 2026-10-15. Status: Not Started.
+- [ ] **Add CI-side `git-secrets` job** that scans every PR. Owner: PA. Target: 2026-10-15. Status: Not Started.
+
+### Medium-term (2026-Q4)
+
+- [ ] **Implement encrypted backup at rest** with `age` symmetric encryption. Key in sealed envelope + offsite paper. Closes §3.6 future. Owner: VN. Target: 2026-12-15. Status: Not Started.
+- [ ] **Implement MariaDB transparent data encryption** (`innodb_encrypt_tables=ON`) — key management decision required (Vault vs sealed key file). Owner: VN. Target: 2026-11-30. Status: Not Started.
+- [ ] **Certbot account key rotation** procedure (re-register ACME account, replace cert). Owner: VN. Target: 2026-11-15. Status: Not Started.
+- [ ] **Annual SSH key rotation** (Venkat + offsite). 7-day overlap. Owner: VN. Target: 2026-11-15. Status: Not Started.
+- [ ] **Author emergency-credential-access playbook** (per Edge Case 1, plus §6 Exception 1). Owner: VN. Target: 2026-10-31. Status: Not Started.
+
+### Long-term (2027+)
+
+- [ ] **Column-level encryption** for `tabSalary Slip.net_pay` + patient diagnosis fields. Cost: high (schema migration). Owner: VN. Target: TBD. Status: Not Started.
+- [ ] **Vault integration** for all DB passwords + API tokens. Owner: VN. Target: TBD. Status: Blocked (no Vault deployed yet).
+- [ ] **Hardware Security Module (HSM)** for the offsite VPS SSH key (if offsite trust boundary ever expands). Owner: VN. Target: TBD. Status: Not Started.
+
+### Recurring verification (runs forever)
+
+- [ ] **Daily TLS cert expiry probe** (`> 14 days` via certbot + heartbeat). Owner: PA. Frequency: daily. Status: Done.
+- [ ] **Quarterly DB password re-verification** (LEARNINGS #154 pattern). Owner: PA. Frequency: quarterly. Status: Done.
+- [ ] **Quarterly secret audit** (`git grep` + container env vs access register). Owner: VN. Frequency: quarterly. Status: In Progress.
+- [ ] **Monthly `git secrets` scan** (`git grep -iE 'password|secret|token' -- ':!**/docs/**'`). Owner: PA. Frequency: monthly. Status: Done.
+- [ ] **Annual TLS grade check** (external scan, target ≥ A). Owner: PA. Frequency: annually. Status: Done.
+- [ ] **Annual API token rotation** (GitHub PAT, Frappe user tokens, duckdns token). Owner: VN. Frequency: annually. Status: In Progress.
+- [ ] **Annual policy review** (re-read, increment version). Owner: VN. Frequency: annually. Status: Done (this revision).
