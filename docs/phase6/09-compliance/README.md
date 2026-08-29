@@ -17,10 +17,10 @@ ISO 27001-aligned policies + CMM L5 process docs for Haritha Hospitals.
 8. [Business Continuity Policy](08-business-continuity.md) — HH-ISMS-08
 
 ### CMM L5 Maturity
-9. [CMM L5 Maturity Assessment](09-cmm-maturity-assessment.md) (Batch 3)
-10. [Process Improvement Framework](10-process-improvement.md) (Batch 3)
-11. [Quantitative Process Management](11-quantitative-management.md) (Batch 3)
-12. [Defect Prevention Process](12-defect-prevention.md) (Batch 3)
+9. [CMM L5 Maturity Assessment](09-cmm-maturity-assessment.md) — HH-CMM-01
+10. [Process Improvement Framework (PDCA)](10-process-improvement.md) — HH-CMM-02
+11. [Quantitative Process Management](11-quantitative-management.md) — HH-CMM-03
+12. [Defect Prevention Process](12-defect-prevention.md) — HH-CMM-04
 
 ## Conventions
 
