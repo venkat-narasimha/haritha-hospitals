@@ -1,3 +1,9 @@
+# Phase 6 — Process & Maturity Documentation
+
+> **Consolidated file** — merged from `037-phase-6-process-maturity.md`. Covers the 34 docs / ~14,030 lines of process and maturity documentation produced 2026-08-29.
+
+----
+
 ## Phase 6 — Process & Maturity Documentation (2026-08-29)
 
 **Status:** COMPLETE ✅ (34 docs, ~14,030 lines)

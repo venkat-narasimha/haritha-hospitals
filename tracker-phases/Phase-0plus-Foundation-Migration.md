@@ -1,3 +1,9 @@
+# Phase 0+ — Foundation & Master Data Migration
+
+> **Consolidated file** — merged from `036-phase-0plus-foundation-migration.md`. Distinct from Phase 0 (schema planning) — this is the "Phase 0.5 / Schema-Portability Layer" covering the custom app build and the prod→dev master data migration.
+
+----
+
 ## Phase 0+ — Foundation & Migration (2026-08-28 to 2026-08-29)
 
 > New top-level phase added today: custom app build + master data migration + outage recovery. Distinct from the existing Phase 0 (schema planning) — this is "Phase 0.5 / Schema-Portability Layer".
