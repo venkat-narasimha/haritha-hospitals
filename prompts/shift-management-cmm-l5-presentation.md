@@ -1,7 +1,7 @@
 ---
 **Document Metadata**
 - **Title:** Prompt — Shift Management with ERPNext HRMS (HTML Presentation Generator)
-- **Version:** 2.0
+- **Version:** 2.1
 - **Date:** 2026-09-04
 - **Author:** Venkat Narasimha (Processbricks)
 - **Status:** Draft (pending review)
@@ -12,6 +12,7 @@
 
 | Version | Date | Author | Changes |
 |---|---|---|---|
+| 2.1 | 2026-09-04 | venkat-narasimha | Fixes: time math clarified, banned-phrases list updated, slide 10 dedup, §13 schema ASCII added, slide 13 concrete example added, filename versioned |
 | 1.0 | 2026-09-03 | venkat-narasimha | Initial draft (20 slides, CMM L5 topic content) — superseded |
 | 2.0 | 2026-09-04 | venkat-narasimha | Rewritten: 17 slides, no CMM L5 topic content, CMM L5 documentation standards applied to prompt itself, concrete slide examples added |
 
@@ -42,7 +43,7 @@ Generate a **17-slide** self-contained HTML presentation explaining shift manage
 ## 4. Time Budget
 
 **Total: 40 minutes** (32 min content + 8 min Q&A)
-Per-slide timing specified in §7.
+Per-slide timing specified in §7. (Note: per-slide timings sum to ~34 min — content is flexible; speaker can compress/expand as needed.)
 
 ## 5. Output Specs
 
@@ -197,11 +198,10 @@ Every slide must include:
 
 **Slide 10 — Shift Schedule Assignment + Tool (merged)** (2.5 min)
 - Title: "Bulk Assignment + Tool"
-- 4 bullets:
+- 3 bullets:
   - **Shift Schedule Assignment:** apply a schedule to many employees at once
   - **Shift Assignment Tool:** drag-and-drop UI for fast monthly scheduling
-  - Visual: drag-drop calendar grid mockup
-  - Time saving: monthly roster in minutes vs hours
+  - Time saving: monthly roster in minutes vs hours (not hours of manual work)
 - Visual: **drag-drop mockup** — calendar grid with employee names as draggable cards
 - Speaker notes: "this is where supervisors save hours per month"
 - Transition: "What does the result look like? The Roster."
@@ -372,6 +372,66 @@ CSS:
 
 Apply this exact pattern to all 17 slides.
 
+## 11.5. Concrete Example #2 — Slide 13 (Reports & Analytics)
+
+Apply same pattern as §11 — here's a dashboard mockup:
+
+```html
+<section class="slide" id="slide-13">
+  <div class="slide-number">13 / 17</div>
+  <h2 class="slide-title">Reports & Analytics</h2>
+  <div class="body">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Coverage Today</div>
+        <div class="stat-value">98.5%</div>
+        <div class="stat-trend positive">+1.2%</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Late Arrivals</div>
+        <div class="stat-value">4</div>
+        <div class="stat-trend negative">+2</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Overtime Hours</div>
+        <div class="stat-value">27h</div>
+        <div class="stat-trend neutral">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Pending Swaps</div>
+        <div class="stat-value">7</div>
+        <div class="stat-trend neutral">—</div>
+      </div>
+    </div>
+    <div class="chart-placeholder">
+      <svg viewBox="0 0 600 200"><!-- line chart showing attendance over 7 days --></svg>
+    </div>
+  </div>
+  <aside class="speaker-notes">
+    These KPIs feed into HR decisions daily. Coverage rate drives staffing. Late arrivals trigger manager follow-up. Overtime flags compliance risks. The data updates in real-time as check-ins come in. Customize which KPIs appear per role.
+  </aside>
+</section>
+```
+
+CSS:
+```css
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+.stat-card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; text-align: center; }
+.stat-label { font-size: 13px; color: #64748b; }
+.stat-value { font-size: 32px; font-weight: 700; color: #0f172a; margin-top: 8px; }
+.stat-trend { font-size: 12px; margin-top: 4px; }
+.stat-trend.positive { color: #10b981; }
+.stat-trend.negative { color: #ef4444; }
+.stat-trend.neutral { color: #64748b; }
+.chart-placeholder { background: #f8fafc; border-radius: 8px; padding: 16px; height: 200px; }
+```
+
+**Notice:**
+- 4 stat cards in grid + 1 chart placeholder = dashboard mockup
+- Color-coded trend indicators (green/red/neutral)
+- Concrete example in speaker notes
+- Apply same pattern as §11 to all 17 slides
+
 ## 12. Roster Image Placeholder (Slide 11)
 
 Bottom 40% of slide 11 MUST be:
@@ -409,6 +469,24 @@ Required entities (from `docs/phase6/01-schema/01.2-schema-diagram.md`):
   - **Core:** Employee (in center, connects to all)
 - Use color coding: schedule = blue, execution = sky, tracking = slate, core = primary blue
 
+**ASCII layout (rough positioning):**
+```
+                Holiday List
+                     |
+   Shift Location ── Employee ── Shift Type
+                     |            |
+                     |       Shift Schedule
+                     |            |
+   Employee Checkin ──┤            |
+                     |            |
+              Shift Request ──────┤
+                     |            |
+              Shift Assignment ───┘
+                     |
+                 Attendance
+```
+Central entity: **Employee** (in middle). Schedule layer (Shift Type, Shift Schedule, Shift Location) on the right. Execution layer (Shift Assignment, Shift Request, Employee Checkin) on the left. Tracking (Attendance, Holiday List) at top/bottom. Group visually with colored backgrounds matching §13 color scheme.
+
 ## 14. Content Constraints (CRITICAL)
 
 - **No Haritha-specific data** — no employee counts (e.g., "210 employees"), no company-specific metrics, no real customer names
@@ -427,7 +505,7 @@ Required entities (from `docs/phase6/01-schema/01.2-schema-diagram.md`):
 3. Per-slide timing sums to ~32 minutes
 4. SVG renders correctly (no broken tags)
 5. Print stylesheet works (test with browser print preview)
-6. No filler phrases (run a search for "important", "let's", "as we can see", "in this slide")
+6. No filler phrases (run a search for "important", "as we can see", "in this slide", "It is worth noting", "essentially")
 7. Roster image placeholder present (slide 11)
 8. Schema flowchart present with all 9 entities + relations (slide 15)
 9. Keyboard nav works (arrow keys + S for speaker notes)
@@ -456,7 +534,9 @@ This prompt meets CMM L5 documentation standards:
 
 ## 18. Output Filename
 
-Save as: `shift-management-presentation.html`
+Save as: `shift-management-presentation-v1.html`
+
+If regenerating with significant changes, increment to v2, v3, etc.
 
 Place in: same directory as this prompt
 
