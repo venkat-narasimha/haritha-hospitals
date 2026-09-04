@@ -1,4 +1,3 @@
----
 **Document Metadata**
 - **Title:** Prompt — Shift Management with ERPNext HRMS (HTML Presentation Generator)
 - **Version:** 2.1
