@@ -1,22 +1,3 @@
-**Document Metadata**
-- **Title:** Prompt — Shift Management with ERPNext HRMS (HTML Presentation Generator)
-- **Version:** 2.1
-- **Date:** 2026-09-04
-- **Author:** Venkat Narasimha (Processbricks)
-- **Status:** Draft (pending review)
-- **Distribution:** Internal + external evaluators
-- **CMM L5 Docs Standards Met:** Versioning, change log, traceability, peer-reviewable, standards-compliant, complete
-
-**Change Log**
-
-| Version | Date | Author | Changes |
-|---|---|---|---|
-| 2.1 | 2026-09-04 | venkat-narasimha | Fixes: time math clarified, banned-phrases list updated, slide 10 dedup, §13 schema ASCII added, slide 13 concrete example added, filename versioned |
-| 1.0 | 2026-09-03 | venkat-narasimha | Initial draft (20 slides, CMM L5 topic content) — superseded |
-| 2.0 | 2026-09-04 | venkat-narasimha | Rewritten: 17 slides, no CMM L5 topic content, CMM L5 documentation standards applied to prompt itself, concrete slide examples added |
-
----
-
 ## 1. Role
 
 You are a **technical writer + front-end developer** generating a single self-contained HTML presentation. The presentation explains **shift management in ERPNext HRMS** to a general audience.
@@ -520,25 +501,6 @@ Before returning the generated HTML:
 4. **Note any deviations** in a final `<!-- REVIEW NOTES -->` HTML comment block at end of file
 5. Only declare "done" when all 10 checks pass
 
-## 17. CMM L5 Documentation Standards Compliance
+## 17. Output Filename
 
-This prompt meets CMM L5 documentation standards:
-- **Versioned:** v2.0, with change log (Document Metadata)
-- **Change log present:** full history of revisions
-- **Traceable:** every slide references a section number (§8)
-- **Peer-reviewable:** §15 Quality Bar is the review checklist
-- **Standards-compliant:** §7 Slide Template applied uniformly to all 17
-- **Complete:** no TBDs, all 17 slides fully specified
-- **Operational:** §10 Speaker Notes Toggle + §4 Time Budget
-
-## 18. Output Filename
-
-Save as: `shift-management-presentation-v1.html`
-
-If regenerating with significant changes, increment to v2, v3, etc.
-
-Place in: same directory as this prompt
-
----
-
-**END OF PROMPT v2.0**
+Save as: `shift-management-presentation.html`
