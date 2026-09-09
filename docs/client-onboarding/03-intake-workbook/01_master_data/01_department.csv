@@ -1,0 +1,9 @@
+fieldname,label,type,required,example,validation,client_value,notes
+department_name,Department Name,Data,Y,Cardiology,unique within company,,
+company,Company,Link,Y,Haritha Hospitals Pvt Ltd,must exist,,
+parent_department,Parent Department,Link,N,Clinical Services,must exist if set,,
+is_group,Is Group,Check,N,0,0/1,,
+leave_block_list,Leave Block List,Link,N,,must exist if set,,
+department_code,Department Code,Data,N,CARD,short code for reports,,
+building,Building / Wing,Data,N,Main Block - 2nd Floor,geofencing + signage,,
+hod,Head of Department,Link,N,,must exist in Employee,,

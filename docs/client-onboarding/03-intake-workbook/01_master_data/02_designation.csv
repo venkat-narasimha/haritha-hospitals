@@ -1,0 +1,7 @@
+fieldname,label,type,required,example,validation,client_value,notes
+designation_name,Designation Name,Data,Y,Senior Consultant,unique,,
+description,Description,Text,N,Senior clinical role,,,
+clinical_role,Clinical Role,Select,N,Doctor,Doctor/Nurse/Technician/Support/Admin,,
+requires_registration,Requires Medical Registration,Check,N,1,0/1,,
+min_qualification,Minimum Qualification,Data,N,MBBS, MD,,,
+appraisal_template,Appraisal Template,Link,N,,must exist if set,,

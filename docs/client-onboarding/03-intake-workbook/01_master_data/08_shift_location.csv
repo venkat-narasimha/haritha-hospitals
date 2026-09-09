@@ -1,0 +1,9 @@
+fieldname,label,type,required,example,validation,client_value,notes
+location_name,Location Name,Data,Y,Main Hospital - ICU,unique,,
+latitude,Latitude,Float,Y,17.3850,-90 to 90,,
+longitude,Longitude,Float,Y,78.4867,-180 to 180,,
+checkin_radius,Check-in Radius,Int,N,100,meters,50-200 indoor; 500+ campus,,
+address,Address,Text,N,Main Block - 2nd Floor,,,
+zone_type,Zone Type,Select,N,ICU,ICU/OT/Ward/OPD/Casualty/Lab/Pharmacy/Admin,,
+floor,Floor,Data,N,2nd,,,
+requires_late_attendance_alert,Late Attendance Alert,Check,N,1,0/1,,

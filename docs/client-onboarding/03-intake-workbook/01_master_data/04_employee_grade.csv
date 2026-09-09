@@ -1,0 +1,7 @@
+fieldname,label,type,required,example,validation,client_value,notes
+grade_name,Grade Name,Data,Y,A2,unique,,
+description,Description,Text,N,Junior Doctors and Nurses,,,
+default_currency,Default Currency,Link,N,INR,must exist,,
+min_salary,Minimum Salary,Currency,N,40000,>=0,,
+max_salary,Maximum Salary,Currency,N,80000,>=min_salary,,
+pay_band,Pay Band,Data,N,Clinical-Band-2,,,
