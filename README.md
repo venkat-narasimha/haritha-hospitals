@@ -177,4 +177,4 @@ All captured as Frappe fixtures in the `venkat-narasimha/haritha_hospital` custo
 
 ---
 
-*Last updated: 2026-08-31 — refreshed to add Tier 6 (09-compliance) docs + client demo deck + speaker script*
+*Last updated: 2026-09-10 — renamed phase6→handbook, phase-a→archive, added client-onboarding + walkthrough, fixed 42 stale path refs*
