@@ -83,6 +83,7 @@ ERPNext + HRMS deployment for **Processbricks' Haritha Hospitals** project — a
 | `docs/` | Documentation — `HARITHA_HOSPITALS_GUIDE.md` + `handbook/` (Tier 0-8) + `pberp-setup-plan.md` |
 | `docs/handbook/` | **Phase 6 documentation** — 35 docs, 9 tiers, ~15,900 lines (foundations, schema, workflow, client, runbooks, process, user manuals, testing, compliance) |
 | `docs/handbook/03-client/` | **Client demo deliverable** — markdown deck (`03.4`), PPTX export (`03.4.pptx`, 543 KB), speaker script (`03.5`), 10 screenshots from pberpprod, 20 mermaid-rendered diagrams |
+| `docs/client-onboarding/` | Client onboarding data collection kit — 6-phase process doc, intake workbook (15 DocTypes), 6 sign-off templates, settings checklists |
 | `docs/handbook/09-compliance/` | **ISO 27001 + CMM L5 docs** (12 policies/maturity docs, internal best-practice reference) |
 | `tracker-phases/` | Project tracker split into per-phase files (master `TRACKER.md` is the index) |
 | `scripts/` | Utility scripts (≈45 files) — `migrate_master_data.py`, `recreate_property_setters.py`, `bulk_submit.py`, `fix_attendance_hrms_recompute.py`, `verify_csvs.py`, `update_tracker.py`, etc. |
