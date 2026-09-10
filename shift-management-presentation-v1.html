@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shift Management with ERPNext HRMS</title>
+  <style>
+    /* Design Tokens (§6) */
+    :root {
+      --primary: #1e40af;
+      --secondary: #64748b;
+      --accent: #0ea5e9;
+      --text: #0f172a;
+      --muted: #94a3b8;
+      --bg-odd: #ffffff;
+      --bg-even: #f8fafc;
+      --code-bg: #f1f5f9;
+      --code-text: #0f172a;
+      --space-8: 8px;
+      --space-16: 16px;
+      --space-24: 24px;
+      --space-32: 32px;
+      --space-48: 48px;
+      --space-64: 64px;
+      --font-main: Inter, system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-main);
+      font-size: 18px;
+      line-height: 1.6;
+      color: var(--text);
+      background-color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+    }
+
+    /* Presentation Slide Frame */
+    .deck-container {
+      width: 100%;
+      max-width: 960px;
+      min-height: 680px;
+      position: relative;
+      margin: 0 auto;
+    }
+
+    .slide {
+      display: none;
+      width: 100%;
+      min-height: 640px;
+      padding: var(--space-64) var(--space-32);
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
+      position: relative;
+      animation: slideIn 200ms ease-out;
+    }
+
+    .slide.active {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+
+    .slide:nth-child(odd) {
+      background-color: var(--bg-odd);
+    }
+
+    .slide:nth-child(even) {
+      background-color: var(--bg-even);
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Slide Typography & Shared Elements */
+    .slide-number {
+      position: absolute;
+      top: var(--space-32);
+      right: var(--space-32);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--secondary);
+      font-family: var(--font-mono);
+    }
+
+    .slide-title {
+      font-size: 40px;
+      font-weight: 600;
+      line-height: 1.2;
+      color: var(--primary);
+      margin-bottom: var(--space-24);
+    }
+
+    h3 {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: var(--space-16);
+    }
+
+    h4 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .body p {
+      margin-bottom: var(--space-16);
+      color: var(--text);
+    }
+
+    .bullet-list {
+      list-style: none;
+      margin-bottom: var(--space-24);
+    }
+
+    .bullet-list li {
+      position: relative;
+      padding-left: var(--space-24);
+      margin-bottom: var(--space-8);
+      color: var(--text);
+    }
+
+    .bullet-list li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-size: 24px;
+      line-height: 1;
+      top: -2px;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      background-color: var(--code-bg);
+      color: var(--code-text);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* Speaker Notes (§10) */
+    .speaker-notes {
+      display: none;
+      font-size: 14px;
+      color: var(--secondary);
+      border-left: 3px solid var(--accent);
+      padding-left: var(--space-16);
+      margin-top: var(--space-24);
+      font-style: italic;
+      background: rgba(241, 245, 249, 0.6);
+      padding-top: var(--space-8);
+      padding-bottom: var(--space-8);
+    }
+
+    body.show-speaker-notes .speaker-notes {
+      display: block;
+    }
+
+    /* Navigation UI */
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 960px;
+      margin-top: var(--space-16);
+      padding: 0 var(--space-16);
+      color: var(--secondary);
+      font-size: 14px;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: var(--space-8);
+    }
+
+    button.nav-btn {
+      background: white;
+      border: 1px solid var(--muted);
+      color: var(--text);
+      padding: 6px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: var(--font-main);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    button.nav-btn:hover {
+      background: var(--code-bg);
+      border-color: var(--secondary);
+    }
+
+    /* Slide 1 - Title Custom Layout */
+    .title-wrapper {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 480px;
+      position: relative;
+    }
+    .title-subtitle {
+      font-size: 24px;
+      color: var(--secondary);
+      margin-top: var(--space-16);
+      margin-bottom: var(--space-48);
+    }
+    .metadata-block {
+      align-self: flex-end;
+      margin-top: auto;
+      text-align: right;
+      font-size: 14px;
+      color: var(--secondary);
+      background: #ffffff;
+      padding: var(--space-16);
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+    }
+    .metadata-block div {
+      margin-bottom: 4px;
+    }
+
+    /* Slide 2 - Agenda Cards */
+    .agenda-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-16);
+      margin-top: var(--space-32);
+    }
+    .agenda-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: var(--space-16);
+      border-top: 4px solid var(--primary);
+      display: flex;
+      flex-direction: column;
+    }
+    .agenda-num {
+      font-family: var(--font-mono);
+      color: var(--accent);
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: var(--space-8);
+    }
+    .agenda-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: var(--space-8);
+    }
+    .agenda-sub {
+      font-size: 13px;
+      color: var(--secondary);
+      line-height: 1.4;
+    }
+
+    /* Slide 3 - Layered Stack */
+    .stack-diagram {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-8);
+      margin-top: var(--space-24);
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      width: 100%;
+    }
+    .stack-layer {
+      padding: var(--space-16);
+      border-radius: 6px;
+      text-align: center;
+      font-weight: 600;
+      color: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .layer-top { background-color: var(--primary); }
+    .layer-mid { background-color: var(--accent); }
+    .layer-bot { background-color: var(--secondary); }
+
+    /* Slide 5 - Shift Type Cards */
+    .shift-cards {
+      display: flex;
+      gap: var(--space-24);
+      justify-content: center;
+      margin-top: var(--space-32);
+    }
+    .shift-card {
+      flex: 1;
+      max-width: 220px;
+      padding: var(--space-24) var(--space-16) var(--space-16);
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(15,23,42,0.06);
+      background: white;
+      border: 1px solid #e2e8f0;
+      position: relative;
+    }
+    .shift-color-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      border-radius: 8px 8px 0 0;
+    }
+    .shift-name {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text);
+      margin-top: var(--space-12, 12px);
+    }
+    .shift-time {
+      font-size: 16px;
+      color: var(--primary);
+      margin-top: var(--space-8);
+      font-family: var(--font-mono);
+    }
+    .shift-hours {
+      font-size: 13px;
+      color: var(--secondary);
+      margin-top: 4px;
+    }
+
+    /* Slide 8 & 12 - Workflow Flows */
+    .flow-horizontal {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-16);
+      margin-top: var(--space-32);
+    }
+    .flow-step {
+      background: white;
+      border: 1px solid #e2e8f0;
+      padding: var(--space-16) var(--space-24);
+      border-radius: 6px;
+      font-weight: 600;
+      color: var(--text);
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+      min-width: 140px;
+    }
+    .flow-arrow {
+      color: var(--accent);
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    /* Slide 9 - Table Mockup */
+    .table-mockup {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: var(--space-24);
+      background: white;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+    }
+    .table-mockup th, .table-mockup td {
+      padding: var(--space-16);
+      text-align: left;
+      font-size: 15px;
+    }
+    .table-mockup th {
+      background-color: #f1f5f9;
+      color: var(--secondary);
+      font-weight: 600;
+    }
+    .table-mockup tr:not(:last-child) {
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    /* Slide 13 - Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-16);
+      margin-bottom: var(--space-32);
+    }
+    .stat-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: var(--space-16);
+      text-align: center;
+    }
+    .stat-label {
+      font-size: 13px;
+      color: var(--secondary);
+    }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text);
+      margin-top: var(--space-8);
+    }
+    .stat-trend {
+      font-size: 12px;
+      margin-top: 4px;
+    }
+    .stat-trend.positive { color: #10b981; }
+    .stat-trend.negative { color: #ef4444; }
+    .stat-trend.neutral { color: var(--secondary); }
+    .chart-placeholder {
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: var(--space-16);
+      height: 180px;
+      border: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Slide 16 - Comparison Table */
+    .comp-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: var(--space-24);
+      background: white;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+    }
+    .comp-table th, .comp-table td {
+      padding: var(--space-16);
+      font-size: 14px;
+      text-align: left;
+    }
+    .comp-table th {
+      background: #f1f5f9;
+      color: var(--text);
+    }
+    .comp-table tr:not(:last-child) {
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .comp-highlight {
+      background: #eff6ff;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    /* Print Stylesheet (§5) */
+    @media print {
+      body {
+        background: none;
+        padding: 0;
+      }
+      .deck-container {
+        max-width: 100%;
+      }
+      .slide {
+        display: flex !important;
+        page-break-after: always;
+        min-height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 48px;
+      }
+      .controls {
+        display: none;
+      }
+      .speaker-notes {
+        display: block !important;
+        margin-top: 32px;
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="deck-container">
+
+    <section class="slide active" id="slide-1">
+      <div class="slide-number">1 / 17</div>
+      <div class="body title-wrapper">
+        <h2 class="slide-title">Shift Management with ERPNext HRMS</h2>
+        <div class="title-subtitle">A practical guide to planning, scheduling, attendance &amp; reporting</div>
+        
+        <div class="metadata-block">
+          <div><strong>Version:</strong> 1.0</div>
+          <div><strong>Date:</strong> 2026-09-04</div>
+          <div><strong>Audience:</strong> General (HR, Operations, Evaluators)</div>
+        </div>
+      </div>
+      <aside class="speaker-notes">
+        Welcome everyone. Today we will explore shift operations using ERPNext HRMS across this 40-minute session, tailored for operations leads, HR administrators, and system evaluators. Press 'S' to toggle presenter notes.
+        <br><br>
+        Transition: Let's start with what we are covering today.
+      </aside>
+    </section>
+
+    <section class="slide" id="slide-2">
+      <div class="slide-number">2 / 17</div>
+      <h2 class="slide-title">Agenda</h2>
+      <div class="body">
+        <p>A roadmap across core architecture, operational workflows, and extension paradigms.</p>
+        <div class="agenda-grid">
+          <div class="agenda-card">
+            <div class="agenda-num">01</div>
+            <div class="agenda-title">ERPNext + HRMS Stack</div>
+            <div class="agenda-sub">Open-source architectural foundation and design layers.</div>
+          </div>
+          <div class="agenda-card">
+            <div class="agenda-num">02</div>
+            <div class="agenda-title">Shift Operations</div>
+            <div class="agenda-sub">Templates, requests, assignments, and auto-attendance.</div>
+          </div>
+          <div class="agenda-card">
+            <div class="agenda-num">03</div>
+            <div class="agenda-title">Custom App &amp; Schema</div>
+            <div class="agenda-sub">DocType relational schema and clean extensions.</div>
+          </div>
+          <div class="agenda-card">
+            <div class="agenda-num">04</div>
+            <div class="agenda-title">Why ERPNext + Haritha</div>
+            <div class="agenda-sub">Evaluation metrics, ROI comparison, and takeaways.</div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">
+        We will step through four cohesive modules, each taking roughly seven minutes before opening for targeted questions and answers.
+        <br><br>
+        Transition: First, a quick foundation.
+      </aside>
+    </section>
+
+    <section class="slide" id="slide-3">
+      <div class="slide-number">3 / 17</div>
+      <h2 class="slide-title">ERPNext + HRMS Stack</h2>
+      <div class="body">
+        <ul class="bullet-list">
+          <li>Open-source ERP platform built upon Frappe framework and Python/JS web technologies.</li>
+          <li>Encompasses ~12 business domains including accounting, inventory, payroll, and projects.</li>
+          <li>HRMS operates as a specialized HR module installed cleanly on top of ERPNext.</li>
+          <li>Backed by 5,000+ contributors, fully web-native with mobile responsive interfaces.</li>
+        </ul>
+        <div class="stack-diagram">
+          <div class="stack-layer layer-top">HRMS (HR Module: Shifts, Leaves, Payroll)</div>
+          <div class="stack-layer layer-mid">ERPNext (Standard Enterprise Apps Layer)</div>
+          <div class="stack-layer layer-bot">Frappe Framework (Python, JS, MariaDB, Redis)</div>
+        </div>
+      </div>
+      <aside class="speaker-notes">
+        This decoupled architectural hierarchy provides zero per-seat licensing fees alongside total ownership of database schemas, custom workflows, and sensitive employee data.
+        <br><br>
+        Transition: Now let's dive into shift management.
+      </aside>
+    </section>
+
+    <section class="slide" id="slide-4">
+      <div class="slide-number">4 / 17</div>
+      <h2 class="slide-title">Why shift management matters</h2>
+      <div class="body">
+        <ul class="bullet-list">
+          <li>Unstructured spreadsheets lead directly to coverage gaps, compliance penalties, and payroll disputes.</li>
+          <li>Critical across 24/7 sectors: healthcare, manufacturing, retail, security, and logistics.</li>
+          <li>Continuous operations require systematic, automated scheduling to manage labor compliance.</li>
+        </ul>
+        <div style="display:flex; justify-content:center; margin-top:var(--space-16);">
+          <svg viewBox="0 0 200 200" width="180" height="180">
+            <circle cx="100" cy="100" r="80" fill="none" stroke="#e2e8f0" stroke-width="24" />
+            <circle cx="100" cy="100" r="80" fill="none" stroke="#1e40af" stroke-width="24" stroke-dasharray="167.5 335" stroke-dashoffset="0" />
+            <circle cx="100" cy="100" r="80" fill="none" stroke="#0ea5e9" stroke-width="24" stroke-dasharray="167.5 335" stroke-dashoffset="-167.5" />
+            <circle cx="100" cy="100" r="80" fill="none" stroke="#64748b" stroke-width="24" stroke-dasharray="167.5 335" stroke-dashoffset="-335" />
+            <text x="100" y="105" text-anchor="middle" font-size="14" font-weight="600" fill="#0f172a" font-family="Inter, sans-serif">24 Hours</text>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">
+        Before evaluating software mechanics, we must define the cost of operational silence. Scheduling mistakes directly create legal compliance exposures and rapid employee burnout.
+        <br><br>
+        Transition: Let's start with the foundation: Shift Type.
+      </aside>
+    </section>
+
+    <section class="slide" id="slide-5">
+      <div class="slide-number">5 / 17</div>
+      <h2 class="slide-title">Shift Type</h2>
+      <div class="body">
+        <p>A Shift Type is a reusable template that defines when work happens. You define Morning, Evening, and Night once, then assign employees to instances of these templates on specific dates.</p>
+        <div class="shift-cards">
+          <div class="shift-card">
+            <div class="shift-color-bar" style="background:#1e40af;"></div>
+            <div class="shift-name">Morning</div>
+            <div class="shift-time">06:00 – 14:00</div>
+            <div class="shift-hours">8 hours</div>
+          </div>
+          <div class="shift-card">
+            <div class="shift-color-bar" style="background:#0ea5e9;"></div>
+            <div class="shift-name">Evening</div>
+            <div class="shift-time">14:00 – 22:00</div>
+            <div class="shift-hours">8 hours</div>
+          </div>
+          <div class="shift-card">
+            <div class="shift-color-bar" style="background:#64748b;"></div>
+            <div class="shift-name">Night</div>
+            <div class="shift-time">22:00 – 06:00</div>
+            <div class="shift-hours">8 hours</div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">
+        Shift Types are reusable structural templates, not calendar dates. You configure timing rules once and leverage them endlessly. For example, clinical wards standardise around 8-hour rotations.
+        <br><br>
+        Transition: But work happens at a place — that's Shift Location.
+      </aside>
+    </section>
+
+    <section class="slide" id="slide-6">
+      <div class="slide-number">6 / 17</div>
+      <h2 class="slide-title">Shift Location</h2>
+      <div class="body">
+        <ul class="bullet-list">
+          <li>Defines the physical deployment boundary tied directly to a scheduled shift.</li>
+          <li>Prevents fraudulent check-ins and buddy-punching via geo-fenced boundaries.</li>
+          <li>Configured via GPS coordinates paired with strict allowed radial tolerances.</li>
+        </ul>
+        <div style="display:flex; justify-content:center; align-items:center; margin-top:var(--space-16);">
+          <svg viewBox="0 0 320 180" width="320" height="180">
+            <rect width="320" height="180" rx="8" fill="#f1f5f9" />
+            <circle cx="160" cy="90" r="55" fill="rgba(14, 165, 233, 0.15)" stroke="#0ea5e9" stroke-width="2" stroke-dasharray="4 4" />
+            <circle cx="160" cy="90" r="6" fill="#1e40af" />
+            <text x="160" y="165" text-anchor="middle" font-size="12" fill="#64748b" font-family="Inter, sans-serif">Allowed Check-in Zone (200m radius)</text>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">
+        Shift Locations prevent off-site time fraud by pairing mobile or kiosk check-ins with precise device telemetry. This boundary ensures staff check in on site.
+        <br><br>
+        Transition: Templates are scheduled — Shift Schedule.
+      </aside>
+    </section>
+
+    <section class="slide" id="slide-7">
+      <div class="slide-number">7 / 17</div>
+      <h2 class="slide-title">Shift Schedule</h2>
+      <div class="body">
+        <ul class="bullet-list">
+          <li>Represents planned working patterns projected across a specified date calendar range.</li>
+          <li>Supports structured recurrences: weekly cycles, rolling rotations, or fixed templates.</li>
+          <li>Acts as the authoritative master template for generating actual employee assignments.</li>
+        </ul>
+        <div style="display:flex; justify-content:center; margin-top:var(--space-16);">
+          <svg viewBox="0 0 420 130" width="420" height="130">
+            <rect x="0" y="0" width="55" height="120" rx="4" fill="#ffffff" stroke="#cbd5e1" />
+            <rect x="60" y="0" width="55" height="120" rx="4" fill="#ffffff" stroke="#cbd5e1" />
+            <rect x="120" y="0" width="55" height="120" rx="4" fill="#ffffff" stroke="#cbd5e1" />
+            <rect x="180" y="0" width="55" height="120" rx="4" fill="#ffffff" stroke="#cbd5e1" />
+            <rect x="240" y="0" width="55" height="120" rx="4" fill="#ffffff" stroke="#cbd5e1" />
+            <rect x="300" y="0" width="55" height="120" rx="4" fill="#f8fafc" stroke="#cbd5e1" />
+            <rect x="360" y="0" width="55" height="120" rx="4" fill="#f8fafc" stroke="#cbd5e1" />
+            
+            <rect x="5" y="30" width="45" height="24" rx="3" fill="#1e40af" />
+            <rect x="65" y="30" width="45" height="24" rx="3" fill="#1e40af" />
+            <rect x="125" y="60" width="45" height="24" rx="3" fill="#0ea5e9" />
+            <rect x="185" y="60" width="45" height="24" rx="3" fill="#0ea5e9" />
+            <rect x="245" y="30" width="45" height="24" rx="3" fill="#1e40af" />
+
+            <text x="27" y="20" font-size="11" text-anchor="middle" fill="#64748b">Mon</text>
+            <text x="87" y="20" font-size="11" text-anchor="middle" fill="#64748b">Tue</text>
+            <text x="147" y="20" font-size="11" text-anchor="middle" fill="#64748b">Wed</text>
+            <text x="207" y="20" font-size="11" text-anchor="middle" fill="#64748b">Thu</text>
+            <text x="267" y="20" font-size="11" text-anchor="middle" fill="#64748b">Fri</text>
+            <text x="327" y="20" font-size="11" text-anchor="middle" fill="#94a3b8">Sat</text>
+            <text x="387" y="20" font-size="11" text-anchor="middle" fill="#94a3b8">Sun</text>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">
+        Keep clear separation between schedules and assignments: schedules provide the abstract planning pattern, whereas assignments represent the concrete operational reality.
+        <br><br>
+        Transition: Employees can also request changes — Shift Request.
+      </aside>
+    </section>
+
+    <section class="slide" id="slide-8">
+      <div class="slide-number">8 / 17</div>
+      <h2 class="slide-title">Shift Request</h2>
+      <div class="body">
+        <ul class="bullet-list">
+          <li>Employee-initiated self-service portal for shift swaps, leaves, or allocations.</li>
+          <li>Enforces automated multi-tier approval workflows tailored by role or department.</li>
+          <li>Maintains strict auditable lifecycle states: Draft → Submitted → Approved / Rejected.</li>
+        </ul>
+        <div class="flow-horizontal">
+          <div class="flow-step">1. Employee<br><small style="color:var(--secondary)">Submits Request</small></div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">2. Supervisor<br><small style="color:var(--secondary)">Validates Shift</small></div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">3. HR / System<br><small style="color:var(--secondary)">Updates Roster</small></div>
+        </div>
+      </div>
+      <aside class="speaker-notes">
+        Allowing self-service shift requests reduces supervisor friction while preserving managerial oversight through automated escalation rules.
+        <br><br>
+        Transition: Once approved, the assignment happens — Shift Assignment.
+      </aside>
+    </section>
+
+    <section class="slide" id="slide-9">
+      <div class="slide-number">9 / 17</div>
+      <h2 class="slide-title">Shift Assignment</h2>
+      <div class="body">
+        <ul class="bullet-list">
+          <li>Maps an individual employee to a defined shift type across concrete dates.</li>
+          <li>Automated validation engines prevent double-booking and mandatory rest violations.</li>
+          <li>Dispatches automated email and mobile notifications upon assignment finalization.</li>
+        </ul>
+        <table class="table-mockup">
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Shift Type</th>
+              <th>Date Window</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>EMP-00124</td>
+              <td>Morning (06:00-14:00)</td>
+              <td>2026-09-07 – 2026-09-11</td>
+              <td><span class="status-badge">Active</span></td>
+            </tr>
+            <tr>
+              <td>EMP-00891</td>
+              <td>Night (22:00-06:00)</td>
+              <td>2026-09-07 – 2026-09-11</td>
+              <td><span class="status-badge">Active</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <aside class="speaker-notes">
+        Shift Assignment represents actual ledger records. The validation engine blocks overlapping shifts or statutory rest-interval breaches automatically.
+        <br><br>
+        Transition: Now the bulk + UI features — Schedule Assignment + Tool.
+      </aside>
+    </section>
+
+    <section class="slide" id="slide-10">
+      <div class="slide-number">10 / 17</div>
+      <h2 class="slide-title">Bulk Assignment + Tool</h2>
+      <div class="body">
+        <ul class="bullet-list">
+          <li><strong>Shift Schedule Assignment:</strong> Instantly project standardized templates across broad teams.</li>
+          <li><strong>Shift Assignment Tool:</strong> Interactive visual matrix for agile calendar-based planning.</li>
+          <li>Compresses monthly team roster generation from hours down to minutes.</li>
+        </ul>
+        <div style="background:white; border:1px solid #e2e8f0; border-radius:6px; padding:var(--space-16); margin-top:var(--space-16);">
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px; font-weight:600; color:var(--secondary);">
+            <span>Team Member</span>
+            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-top:1px solid #f1f5f9;">
+            <span style="font-size:14px;">Operator Alpha</span>
+            <code style="background:#dbeafe; color:#1e40af;">MORN</code>
+            <code style="background:#dbeafe; color:#1e40af;">MORN</code>
+            <code style="background:#e0f2fe; color:#0369a1;">EVEN</code>
+            <code style="background:#e0f2fe; color:#0369a1;">EVEN</code>
+            <code style="background:#f1f5f9; color:#64748b;">OFF</code>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">
+        Operations leads save considerable administrative effort here. Bulk assignment tools remove repetitive manual row-by-row entries.
+        <br><br>
+        Transition: What does the result look like? The Roster.
+      </aside>
+    </section>
+
+    <section class="slide" id="slide-11">
+      <div class="slide-number">11 / 17</div>
+      <h2 class="slide-title">Roster</h2>
+      <div class="body">
+        <p>A unified interactive calendar visualizing department-wide shift coverage at a glance.</p>
+        <ul class="bullet-list">
+          <li>Filter dynamic views by department, specific role, designated shift location, or date span.</li>
+          <li>Color-coded operational blocks streamline identification of understaffed periods.</li>
+        </ul>
+        <div class="image-placeholder" style="border: 2px dashed #94a3b8; padding: 48px 32px; text-align: center; color: #64748b; margin-top: 32px;">
+          [Insert roster screenshot here]
+          <br><small>Roster view — calendar of employee shifts</small>
+        </div>
+      </div>
+      <aside class="speaker-notes">
+        The master roster provides complete coverage visibility. Managers filter by location and qualification to verify adequate coverage before shifts commence.
+        <br><br>
+        Transition: Now let's track who's actually showing up — Attendance.
+      </aside>
+    </section>
+
+    <section class="slide" id="slide-12">
+      <div class="slide-number">12 / 17</div>
+      <h2 class="slide-title">Attendance + Auto-attendance</h2>
+      <div class="body">
+        <ul class="bullet-list">
+          <li>Hardware-agnostic sync: captures events via mobile GPS, biometrics, or networked kiosks.</li>
+          <li>System correlates check-in events against planned assignments to record presence.</li>
+          <li>Identifies grace-period thresholds to flag late arrivals and calculate overtime.</li>
+        </ul>
+        <div class="flow-horizontal">
+          <div class="flow-step">1. Telemetry<br><small style="color:var(--secondary)">GPS / Biometric</small></div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">2. Match Engine<br><small style="color:var(--secondary)">Validate Shift Type</small></div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">3. Ledger<br><small style="color:var(--secondary)">Present / Tardy</small></div>
+        </div>
+      </div>
+      <aside class="speaker-notes">
+        Auto-attendance matches raw biometric check-ins against active shift assignments. The engine applies grace periods and calculates overtime without manual oversight.
+        <br><br>
+        Transition: All this data feeds into Reports.
+      </aside>
+    </section>
+
+    <section class="slide" id="slide-13">
+      <div class="slide-number">13 / 17</div>
+      <h2 class="slide-title">Reports &amp; Analytics</h2>
+      <div class="body">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Coverage Today</div>
+            <div class="stat-value">98.5%</div>
+            <div class="stat-trend positive">+1.2%</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Late Arrivals</div>
+            <div class="stat-value">4</div>
+            <div class="stat-trend negative">+2</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Overtime Hours</div>
+            <div class="stat-value">27h</div>
+            <div class="stat-trend neutral">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Pending Swaps</div>
+            <div class="stat-value">7</div>
+            <div class="stat-trend neutral">—</div>
+          </div>
+        </div>
+        <div class="chart-placeholder">
+          <svg viewBox="0 0 600 120" width="100%" height="100%">
+            <polyline fill="none" stroke="#0ea5e9" stroke-width="3" points="20,90 100,85 180,60 260,70 340,40 420,45 500,20 580,30" />
+            <circle cx="500" cy="20" r="4" fill="#1e40af" />
+            <text x="500" y="15" font-size="11" fill="#1e40af" text-anchor="middle">Peak Attendance (99.2%)</text>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">
+        These operational metrics inform daily decisions. Supervisors address late arrivals immediately, while overtime trends guide capacity planning.
+        <br><br>
+        Transition: What if ERPNext out-of-box doesn't fit? Custom apps.
+      </aside>
+    </section>
+
+    <section class="slide" id="slide-14">
+      <div class="slide-number">14 / 17</div>
+      <h2 class="slide-title">Extending ERPNext with Custom Apps</h2>
+      <div class="body">
+        <ul class="bullet-list">
+          <li>Custom apps layer cleanly above core code without forking baseline repositories.</li>
+          <li>Add custom fields, new DocTypes (tables), specialized workflows, and Python hooks.</li>
+          <li>Deploy cleanly across production fleets using Git and standard <code>bench</code> commands.</li>
+        </ul>
+        <div class="stack-diagram" style="margin-top:var(--space-16);">
+          <div class="stack-layer" style="background:var(--accent);">Specialized App Layer (e.g. Industry Clinical Workflows)</div>
+          <div class="stack-layer" style="background:var(--primary);">HRMS Core Layer (Shift Assignment, Leaves, Attendance)</div>
+          <div class="stack-layer" style="background:var(--secondary);">ERPNext &amp; Frappe Framework Base</div>
+        </div>
+      </div>
+      <aside class="speaker-notes">
+        Custom apps ensure your operational customizations survive upstream software upgrades. You can modify DocTypes and add server scripts without editing core source code.
+        <br><br>
+        Transition: Here's how the entities relate.
+      </aside>
+    </section>
+
+    <section class="slide" id="slide-15">
+      <div class="slide-number">15 / 17</div>
+      <h2 class="slide-title">Schema: Shift Management Entities</h2>
+      <div class="body">
+        <p style="margin-bottom:var(--space-8); font-size:15px;"><strong>Architecture:</strong> How shift management entities relate across layers.</p>
+        <div style="width:100%; display:flex; justify-content:center;">
+          <svg viewBox="0 0 740 320" width="740" height="320">
+            <path d="M 370 65 L 370 120" stroke="#94a3b8" stroke-width="2" />
+            <path d="M 370 180 L 370 230" stroke="#94a3b8" stroke-width="2" />
+            <path d="M 310 150 L 190 150" stroke="#94a3b8" stroke-width="2" />
+            <path d="M 430 150 L 550 150" stroke="#94a3b8" stroke-width="2" />
+            <path d="M 130 180 L 130 230" stroke="#94a3b8" stroke-width="2" />
+            <path d="M 610 95 L 610 120" stroke="#94a3b8" stroke-width="2" />
+            <path d="M 610 180 L 610 205" stroke="#94a3b8" stroke-width="2" />
+            <path d="M 550 240 L 190 260" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 4" />
+
+            <rect x="310" y="120" width="120" height="60" rx="6" fill="#1e40af" />
+            <text x="370" y="146" fill="#ffffff" font-size="14" font-weight="600" text-anchor="middle">Employee</text>
+            <text x="370" y="164" fill="#93c5fd" font-size="11" text-anchor="middle">Core Master</text>
+
+            <rect x="310" y="15" width="120" height="50" rx="6" fill="#64748b" />
+            <text x="370" y="38" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Holiday List</text>
+            <text x="370" y="54" fill="#cbd5e1" font-size="10" text-anchor="middle">Company/Dept</text>
+
+            <rect x="310" y="230" width="120" height="50" rx="6" fill="#64748b" />
+            <text x="370" y="253" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Attendance</text>
+            <text x="370" y="269" fill="#cbd5e1" font-size="10" text-anchor="middle">Logs &amp; Status</text>
+
+            <rect x="550" y="45" width="120" height="50" rx="6" fill="#1e40af" />
+            <text x="610" y="68" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Shift Type</text>
+            <text x="610" y="84" fill="#93c5fd" font-size="10" text-anchor="middle">Time Definition</text>
+
+            <rect x="550" y="120" width="120" height="60" rx="6" fill="#1e40af" />
+            <text x="610" y="146" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Shift Schedule</text>
+            <text x="610" y="164" fill="#93c5fd" font-size="10" text-anchor="middle">Recurrence Model</text>
+
+            <rect x="550" y="205" width="120" height="50" rx="6" fill="#1e40af" />
+            <text x="610" y="228" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Shift Location</text>
+            <text x="610" y="244" fill="#93c5fd" font-size="10" text-anchor="middle">Geo-fence Radius</text>
+
+            <rect x="70" y="45" width="120" height="50" rx="6" fill="#0ea5e9" />
+            <text x="130" y="68" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Shift Request</text>
+            <text x="130" y="84" fill="#e0f2fe" font-size="10" text-anchor="middle">Workflow Link</text>
+
+            <rect x="70" y="120" width="120" height="60" rx="6" fill="#0ea5e9" />
+            <text x="130" y="146" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Shift Assignment</text>
+            <text x="130" y="164" fill="#e0f2fe" font-size="10" text-anchor="middle">Execution Entity</text>
+
+            <rect x="70" y="230" width="120" height="50" rx="6" fill="#0ea5e9" />
+            <text x="130" y="253" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Employee Checkin</text>
+            <text x="130" y="269" fill="#e0f2fe" font-size="10" text-anchor="middle">Raw Logs / Device</text>
+          </svg>
+        </div>
+        <p style="margin-top:var(--space-8); font-size:14px; color:var(--secondary);">The relational model connects schedule templates and raw checkins to generate clean attendance records.</p>
+      </div>
+      <aside class="speaker-notes">
+        Employee sits at the center of the architecture. Shift Assignments bridge abstract Shift Types with actual people, while Employee Checkins validate real-world execution against these definitions.
+        <br><br>
+        Transition: Why choose ERPNext + Haritha for your deployment.
+      </aside>
+    </section>
+
+    <section class="slide" id="slide-16">
+      <div class="slide-number">16 / 17</div>
+      <h2 class="slide-title">Why choose ERPNext + Haritha</h2>
+      <div class="body">
+        <ul class="bullet-list" style="margin-bottom:var(--space-16);">
+          <li><strong>Open source</strong> &mdash; Eliminates license fee overhead relative to enterprise legacy stacks.</li>
+          <li><strong>Complete code ownership</strong> &mdash; Full control over your database schema and customizations.</li>
+          <li><strong>Clinical operational readiness</strong> &mdash; Extensible architecture supports specialised rota requirements.</li>
+          <li><strong>Active community</strong> &mdash; Supported by 5,000+ contributors and partner implementation networks.</li>
+          <li><strong>Workflow flexibility</strong> &mdash; Configure validation logic to match operations without vendor lock-in.</li>
+        </ul>
+        <table class="comp-table">
+          <thead>
+            <tr>
+              <th>Evaluation Parameter</th>
+              <th class="comp-highlight">ERPNext + Haritha</th>
+              <th>SAP / Oracle</th>
+              <th>Workday</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>License Costs</td>
+              <td class="comp-highlight">Zero seat fees (Open Source)</td>
+              <td>High per-user enterprise tier</td>
+              <td>High recurring per-seat cost</td>
+            </tr>
+            <tr>
+              <td>Code Ownership</td>
+              <td class="comp-highlight">100% data and logic control</td>
+              <td>Proprietary walled-garden</td>
+              <td>Proprietary SaaS model</td>
+            </tr>
+            <tr>
+              <td>Customization Agility</td>
+              <td class="comp-highlight">Rapid custom app creation</td>
+              <td>Complex consulting cycles</td>
+              <td>Strict standard patterns</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <aside class="speaker-notes">
+        For Priya in HR, this provides predictable operational ROI. For Arjun, it offers configurable day-to-day rota control. For Sarah, it secures open platform freedom without recurring seat fees.
+        <br><br>
+        Transition: Let's wrap up.
+      </aside>
+    </section>
+
+    <section class="slide" id="slide-17">
+      <div class="slide-number">17 / 17</div>
+      <h2 class="slide-title">Conclusion + Next Steps</h2>
+      <div class="body">
+        <div style="margin-bottom:var(--space-32);">
+          <h3 style="color:var(--primary); margin-bottom:var(--space-16);">Key Takeaways</h3>
+          <ol style="margin-left:var(--space-24); color:var(--text); line-height:1.8;">
+            <li>ERPNext + HRMS provides a complete open-source platform for shift management.</li>
+            <li>Covers the complete operational lifecycle: planning, requests, assignment, and attendance.</li>
+            <li>Custom apps adapt ERPNext to your industry without forking the codebase.</li>
+          </ol>
+        </div>
+        <div style="background:white; border:1px solid #e2e8f0; border-radius:6px; padding:var(--space-16);">
+          <h4 style="margin-bottom:var(--space-8); color:var(--text);">Next Steps</h4>
+          <ul class="bullet-list" style="margin-bottom:0;">
+            <li>Access the live sandbox environment at <code>demo.example.com</code>.</li>
+            <li>Scope pilot rollout milestones across target departments (4-8 weeks).</li>
+            <li>Schedule technical architecture review for custom integration planning.</li>
+          </ul>
+        </div>
+      </div>
+      <aside class="speaker-notes">
+        We covered planning, automated roster assignment, and real-time attendance verification. We invite your questions and welcome deep-dive technical discussions during our open Q&amp;A.
+        <br><br>
+        Transition: Thank you and welcome to the Q&amp;A.
+      </aside>
+    </section>
+
+  </main>
+
+  <footer class="controls">
+    <div>Use <kbd>←</kbd> / <kbd>→</kbd> to navigate &bull; Press <kbd>S</kbd> for speaker notes</div>
+    <div class="nav-buttons">
+      <button class="nav-btn" id="prev-btn" aria-label="Previous Slide">&larr; Prev</button>
+      <span id="deck-counter" style="display:flex; align-items:center; font-family:var(--font-mono); font-weight:600;">1 / 17</span>
+      <button class="nav-btn" id="next-btn" aria-label="Next Slide">Next &rarr;</button>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      const slides = document.querySelectorAll('.slide');
+      const counter = document.getElementById('deck-counter');
+      const prevBtn = document.getElementById('prev-btn');
+      const nextBtn = document.getElementById('next-btn');
+      let currentSlide = 0;
+      const totalSlides = slides.length;
+
+      function updateSlide(newIndex) {
+        if (newIndex < 0 || newIndex >= totalSlides) return;
+        slides[currentSlide].classList.remove('active');
+        currentSlide = newIndex;
+        slides[currentSlide].classList.add('active');
+        if (counter) {
+          counter.textContent = (currentSlide + 1) + ' / ' + totalSlides;
+        }
+      }
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+          e.preventDefault();
+          updateSlide(currentSlide + 1);
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+          e.preventDefault();
+          updateSlide(currentSlide - 1);
+        } else if (e.key === 's' || e.key === 'S') {
+          document.body.classList.toggle('show-speaker-notes');
+        }
+      });
+
+      if (prevBtn) prevBtn.addEventListener('click', () => updateSlide(currentSlide - 1));
+      if (nextBtn) nextBtn.addEventListener('click', () => updateSlide(currentSlide + 1));
+    })();
+  </script>
+
+  </body>
+</html>
