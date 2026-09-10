@@ -2,7 +2,7 @@
 
 > **Audience:** Processbricks team (Venkat + downstream devs) and any operator touching the Haritha Hospitals ERPNext stack.
 > **Scope:** End-to-end reference for the Haritha Hospitals deployment — architecture, customizations, migration, ops, and lessons.
-> **Last updated:** 2026-08-29 (post custom-app build + master data migration + P1 outage recovery).
+> **Last updated:** 2026-09-10 — repo refresh: renamed phase6→handbook, phase-a→archive, fixed 42 stale path refs
 
 ---
 
@@ -538,6 +538,6 @@ Wards, beds, OTs, pharmacy, lab, billing, full Chart of Accounts — deferred pe
 
 ---
 
-*Last updated: 2026-08-29 09:21 IST (post Phase 0+ — Foundation & Migration).*
+*Last updated: 2026-09-10 — repo refresh: renamed phase6→handbook, phase-a→archive, fixed 42 stale path refs*
 
 *Generated as part of comprehensive doc update subagent task (2026-08-29). See `TRACKER.md` Phase 0+ section for chronological build-out.*

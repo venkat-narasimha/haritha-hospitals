@@ -3,7 +3,7 @@
 **Project:** `haritha-hospitals`
 **Owner:** Venkat (Processbricks) | **Recorded by:** ERPClaw + subagents
 **Source:** Extracted from `TRACKER.md` Decisions Log table (2026-08-19 → 2026-08-21)
-**Last updated:** 2026-08-21 11:55 IST
+**Last updated:** 2026-09-10 — repo refresh: renamed phase6→handbook, phase-a→archive, fixed 42 stale path refs
 **Total entries:** 28 (13 on 2026-08-19 + 10 on 2026-08-20 + 5 on 2026-08-21)
 
 > **Note on count:** Task brief said "32 entries" but the actual `TRACKER.md` Decisions Log table contains **28** decision rows. This file extracts all 28 verbatim — no fabrication. Discrepancy surfaced in Step 3 verification.

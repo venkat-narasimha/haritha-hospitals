@@ -1,6 +1,6 @@
 # Haritha Hospitals — Project Walkthrough for Newcomers
 
-**Last updated:** 2026-09-10
+**Last updated:** 2026-09-10 — repo refresh: renamed phase6→handbook, phase-a→archive, fixed 42 stale path refs
 **Audience:** Someone new to the project (treat as having zero context)
 **Reading time:** ~15-20 minutes
 **Sources:** Verified from `git log` + `TRACKER.md` + `README.md` + `tracker-phases/` + recent commits

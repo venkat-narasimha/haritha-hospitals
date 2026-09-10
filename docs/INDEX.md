@@ -3,7 +3,7 @@
 **Project code:** `haritha-hospitals`
 **Owner:** Venkat (Processbricks) | **Builder:** ERPClaw + subagents
 **Started:** 2026-08-19
-**Last updated:** 2026-08-21 11:55 IST
+**Last updated:** 2026-09-10 — repo refresh: renamed phase6→handbook, phase-a→archive, fixed 42 stale path refs
 **Status:** 🔄 **RESTART FROM PHASE 1** — Phase 2 deployment (`pberp.duckdns.org`) destroyed in 2026-08-21 10:11–10:18 IST teardown (Option B: nuke, no backup). 24,511 records + deployment artifacts lost. Phase 0 + 1 design preserved (CSV masters + git history intact). Phases 2–5 need redo on new env.
 **Target environment:** TBD — see Open Question #1 / #3 (new domain pending user decision)
 **Source data:** 19 CSV masters in `masters/` (1.77 MB, 24,758 rows) — canonical, read-only

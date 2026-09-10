@@ -1,6 +1,6 @@
 # Phase 6 — Process & Maturity Documentation
 
-Last updated: 2026-08-29 (Phase 6 complete)
+Last updated: 2026-09-10 — repo refresh: renamed phase6→handbook, phase-a→archive, fixed 42 stale path refs
 
 This directory contains Haritha Hospitals ERPNext deployment documentation.
 Organized in tiers for incremental review.

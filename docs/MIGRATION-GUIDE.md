@@ -4,7 +4,7 @@
 **Target:** pberpqa.duckdns.org (post 2026-08-21 rollback)
 **Source data:** `masters/` (19 CSV files — canonical, idempotent)
 **Git repo:** origin/main at `a0d1be9` (includes rollback event)
-**Last updated:** 2026-08-21 11:40 IST
+**Last updated:** 2026-09-10 — repo refresh: renamed phase6→handbook, phase-a→archive, fixed 42 stale path refs
 **Author:** Agent C (workflow+migration+audit subagent)
 
 ---
