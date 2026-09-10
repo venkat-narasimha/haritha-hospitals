@@ -425,7 +425,7 @@ Bottom 40% of slide 11 MUST be:
 
 ## 13. Schema Flowchart Details (Slide 15)
 
-Required entities (from `docs/phase6/01-schema/01.2-schema-diagram.md`):
+Required entities (from `docs/handbook/01-schema/01.2-schema-diagram.md`):
 
 | Entity | Key fields | Links to |
 |---|---|---|

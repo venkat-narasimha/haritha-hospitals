@@ -12,9 +12,9 @@ Generated PDFs of all markdown documentation in this repo.
 | `audit/*.pdf` | Audit reports |
 | `config/*.pdf` | Config documentation |
 | `docs/*.pdf` | Loose top-level docs |
-| `docs/phase6/*.pdf` | Phase 6 documentation (Tier 0-8) |
+| `docs/handbook/*.pdf` | Phase 6 documentation (Tier 0-8) |
 | `masters/*.pdf` | Master documentation |
-| `phase-a/*.pdf` | Phase A docs |
+| `archive/*.pdf` | Phase A docs |
 | `reports/*.pdf` | Reports |
 | `scripts/*.pdf` | Script docs |
 | `tracker-phases/*.pdf` | Per-phase tracker files |
@@ -26,7 +26,7 @@ Generated PDFs of all markdown documentation in this repo.
 - **Date:** 2026-08-31
 - **Source:** All `*.md` files in this repo (excluding `assets/`, `screenshots/`, `.git/`)
 - **Total files:** 67 PDFs (5.7 MB)
-- **Mermaid diagrams:** Pre-processed to embedded PNGs from `docs/phase6/03-client/assets/`
+- **Mermaid diagrams:** Pre-processed to embedded PNGs from `docs/handbook/03-client/assets/`
 
 ## Notes
 

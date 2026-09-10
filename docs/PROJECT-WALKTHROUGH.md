@@ -181,23 +181,23 @@ Lives at github.com/venkat-narasimha/haritha_hospital. Version 0.0.1.
 
 ## 5. Documentation overview (35 docs across 9 tiers)
 
-> **Verified counts** (from `find docs/phase6 -maxdepth 1 -name "*.md" | wc -l` per tier):
+> **Verified counts** (from `find docs/handbook -maxdepth 1 -name "*.md" | wc -l` per tier):
 > 00-foundations: 2 · 01-schema: 2 · 02-workflow: 2 · 03-client: 5 · 04-runbooks: 4 · 05-process: 2 · 07-user-manuals: 3 · 08-testing: 3 · 09-compliance: 13
-> Plus `docs/phase6/README.md` and 67 PDF renders in `pdfs/`.
+> Plus `docs/handbook/README.md` and 67 PDF renders in `pdfs/`.
 
 | Tier | Path | Purpose |
 |---|---|---|
-| 0 | `docs/phase6/00-foundations/` | ERP / Frappe / HRMS concepts (background for non-ERP readers) |
-| 1 | `docs/phase6/01-schema/` | Schema reference + ERD |
-| 2 | `docs/phase6/02-workflow/` | Shift management workflow + process diagrams |
-| 3 | `docs/phase6/03-client/` | Client demo deck + speaker script + 10 screenshots + 20 mermaid-rendered diagrams |
-| 4 | `docs/phase6/04-runbooks/` | Deployment, daily ops, disaster recovery, incident response |
-| 5 | `docs/phase6/05-process/` | Change management + post-mortem template |
-| 6 | `docs/phase6/09-compliance/` | ISO 27001 + CMM L5 maturity (13 docs — largest tier) |
-| 7 | `docs/phase6/07-user-manuals/` | User / Manager / Admin guides |
-| 8 | `docs/phase6/08-testing/` | Test plan + test cases + regression script |
+| 0 | `docs/handbook/00-foundations/` | ERP / Frappe / HRMS concepts (background for non-ERP readers) |
+| 1 | `docs/handbook/01-schema/` | Schema reference + ERD |
+| 2 | `docs/handbook/02-workflow/` | Shift management workflow + process diagrams |
+| 3 | `docs/handbook/03-client/` | Client demo deck + speaker script + 10 screenshots + 20 mermaid-rendered diagrams |
+| 4 | `docs/handbook/04-runbooks/` | Deployment, daily ops, disaster recovery, incident response |
+| 5 | `docs/handbook/05-process/` | Change management + post-mortem template |
+| 6 | `docs/handbook/09-compliance/` | ISO 27001 + CMM L5 maturity (13 docs — largest tier) |
+| 7 | `docs/handbook/07-user-manuals/` | User / Manager / Admin guides |
+| 8 | `docs/handbook/08-testing/` | Test plan + test cases + regression script |
 
-**Plus the standalone project docs** (not in phase6/):
+**Plus the standalone project docs** (not in handbook/):
 - `docs/HARITHA_HOSPITALS_GUIDE.md` (26 KB — comprehensive end-to-end architecture + ops guide)
 - `docs/DECISIONS.md` (28+ entries)
 - `docs/WORKFLOW.md` (shift management workflow notes)
@@ -212,7 +212,7 @@ Lives at github.com/venkat-narasimha/haritha_hospital. Version 0.0.1.
 
 ## 6. Operational runbooks
 
-All under `docs/phase6/04-runbooks/`:
+All under `docs/handbook/04-runbooks/`:
 
 | Doc | Purpose |
 |---|---|
@@ -286,16 +286,16 @@ Per README: "⏳ skipped per Venkat". Items not done:
 1. **Read this walkthrough first** — you are here.
 2. **Read `docs/HARITHA_HOSPITALS_GUIDE.md`** — comprehensive architecture + ops guide (~26 KB).
 3. **Read `TRACKER.md`** — it's now a slim index pointing to `tracker-phases/`. Read the relevant phase file for deep history (e.g., `tracker-phases/Phase-4-Shift-Management-Roster-Crash-Fix.md` for the roster work).
-4. **Read `docs/phase6/`** — operational docs (foundations → schema → workflow → client → runbooks → process → compliance → user manuals → testing).
+4. **Read `docs/handbook/`** — operational docs (foundations → schema → workflow → client → runbooks → process → compliance → user manuals → testing).
 5. **Read `.learnings/LEARNINGS.md`** — 159+ known pitfalls; #44, #46, #79, #104-106, #112, #151-157 are the most relevant.
 6. **Skim `DECISIONS.md` and `docs/DECISIONS.md`** — 28+ decisions with rationale.
 7. **Ask Venkat** for anything not covered. He's the project owner and the only one who knows why some trade-offs were made (e.g., why Option B teardown was authorized, why QA env was skipped).
 
 **Tactical entry points by task:**
-- "I need to deploy a new env" → `docs/phase6/04-runbooks/04.1-deployment.md` + `docs/MIGRATION-GUIDE.md`
+- "I need to deploy a new env" → `docs/handbook/04-runbooks/04.1-deployment.md` + `docs/MIGRATION-GUIDE.md`
 - "I need to add a Custom Field" → `scripts/recreate_property_setters.py` + the `haritha_hospital` app's fixtures
 - "I need to migrate data between envs" → `scripts/migrate_master_data.py`
-- "Something crashed" → `docs/phase6/04-runbooks/04.4-incident-response.md` + `LEARNINGS.md`
+- "Something crashed" → `docs/handbook/04-runbooks/04.4-incident-response.md` + `LEARNINGS.md`
 
 ---
 

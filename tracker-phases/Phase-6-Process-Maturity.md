@@ -60,4 +60,4 @@ SKIPPED per Venkat (DR test, security audit, SSL audit, UAT, perf baseline — d
 - [ ] HRMS version-check in `haritha_hospital/__init__.py` (deferred)
 
 ### Phase 6 — Documentation Index
-See `docs/phase6/README.md` for the full index. Tier 6 (compliance/maturity) lives under `docs/phase6/09-compliance/` despite the tier numbering — the folder was named that way in Tier 6 Batch 1 to distinguish from process-level docs (Tier 5). Renaming deferred.
+See `docs/handbook/README.md` for the full index. Tier 6 (compliance/maturity) lives under `docs/handbook/09-compliance/` despite the tier numbering — the folder was named that way in Tier 6 Batch 1 to distinguish from process-level docs (Tier 5). Renaming deferred.

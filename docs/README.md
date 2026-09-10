@@ -4,4 +4,4 @@ Top-level project documentation — guides, audit reports, decisions, workflow n
 
 See [INDEX.md](INDEX.md) for the full doc index and [HARITHA_HOSPITALS_GUIDE.md](HARITHA_HOSPITALS_GUIDE.md) for the canonical project guide.
 
-Subdirectory: [phase6/](phase6/) — Process & Maturity documentation (Tier 1–9).
+Subdirectory: [handbook/](handbook/) — Process & Maturity documentation (Tier 1–9).

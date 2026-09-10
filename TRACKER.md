@@ -42,4 +42,4 @@ A full backup of the original 1492-line TRACKER.md is preserved at [`tracker-pha
 
 - [README.md](README.md)
 - [docs/](docs/)
-- [docs/phase6/README.md](docs/phase6/README.md)
+- [docs/handbook/README.md](docs/handbook/README.md)

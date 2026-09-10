@@ -18,8 +18,8 @@ ERPNext + HRMS deployment for **Processbricks' Haritha Hospitals** project — a
 - **Custom app `haritha_hospital` built** — captures **274 production-validated customizations** as Frappe JSON fixtures (78 Custom Fields + 189 Property Setters + 3 Print Formats + 2 Notifications + 2 Letter Heads).
 - **Installed on both envs** — `pberpdev` (fresh, all 274 loaded) and `pberpprod` (idempotent re-install verified, `installed_apps` updated, count matches).
 - **Master data migrated prod → dev** — 16 DocTypes via `scripts/migrate_master_data.py`. pberpdev now mirrors prod: 1 Company, 210 Employees, 37 Departments, 25 Shift Types, 8,118 Shift Assignments, 6,300 Attendance, 12,562 Employee Checkins, etc.
-- **Phase 6 + Tier 6 documentation complete** — 35 docs across 9 tiers (`docs/phase6/`), ~15,900 lines. Tier 0-5 (foundations, schema, workflow, client, runbooks, process) + Tier 6/Tier 9 (`09-compliance/`, ISO 27001-aligned policies + CMM L5 maturity) + Tier 7-8 (user manuals + testing). Mermaid diagrams rendered to PNG.
-- **Client demo deck + speaker script** — `docs/phase6/03-client/`: 11-slide deck (`03.4`), PPTX export (`03.4.pptx`, 543 KB), speaker script (`03.5`), 10 screenshots from pberpprod, 20 mermaid-rendered diagrams.
+- **Phase 6 + Tier 6 documentation complete** — 35 docs across 9 tiers (`docs/handbook/`), ~15,900 lines. Tier 0-5 (foundations, schema, workflow, client, runbooks, process) + Tier 6/Tier 9 (`09-compliance/`, ISO 27001-aligned policies + CMM L5 maturity) + Tier 7-8 (user manuals + testing). Mermaid diagrams rendered to PNG.
+- **Client demo deck + speaker script** — `docs/handbook/03-client/`: 11-slide deck (`03.4`), PPTX export (`03.4.pptx`, 543 KB), speaker script (`03.5`), 10 screenshots from pberpprod, 20 mermaid-rendered diagrams.
 - **P1 outage resolved (2026-08-29 03:06 IST)** — gunicorn `--preload` sys.path freeze after `install-app`; both envs restarted (~30-60s downtime each, zero data loss). Always restart backend after `install-app` (LEARNINGS #153).
 - **Roster SPA verified rendering** — Phase 4.10/4.11 fixes held; `/hr/roster` shows 211 employees × 31 days without crash.
 
@@ -43,11 +43,11 @@ ERPNext + HRMS deployment for **Processbricks' Haritha Hospitals** project — a
 
 | Deliverable | Path | Notes |
 |---|---|---|
-| **Client demo deck** | `docs/phase6/03-client/03.4-client-presentation.pptx` | 11 slides, 543 KB, screenshots + diagrams embedded |
-| **Speaker script** | `docs/phase6/03-client/03.5-speaker-script.md` | Talking notes for each slide |
-| **Demo screenshots** | `docs/phase6/03-client/screenshots/` | 10 PNGs from pberpprod (login, dashboard, roster, etc.) |
-| **Diagram assets** | `docs/phase6/03-client/assets/` | 20 mermaid-rendered PNGs |
-| **Phase 6 + Tier 6 docs** | `docs/phase6/` | 35 docs, ~15,900 lines, 9 tiers |
+| **Client demo deck** | `docs/handbook/03-client/03.4-client-presentation.pptx` | 11 slides, 543 KB, screenshots + diagrams embedded |
+| **Speaker script** | `docs/handbook/03-client/03.5-speaker-script.md` | Talking notes for each slide |
+| **Demo screenshots** | `docs/handbook/03-client/screenshots/` | 10 PNGs from pberpprod (login, dashboard, roster, etc.) |
+| **Diagram assets** | `docs/handbook/03-client/assets/` | 20 mermaid-rendered PNGs |
+| **Phase 6 + Tier 6 docs** | `docs/handbook/` | 35 docs, ~15,900 lines, 9 tiers |
 
 ---
 
@@ -80,16 +80,16 @@ ERPNext + HRMS deployment for **Processbricks' Haritha Hospitals** project — a
 | `MIGRATION-GUIDE.md` | Migration playbook reference |
 | `all_schemas.csv` | Schema definitions for 15 master entities (schema-only, single CSV) |
 | `masters/` | Source CSVs — 19 files, ~1.77 MB, 24,758 rows (Company, Department, Designation, Employee, Shift Type, Shift Assignment, Attendance, Employee Checkin, etc.) |
-| `docs/` | Documentation — `HARITHA_HOSPITALS_GUIDE.md` + `phase6/` (Tier 0-8) + `pberp-setup-plan.md` |
-| `docs/phase6/` | **Phase 6 documentation** — 35 docs, 9 tiers, ~15,900 lines (foundations, schema, workflow, client, runbooks, process, user manuals, testing, compliance) |
-| `docs/phase6/03-client/` | **Client demo deliverable** — markdown deck (`03.4`), PPTX export (`03.4.pptx`, 543 KB), speaker script (`03.5`), 10 screenshots from pberpprod, 20 mermaid-rendered diagrams |
-| `docs/phase6/09-compliance/` | **ISO 27001 + CMM L5 docs** (12 policies/maturity docs, internal best-practice reference) |
+| `docs/` | Documentation — `HARITHA_HOSPITALS_GUIDE.md` + `handbook/` (Tier 0-8) + `pberp-setup-plan.md` |
+| `docs/handbook/` | **Phase 6 documentation** — 35 docs, 9 tiers, ~15,900 lines (foundations, schema, workflow, client, runbooks, process, user manuals, testing, compliance) |
+| `docs/handbook/03-client/` | **Client demo deliverable** — markdown deck (`03.4`), PPTX export (`03.4.pptx`, 543 KB), speaker script (`03.5`), 10 screenshots from pberpprod, 20 mermaid-rendered diagrams |
+| `docs/handbook/09-compliance/` | **ISO 27001 + CMM L5 docs** (12 policies/maturity docs, internal best-practice reference) |
 | `tracker-phases/` | Project tracker split into per-phase files (master `TRACKER.md` is the index) |
 | `scripts/` | Utility scripts (≈45 files) — `migrate_master_data.py`, `recreate_property_setters.py`, `bulk_submit.py`, `fix_attendance_hrms_recompute.py`, `verify_csvs.py`, `update_tracker.py`, etc. |
 | `fixtures/` | Legacy fixtures dir (pre-custom-app) |
 | `mapping/` | Data mapping rules |
 | `scout/` | Source data scout reports |
-| `phase-a/` | Phase A fixtures bundle (`fixtures.tar.gz`) + `REPORT.md` + `logs/` |
+| `archive/` | Phase A fixtures bundle (`fixtures.tar.gz`) + `REPORT.md` + `logs/` |
 | `audit/` | Fixture audit reports (pberpprod detail + summary) |
 | `config/` | `cron.tab` for backup cron |
 | `updates/` | Phase update JSON snapshots |
@@ -119,7 +119,7 @@ All captured as Frappe fixtures in the `venkat-narasimha/haritha_hospital` custo
 
 - **[HARITHA_HOSPITALS_GUIDE.md](docs/HARITHA_HOSPITALS_GUIDE.md)** — comprehensive guide (architecture, customizations, migration, ops runbook)
 - **[TRACKER.md](TRACKER.md)** — phase-by-phase history + subagent log
-- **[docs/phase6/](docs/phase6/)** — Phase 6 Tier 0-8 documentation (foundations, schema, workflow, runbooks, user manuals, testing)
+- **[docs/handbook/](docs/handbook/)** — Phase 6 Tier 0-8 documentation (foundations, schema, workflow, runbooks, user manuals, testing)
 - **[scripts/migrate_master_data.py](scripts/migrate_master_data.py)** — idempotent master data migration (16 DocTypes, 10 gotchas documented)
 - **[scripts/recreate_property_setters.py](scripts/recreate_property_setters.py)** — idempotent Property Setter recreate (HRMS doesn't list `Property Setter` as a fixture)
 - **[masters/](masters/)** — 19 source CSVs (canonical reference)
@@ -152,7 +152,7 @@ All captured as Frappe fixtures in the `venkat-narasimha/haritha_hospital` custo
 
 ## Recent milestones
 
-- **2026-08-29 — Phase 6 docs complete** — 22 docs across 8 tiers (`docs/phase6/`), ~10,000 lines, Mermaid diagrams
+- **2026-08-29 — Phase 6 docs complete** — 22 docs across 8 tiers (`docs/handbook/`), ~10,000 lines, Mermaid diagrams
 - **2026-08-29 — Master data migration prod → dev** — 16 DocTypes via `migrate_master_data.py`; 8,118 Shift Assignments on dev, all bulk-submitted; idempotent script saved
 - **2026-08-29 — P1 outage resolved** — gunicorn `--preload` sys.path freeze; both envs restarted, zero data loss; LEARNINGS #153
 - **2026-08-28 — Custom app `haritha_hospital` installed** — 274 customizations verified on both envs; idempotent
