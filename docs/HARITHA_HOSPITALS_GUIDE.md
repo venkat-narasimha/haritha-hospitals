@@ -30,7 +30,7 @@
 | Company | Haritha Hospitals (healthcare / hospital group) |
 | Industry | Hospital shift management + HRMS |
 | Owner | Venkat Narasimha (Processbricks) |
-| Started | 2026-04-01 (concept); project on this repo: 2026-08-19 |
+| Started | 2026-08-19 (first commit on this repo) |
 | Stack | Frappe 16 / ERPNext 16 / HRMS 16.5.0 (pinned) / custom app `haritha_hospital` |
 | Sites | `pberpprod.duckdns.org` (prod), `pberpdev.duckdns.org` (dev), `dev-erp.duckdns.org` (Venkat VPS for prototyping) |
 | Last major milestone | 2026-08-29 — custom app build + master data migration + P1 outage recovery |
@@ -144,7 +144,7 @@ Master data lives in the DB; CSV sources in `projects/haritha-hospitals/masters/
 
 ## 4. Phase History
 
-### Phase 0 — Schema Planning (2026-04-01 to 2026-08-19)
+### Phase 0 — Schema Planning (ended 2026-08-19)
 **Goal:** Document schema for all master data entities needed for shift management.
 
 **Status:** ✅ Complete. 19 entities, 168 fields. HRMS v15 verification done (9 docs read, 7 corrections applied).
@@ -156,8 +156,8 @@ Master data lives in the DB; CSV sources in `projects/haritha-hospitals/masters/
 - `knowledge/shift_management_hrms.md` — reusable reference
 
 **Decisions:**
-- 2026-04-01: Scope = shift management only (defer wards, beds, OTs, pharmacy, lab, billing)
-- 2026-04-15: HRMS v16.5.0 pin (Lesson #44)
+- 2026-08-19: Scope = shift management only (defer wards, beds, OTs, pharmacy, lab, billing)
+- 2026-08-19: HRMS v16.5.0 pin (Lesson #44)
 - 2026-08-19: Shift code = 10-char `[P][HHMM][S][HHMM]` (HRMS-native flags)
 - 2026-08-19: Holidays = standard Indian national + 4-5 Telangana
 
