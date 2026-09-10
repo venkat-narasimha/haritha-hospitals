@@ -373,7 +373,7 @@ Concrete actions derived from this policy. Owner initials: VN = Venkat Narasimha
 ### Short-term (2026-Q3)
 
 - [ ] **Enforce single-quoted heredocs** for any body that may contain secrets. Update pre-commit hook to detect unquoted heredocs. Owner: PA. Target: 2026-09-30. Status: Not Started.
-- [ ] **Author the secret register** (`docs/phase6/09-compliance/secret-register.md`) — every secret, location, last rotation date, owner. Owner: VN. Target: 2026-09-30. Status: Not Started.
+- [ ] **Author the secret register** (`docs/handbook/09-compliance/secret-register.md`) — every secret, location, last rotation date, owner. Owner: VN. Target: 2026-09-30. Status: Not Started.
 - [ ] **Submit HSTS preload** for `*.duckdns.org`. Owner: VN. Target: 2026-10-15. Status: Not Started.
 - [ ] **Rotate DB passwords** on `erp-prod-db-1`, `erp-dev-db-1`, `erp-qa-db-1` (annual cadence). Owner: VN. Target: 2026-10-15. Status: Not Started.
 - [ ] **Rotate GitHub PAT + duckdns update token** (annual). Owner: VN. Target: 2026-10-15. Status: Not Started.

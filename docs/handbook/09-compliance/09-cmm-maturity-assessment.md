@@ -313,7 +313,7 @@ Concrete actions derived from this assessment. Owner initials: VN = Venkat Naras
 
 - [ ] **Deploy the first metric dashboard** (Frappe built-in Monitoring module + custom Daily Ops card per [11](11-quantitative-management.md)). Owner: PA. Target: 2026-09-30. Status: Not Started.
 - [ ] **Define control limits** for at least 3 metrics (uptime, backup success, MTTR) per [11](11-quantitative-management.md). Owner: VN. Target: 2026-09-30. Status: Not Started.
-- [ ] **Open the first formal PDCA cycle log** at `docs/phase6/06-process-improvements/` per [10](10-process-improvement.md). Owner: PA. Target: 2026-09-30. Status: Not Started.
+- [ ] **Open the first formal PDCA cycle log** at `docs/handbook/06-process-improvements/` per [10](10-process-improvement.md). Owner: PA. Target: 2026-09-30. Status: Not Started.
 - [ ] **First causal analysis meeting** structured per [12](12-defect-prevention.md) §3. Owner: VN. Target: 2026-09-30. Status: Not Started.
 
 ### Medium-term (2026-Q4)

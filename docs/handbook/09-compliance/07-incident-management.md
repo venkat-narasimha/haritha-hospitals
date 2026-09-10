@@ -246,7 +246,7 @@ LEARNINGS #113, #114, #153 are the canonical examples:
 
 ### Known GAPS
 
-1. **No formal incident tracking system.** Incidents live in Telegram chat history + `memory/YYYY-MM-DD.md` + the post-mortem file. No JIRA-like ticket. Future: lightweight incident table in `docs/phase6/incidents/`.
+1. **No formal incident tracking system.** Incidents live in Telegram chat history + `memory/YYYY-MM-DD.md` + the post-mortem file. No JIRA-like ticket. Future: lightweight incident table in `docs/handbook/incidents/`.
 2. **No on-call rotation.** Single-operator model. Acknowledged limitation per §3.8.
 3. **No automated pager.** Pages are manual (Telegram from a subagent or admin). Future: PagerDuty / OpsGenie integration is out of scope for v1.
 4. **No formal SEV-3/4 post-mortem policy.** They're "optional" per §3.6.2 but the threshold for "is this worth documenting?" is informal.
@@ -356,7 +356,7 @@ Real incidents that shaped this policy. The 2026-08-29 500-outage is the canonic
 
 | Check | Frequency | Owner | Source of truth |
 |---|---|---|---|
-| All SEV-1/2 incidents have a post-mortem within 24h | Per incident | admin | `docs/phase6/post-mortems/` |
+| All SEV-1/2 incidents have a post-mortem within 24h | Per incident | admin | `docs/handbook/post-mortems/` |
 | All SEV-1/2 post-mortems add at least 1 LEARNINGS.md entry | Per incident | admin | diff of LEARNINGS.md |
 | All new LEARNINGS.md entries are cited in relevant runbooks within 7d | Per lesson | admin | runbook footers |
 | Heartbeat probe actually ran (not carried forward) | Daily | subagent | heartbeat log |
@@ -529,13 +529,13 @@ Concrete actions derived from this policy. Owner initials: VN = Venkat Narasimha
 
 ### Immediate (this week)
 
-- [ ] **Create `docs/phase6/post-mortems/` directory** (per [../05-process/05.2-post-mortem.md](../05-process/05.2-post-mortem.md) §"Part 1"). Owner: PA. Target: 2026-09-05. Status: Not Started.
+- [ ] **Create `docs/handbook/post-mortems/` directory** (per [../05-process/05.2-post-mortem.md](../05-process/05.2-post-mortem.md) §"Part 1"). Owner: PA. Target: 2026-09-05. Status: Not Started.
 - [ ] **File the 2026-08-29 500-outage post-mortem** in the new directory (currently inline in [../05-process/05.2-post-mortem.md](../05-process/05.2-post-mortem.md) §"Part 2"; future PMs go to dedicated files). Owner: PA. Target: 2026-09-05. Status: Not Started.
 - [ ] **Audit all runbook `Lessons cited` footers** vs the latest LEARNINGS.md entries. Flag any uncited lessons within 7 days of publication. Owner: PA. Target: 2026-09-05. Status: Not Started.
 
 ### Short-term (2026-Q3)
 
-- [ ] **Author a lightweight incident table** at `docs/phase6/incidents/index.md` (date, env, SEV, root cause, PM link, lesson numbers). Owner: PA. Target: 2026-09-30. Status: Not Started.
+- [ ] **Author a lightweight incident table** at `docs/handbook/incidents/index.md` (date, env, SEV, root cause, PM link, lesson numbers). Owner: PA. Target: 2026-09-30. Status: Not Started.
 - [ ] **Add a "secondary failure" section** to the post-mortem template (per §3b Example 3). Owner: VN. Target: 2026-09-30. Status: Not Started.
 - [ ] **Define a SEV-3/4 documentation threshold** (e.g., "any SEV-3 with > 1 user affected OR any root cause revealing a gap"). Owner: VN. Target: 2026-09-30. Status: Not Started.
 - [ ] **Quarterly incident pattern review** (script that aggregates post-mortems by root-cause class). Owner: PA. Target: 2026-09-30. Status: Not Started.

@@ -73,7 +73,7 @@ Every identity-bearing system:
 
 ### 3.4 Lifecycle
 
-1. **Provisioning.** New user request → Venkat creates `tabUser` with minimum role + sets password expiry + enrolls in MFA. Entry logged in `docs/phase6/09-compliance/access-register.md`.
+1. **Provisioning.** New user request → Venkat creates `tabUser` with minimum role + sets password expiry + enrolls in MFA. Entry logged in `docs/handbook/09-compliance/access-register.md`.
 2. **Modification.** Role changes require Venkat approval. Role additions/removals audited.
 3. **Deprovisioning.** When a user leaves:
    - `tabUser.enabled = 0` within 1 hour of departure notification.
@@ -329,7 +329,7 @@ Concrete actions derived from this policy. Owner initials: VN = Venkat Narasimha
 
 ### Immediate (this week)
 
-- [ ] **Formalize `docs/phase6/09-compliance/access-register.md`** — every `tabUser` row, role assignment, last-review date, deprovisioning status. Source of truth for quarterly review. Owner: VN. Target: 2026-09-05. Status: Not Started.
+- [ ] **Formalize `docs/handbook/09-compliance/access-register.md`** — every `tabUser` row, role assignment, last-review date, deprovisioning status. Source of truth for quarterly review. Owner: VN. Target: 2026-09-05. Status: Not Started.
 - [ ] **TOTP-enroll PA on `pberpprod`** as System Manager (currently password-only on prod). Owner: PA. Target: 2026-09-05. Status: Not Started.
 - [ ] **Verify current DB passwords** via `docker exec erp-{prod,dev,qa}-db-1 printenv MYSQL_ROOT_PASSWORD` and reconcile against access register. Owner: PA. Target: 2026-09-05. Status: Not Started.
 

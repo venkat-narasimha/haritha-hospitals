@@ -16,7 +16,7 @@ Maturity Level 5 is not "we never have problems" — that's impossible. Level 5 
 
 Without a PDCA framework, improvements happen by accident and are lost when the person who made them leaves. With a framework, improvements are:
 
-- **Visible** — written down at `docs/phase6/06-process-improvements/{N}-{slug}.md`.
+- **Visible** — written down at `docs/handbook/06-process-improvements/{N}-{slug}.md`.
 - **Testable** — the hypothesis and the metric are explicit, so "did this work?" has an answer.
 - **Cumulative** — a future PDCA can build on a prior PDCA's result instead of rediscovering it.
 - **Aligned with industry vocabulary** — auditors, future hires, and partners who know PDCA can read our cycles in five minutes.
@@ -48,11 +48,11 @@ This is the practice that moves us from "we got lucky this time" (Level 3) to "w
 Haritha Hospitals commits to:
 
 1. **Minimum one PDCA cycle per quarter.** Q1/Q2/Q3/Q4 each produce at least one completed cycle (or one in-progress cycle with documented Plan step at quarter-end).
-2. **Every cycle logged** at `docs/phase6/06-process-improvements/{NN}-{slug}.md`, numbered sequentially starting at `01-`.
+2. **Every cycle logged** at `docs/handbook/06-process-improvements/{NN}-{slug}.md`, numbered sequentially starting at `01-`.
 3. **Every cycle has all four steps documented** — Plan, Do, Check, Act. A cycle that doesn't reach Act (e.g., the hypothesis failed) is still logged, with the "Act" step being "revert + new hypothesis".
 4. **Cycles cite lessons** — when a cycle ends in a lesson learned, that lesson is added to [LEARNINGS.md](../../../../.learnings/LEARNINGS.md) with the cycle ID as a reference.
 5. **Cycles cite runbooks** — when a cycle changes a runbook, the runbook footer is updated with the cycle ID.
-6. **Annual summary** — once a year, Venkat reviews the cycle log and writes a 1-page summary at `docs/phase6/06-process-improvements/YEAR-summary.md`. The summary feeds the [09-cmm-maturity-assessment §3a](09-cmm-maturity-assessment.md) re-scoring.
+6. **Annual summary** — once a year, Venkat reviews the cycle log and writes a 1-page summary at `docs/handbook/06-process-improvements/YEAR-summary.md`. The summary feeds the [09-cmm-maturity-assessment §3a](09-cmm-maturity-assessment.md) re-scoring.
 
 ### 3.2 The four steps (canonical)
 
@@ -88,7 +88,7 @@ PDCA was popularised by W. Edwards Deming in the 1950s (building on Shewhart's 1
 | Improvement loop | Gunicorn restart pattern after `install-app` | [LEARNINGS #46, #153](../../../../.learnings/LEARNINGS.md) | Done (informal PDCA) |
 | Improvement loop | Idempotent master-data migration | [LEARNINGS #157](../../../../.learnings/LEARNINGS.md) | Done (informal PDCA) |
 | Improvement loop | Heartbeat freshness rule (probe vs carry-forward) | [LEARNINGS #90](../../../../.learnings/LEARNINGS.md) | Done (informal PDCA) |
-| Cycle log directory | `docs/phase6/06-process-improvements/` | not yet created | **Not Started** |
+| Cycle log directory | `docs/handbook/06-process-improvements/` | not yet created | **Not Started** |
 | PDCA template | Markdown template | not yet written | **Not Started** |
 | Quarterly cadence | Owner-driven, not tracked | this doc §3.1 | **Not Started** |
 | Annual summary | Year-end review | not yet written | **Not Started** |
@@ -190,7 +190,7 @@ This is a counter-example: a fix that was *not* PDCA, with measurable cost.
 | Every cycle has all 4 steps documented | Per cycle | PA | cycle file schema |
 | Every cycle cites lessons + runbooks | Per cycle | PA | grep cycle directory for cross-refs |
 | Failed cycles are also logged | Per cycle | PA | cycle directory content |
-| Annual summary written | Annually | VN | `docs/phase6/06-process-improvements/YEAR-summary.md` |
+| Annual summary written | Annually | VN | `docs/handbook/06-process-improvements/YEAR-summary.md` |
 | Cycle-to-runbook update lag | Per cycle | PA | git log timestamp diff |
 | Maturity assessment updated with cycle outcomes | Annually | VN | [09 §3a.2](09-cmm-maturity-assessment.md) re-scoring |
 
@@ -293,8 +293,8 @@ Concrete actions derived from this policy. Owner initials: VN = Venkat Narasimha
 
 ### Immediate (this week)
 
-- [ ] **Create `docs/phase6/06-process-improvements/` directory** + add to git. Owner: PA. Target: 2026-09-05. Status: Not Started.
-- [ ] **Author the PDCA cycle template** at `docs/phase6/06-process-improvements/00-template.md`. Owner: VN. Target: 2026-09-05. Status: Not Started.
+- [ ] **Create `docs/handbook/06-process-improvements/` directory** + add to git. Owner: PA. Target: 2026-09-05. Status: Not Started.
+- [ ] **Author the PDCA cycle template** at `docs/handbook/06-process-improvements/00-template.md`. Owner: VN. Target: 2026-09-05. Status: Not Started.
 - [ ] **Backfill three historical cycles** as `01-backup-hardening.md`, `02-gunicorn-restart.md`, `03-migration-idempotency.md`. Owner: PA. Target: 2026-09-05. Status: Not Started.
 
 ### Short-term (2026-Q3)
@@ -306,7 +306,7 @@ Concrete actions derived from this policy. Owner initials: VN = Venkat Narasimha
 
 ### Medium-term (2026-Q4)
 
-- [ ] **First annual cycle summary** at `docs/phase6/06-process-improvements/2026-summary.md`. Owner: VN. Target: 2027-01-15. Status: Not Started.
+- [ ] **First annual cycle summary** at `docs/handbook/06-process-improvements/2026-summary.md`. Owner: VN. Target: 2027-01-15. Status: Not Started.
 - [ ] **Mature the metric linkage** — every cycle's Check step pulls from a metric defined in [11](11-quantitative-management.md). Owner: PA. Target: 2026-12-31. Status: Not Started.
 - [ ] **At least 4 cycles completed** in 2026-Q4. Owner: PA. Target: 2026-12-31. Status: Not Started.
 - [ ] **Cross-link with [12](12-defect-prevention.md)** — every cycle starts with a problem found via RCA or via post-mortem. Owner: VN. Target: 2026-12-31. Status: Not Started.

@@ -62,7 +62,7 @@ What Haritha has in place today, what is working, and what is a known gap.
 | Monitoring | Daily ops runbook | `../04-runbooks/04.2-daily-ops.md` | Live, executed by admin |
 | Response | Incident response plan + SEV ladder | `../04-runbooks/04.4-incident-response.md` | Live, table-topped |
 | Recovery | Disaster recovery procedure | `../04-runbooks/04.3-disaster-recovery.md` | Live, restore test on 2026-08-19 (slot #1 + #2 PASSED) |
-| Compliance | This policy set | `docs/phase6/09-compliance/` | v1.0, just authored |
+| Compliance | This policy set | `docs/handbook/09-compliance/` | v1.0, just authored |
 | Secret mgmt | Container env vars (DB passwords) | `MYSQL_ROOT_PASSWORD` on `erp-{env}-db-1` | Live, but historically prone to drift — see LEARNINGS #154 |
 
 ### What is WORKING
@@ -319,7 +319,7 @@ Concrete actions derived from this policy. Owner initials: VN = Venkat Narasimha
 
 ### Immediate (this week)
 
-- [ ] **Draft `docs/phase6/09-compliance/asset-inventory.md`** with rows for VPS hosts, offsite VPS, all containers, all envs, all DBs. Owner: VN. Target: 2026-09-05. Status: Not Started.
+- [ ] **Draft `docs/handbook/09-compliance/asset-inventory.md`** with rows for VPS hosts, offsite VPS, all containers, all envs, all DBs. Owner: VN. Target: 2026-09-05. Status: Not Started.
 - [ ] **Add `git-secrets` (or equivalent) CI job** that scans every PR for known patterns (`password=`, `token=`, `BEGIN.*PRIVATE KEY`, Aadhaar 12-digit). Owner: VN. Target: 2026-09-12. Status: Not Started.
 - [ ] **Wire pre-commit hook install** into `scripts/bootstrap.sh` so every fresh clone has the secret-scanning hook by default. Owner: PA. Target: 2026-09-05. Status: Not Started.
 

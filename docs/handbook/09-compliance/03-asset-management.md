@@ -61,7 +61,7 @@ See §3.2 for classification. Inventory of data categories:
 
 ### 3.1 Inventory
 
-1. **Single source of truth.** Asset inventory lives in `docs/phase6/09-compliance/asset-inventory.md` (to be created — see §6 exceptions for the stub status).
+1. **Single source of truth.** Asset inventory lives in `docs/handbook/09-compliance/asset-inventory.md` (to be created — see §6 exceptions for the stub status).
 2. **Every new asset is registered within 7 days** of acquisition, provisioning, or creation. This includes new containers, new apps, new domains, new DBs, new laptops.
 3. **Every retired asset is marked `RETIRED` with date + reason + decommission evidence** (e.g., `wipe-complete-2026-08-29.txt`). Rows are not deleted — historical inventory is audit-relevant.
 4. **Annual inventory audit.** Venkat walks the inventory end-to-end, verifies each asset exists (or was properly retired), and re-signs the doc.
@@ -95,7 +95,7 @@ Examples:
 - Attendance (`tabAttendance`), Shift Assignment, Roster.
 - App code (`apps/haritha_hospital/`).
 - Custom fields, property setters, print formats.
-- Runbooks (`docs/phase6/04-runbooks/*`), this policy set.
+- Runbooks (`docs/handbook/04-runbooks/*`), this policy set.
 - Bench + nginx logs.
 
 Handling:
@@ -165,9 +165,9 @@ Concrete inventory snapshot, what is working, what is a known gap.
 | Data | Custom app code + fixtures | GitHub `venkat-narasimha/haritha-hospitals` (private) | Venkat | Internal | Live |
 | Data | Local backups | `/home/vijay/backups/{prod,dev,qa}/` | Venkat | Confidential (tarball aggregates) | Live |
 | Data | Offsite backups | `venkat@135.125.196.35:/home/venkat/pberp*_backups/` | Venkat | Confidential | Live |
-| Data | Runbooks + policies | `docs/phase6/{04,09}/` | Venkat | Internal | Live |
+| Data | Runbooks + policies | `docs/handbook/{04,09}/` | Venkat | Internal | Live |
 | Data | Audit logs | `frappe-bench/logs/*.log`, `nginx` access log, `/var/log/auth.log` | Venkat | Confidential (reveals who-touched-what) | Live |
-| Documentation | This policy set | `docs/phase6/09-compliance/` | Venkat | Internal | v1.0 |
+| Documentation | This policy set | `docs/handbook/09-compliance/` | Venkat | Internal | v1.0 |
 | Domain | `pberpPROD.duckdns.org` | duckDNS + OVH | Venkat | n/a (DNS) | Live |
 | Domain | `pberpDEV.duckdns.org` | duckDNS + OVH | Venkat | n/a | Live |
 | Domain | `pberpQA.duckdns.org` | duckDNS + OVH | Venkat | n/a | Live |
@@ -410,8 +410,8 @@ Concrete actions derived from this policy. Owner initials: VN = Venkat Narasimha
 
 ### Immediate (this week)
 
-- [ ] **Author `docs/phase6/09-compliance/asset-inventory.md`** — every row from §3a Current State table + classification column + last-reviewed date + deprovisioning status. Owner: VN. Target: 2026-09-05. Status: Not Started.
-- [ ] **Backfill classification footers** in all existing docs in `docs/phase6/{04,05,07,08,09}/` (first 50 lines per §3.3.1). Owner: VN. Target: 2026-09-12. Status: Not Started.
+- [ ] **Author `docs/handbook/09-compliance/asset-inventory.md`** — every row from §3a Current State table + classification column + last-reviewed date + deprovisioning status. Owner: VN. Target: 2026-09-05. Status: Not Started.
+- [ ] **Backfill classification footers** in all existing docs in `docs/handbook/{04,05,07,08,09}/` (first 50 lines per §3.3.1). Owner: VN. Target: 2026-09-12. Status: Not Started.
 - [ ] **Add CI step that greps fixtures for likely-PHI patterns** (Aadhaar 12-digit, phone 10-digit, debit 16-digit). Owner: PA. Target: 2026-09-12. Status: Not Started.
 
 ### Short-term (2026-Q3)

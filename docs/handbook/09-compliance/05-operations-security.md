@@ -147,7 +147,7 @@ This policy makes both classes of failure — silent failure and partial deploym
 | Backup | SHA-256 sidecar | `*.tar.gz.sha256` next to each tarball | Live (post-LEARNINGS #113 fix) |
 | Backup | sentinel line | `BACKUP_OK sha=...` in cron log | Live (post-LEARNINGS #113 fix) |
 | Change mgmt | Pre-flight checklist | [../05-process/05.1-change-management.md](../05-process/05.1-change-management.md) §"Pre-flight checklist" | Live |
-| Change mgmt | Change record | `docs/phase6/changes/{env}-YYYY-MM-DD.md` | Convention; first run pending |
+| Change mgmt | Change record | `docs/handbook/changes/{env}-YYYY-MM-DD.md` | Convention; first run pending |
 | Monitoring | Heartbeat cron | subagent @ 08:30 IST daily | Live |
 | Monitoring | `tabError Log` review | daily ops runbook | Live |
 | Monitoring | Cert expiry probe | daily ops runbook Step 5 | Live |
@@ -177,7 +177,7 @@ This policy makes both classes of failure — silent failure and partial deploym
 
 1. **`dev_backup.sh`, `qa_backup.sh`, `deverp_backup.sh` are pre-hardening.** They don't have `timeout 900` or `${PIPESTATUS[0]}` capture. They run, but on edge-case errors could fail invisibly. **Risk:** medium — these envs are dev/QA so data loss is recoverable, but the script is a template that could be promoted by mistake. Tracked in [../04-runbooks/04.3-disaster-recovery.md](../04-runbooks/04.3-disaster-recovery.md) §"Backup scripts".
 2. **No CI-side CVE scanner.** Weekly CVE review is manual. A `pip-audit` + Frappe advisory-fetch CI job is a future improvement (tracked in §9).
-3. **No formal `docs/phase6/changes/` directory.** The convention exists in the change-mgmt policy but no files have been written. Future: enforce on the next prod change.
+3. **No formal `docs/handbook/changes/` directory.** The convention exists in the change-mgmt policy but no files have been written. Future: enforce on the next prod change.
 4. **No log shipping to long-term storage.** Logs stay on disk for 30 days, then are gzip-archived locally. A 1-year+ store (e.g., a third log VPS or Backblaze B2) is a future improvement.
 5. **Heartbeat is subagent-driven, not cron-driven.** A subagent at 08:30 IST runs the probes. If the subagent is unavailable (e.g., session limit hit), probes don't run. Future: a `crontab`-based heartbeat shell script as the authoritative fallback.
 6. **No automated `RestartCount` paging for non-prod envs.** Currently dev/QA scheduler restarts log but don't page. Acceptable (no users), but should be flagged so the gap is visible.
@@ -295,13 +295,13 @@ KPI dashboard (informal, not a Grafana board):
 | Container restart loops | 0 (prod) | `docker inspect` |
 | Disk space (both VPSes) | ≤ 85% | `df -h` |
 | Patches applied within SLA | 100% | patch tracker (future) |
-| Post-mortem filed within 24h | 100% (SEV-1/2) | `docs/phase6/post-mortems/` |
+| Post-mortem filed within 24h | 100% (SEV-1/2) | `docs/handbook/post-mortems/` |
 
 ## 6. Exceptions
 
 1. **`dev_backup.sh` / `qa_backup.sh` / `deverp_backup.sh` pre-hardening.** Tracked as a known gap (§3a). Resolution: apply the `prod_backup.sh` hardening pattern in the next quarterly maintenance window (target: 2026-Q4). Until then, weekly manual `ls -lt` and `tail -5 <log>` review is the compensating control.
 2. **No cold storage for backups (Backblaze B2 / S3 Glacier).** Offsite is one private VPS, not geographically distant. Tracked in [08-business-continuity §6](08-business-continuity.md) (future). Until then, the existing 3-2-1 (local + offsite + git remote for code) is the trust model.
-3. **No formal `docs/phase6/changes/` directory.** Convention exists; no files yet. Next prod change will create the first file; subsequent changes append.
+3. **No formal `docs/handbook/changes/` directory.** Convention exists; no files yet. Next prod change will create the first file; subsequent changes append.
 4. **No CI-side CVE scanner.** Weekly manual review is the compensating control.
 5. **HRMS pinned to v16.5.0 indefinitely** (LEARNINGS #44). Upgrade requires explicit Venkat approval + dry-run on dev first.
 6. **All other exceptions** follow [01-info-security §6](01-info-security.md#6-exceptions).
@@ -347,7 +347,7 @@ Specific scenarios that test the policy's boundaries. Each entry includes the tr
 |---|---|
 | 0–4 | Monitor; verify it's not local network. Check offsite VPS provider status page. |
 | 4–24 | SEV-3. Alert Venkat. Defer non-critical offsite rsyncs. Local backups continue. |
-| 24–72 | SEV-2. Document in `docs/phase6/09-compliance/exceptions/`. Consider adding a second offsite (B2 / Wasabi). |
+| 24–72 | SEV-2. Document in `docs/handbook/09-compliance/exceptions/`. Consider adding a second offsite (B2 / Wasabi). |
 | > 72 | SEV-2 with policy temporarily violated. Restore cadence resumes when offsite is back. Annual review asks "do we need a second offsite?". |
 
 - **Default action.** Same as [01-info-security §6a Edge Case 5](01-info-security.md#6a-edge-cases--decision-matrix). Never silently let backups accumulate only locally — the 3-2-1 invariant must be restored or formally waived.
@@ -457,7 +457,7 @@ Concrete actions derived from this policy. Owner initials: VN = Venkat Narasimha
 
 ### Immediate (this week)
 
-- [ ] **Create `docs/phase6/changes/` directory** and the first per-env file structure. Owner: VN. Target: 2026-09-05. Status: Not Started.
+- [ ] **Create `docs/handbook/changes/` directory** and the first per-env file structure. Owner: VN. Target: 2026-09-05. Status: Not Started.
 - [ ] **Run manual `pberpqa` and `pberpdev` heartbeat probe** to verify dev/qa containers are also healthy (not just prod). Owner: PA. Target: 2026-09-05. Status: Not Started.
 - [ ] **Verify the sentinel `BACKUP_OK sha=...` line is present** in `prod_backup_cron.log` for 2026-08-29 + 2026-08-30 slots. Owner: PA. Target: 2026-09-05. Status: Not Started.
 
