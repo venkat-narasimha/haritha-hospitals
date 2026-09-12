@@ -1,0 +1,960 @@
+#!/usr/bin/env python3
+"""build_deck.py — Regenerate shift-management-presentation-v2.html from the v2 prompt.
+
+Workflow (CMM L5: quantitative process management):
+  1. Read prompts/shift-management-cmm-l5-presentation-v2.md (the spec).
+  2. Validate the spec has 18 slide specs (count **Slide N — ...** markers).
+  3. Emit docs/handbook/03-client/shift-management-presentation-v2.html with the
+     18 slides, schema duplicate at slide 4, schema original at slide 16,
+     counter `N / 18` everywhere, roster image placeholder on slide 12.
+
+The slide content (body text, visuals, speaker notes) lives in SLIDES below.
+v2.md is the source of truth for STRUCTURE — the generator cross-checks the
+slide count and titles against the spec.
+
+Usage:
+  python3 build_deck.py
+"""
+
+from __future__ import annotations
+
+import re
+import sys
+from pathlib import Path
+from textwrap import dedent
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+PROMPT_PATH = REPO_ROOT / "prompts" / "shift-management-cmm-l5-presentation-v2.md"
+OUTPUT_PATH = REPO_ROOT / "docs" / "handbook" / "03-client" / "shift-management-presentation-v2.html"
+
+
+# ---------------------------------------------------------------------------
+# Slide content (authoritative copy for the regenerated deck)
+# ---------------------------------------------------------------------------
+# Each slide is a dict with: id, title, body_html, visual_html, notes_html,
+# transition, timing.
+
+SLIDES: list[dict] = [
+    {
+        "id": 1,
+        "title": "Shift Management with ERPNext HRMS",
+        "body_html": dedent("""
+            <h3 class="slide-subtitle" style="font-size: 22px; font-weight: 400; color: var(--secondary); margin-bottom: 48px;">
+              A practical guide to planning, scheduling, attendance &amp; reporting
+            </h3>
+            <div style="display:flex; justify-content:center; margin-bottom: 48px;">
+              <svg viewBox="0 0 480 200" width="480" height="200">
+                <rect x="20"  y="40" width="80" height="120" rx="8" fill="#1e40af" />
+                <rect x="120" y="60" width="80" height="100" rx="8" fill="#0ea5e9" />
+                <rect x="220" y="80" width="80" height="80"  rx="8" fill="#64748b" />
+                <text x="60"  y="180" fill="#0f172a" font-size="13" text-anchor="middle">Frappe</text>
+                <text x="160" y="180" fill="#0f172a" font-size="13" text-anchor="middle">ERPNext</text>
+                <text x="260" y="180" fill="#0f172a" font-size="13" text-anchor="middle">HRMS</text>
+              </svg>
+            </div>
+        """).strip(),
+        "metadata_block": True,
+        "notes_html": "Welcome. Frame the 40-minute talk: who it is for, what we'll cover, why it matters. The deck ends with Q&A.",
+        "transition": "Let's start with what we are covering today.",
+        "timing": "30s",
+    },
+    {
+        "id": 2,
+        "title": "Agenda",
+        "body_html": dedent("""
+            <div class="agenda-grid">
+              <div class="agenda-card"><div class="agenda-num">1</div><h4>ERPNext + HRMS Stack</h4><p>Foundation: open-source ERP and the HR module.</p></div>
+              <div class="agenda-card"><div class="agenda-num">2</div><h4>Shift Management Operations</h4><p>Planning, scheduling, assignment, attendance, reports.</p></div>
+              <div class="agenda-card"><div class="agenda-num">3</div><h4>Custom App + Schema</h4><p>Extending ERPNext; the entities that make it work.</p></div>
+              <div class="agenda-card"><div class="agenda-num">4</div><h4>Why ERPNext + Haritha</h4><p>Open-source ROI, ownership, and healthcare fit.</p></div>
+            </div>
+        """).strip(),
+        "notes_html": "Walk through the 4 sections. Mention each is roughly 7 minutes. Tell the audience when Q&A starts.",
+        "transition": "First, a quick foundation.",
+        "timing": "45s",
+    },
+    {
+        "id": 3,
+        "title": "ERPNext + HRMS Stack",
+        "body_html": dedent("""
+            <ul class="bullet-list">
+              <li>Open-source ERP platform: Frappe framework + ERPNext apps.</li>
+              <li>~12 business domains: accounting, inventory, sales, HR, payroll, projects, and more.</li>
+              <li>HRMS is the HR module, installable as a separate app on top of ERPNext.</li>
+              <li>5,000+ contributors, web + mobile, multi-language.</li>
+            </ul>
+            <div class="stack-diagram">
+              <div class="stack-layer" style="background: var(--bg-even); border-color: var(--muted);">
+                <strong>Frappe Framework</strong><br><small>Python + JS runtime</small>
+              </div>
+              <div class="stack-layer" style="background: #dbeafe; border-color: var(--accent);">
+                <strong>ERPNext</strong><br><small>apps layer</small>
+              </div>
+              <div class="stack-layer" style="background: #1e40af; color: white; border-color: var(--primary);">
+                <strong>HRMS</strong><br><small style="color:#bfdbfe;">HR module</small>
+              </div>
+            </div>
+        """).strip(),
+        "notes_html": "Highlight the open-source advantage: no license fees, code ownership, large community. HRMS sits as an app on top of ERPNext — install only what you need.",
+        "transition": "Before we go deeper, here is the architecture.",
+        "timing": "2 min",
+    },
+    {
+        "id": 4,
+        "title": "Schema: Shift Management Entities",
+        "body_html": dedent("""
+            <p style="margin-bottom: var(--space-8); font-size: 15px;">
+              <strong>Architecture:</strong> how shift management entities relate across layers.
+            </p>
+            <div style="width:100%; display:flex; justify-content:center;">
+              <svg viewBox="0 0 740 320" width="740" height="320">
+                <path d="M 370 65 L 370 120" stroke="#94a3b8" stroke-width="2" />
+                <path d="M 370 180 L 370 230" stroke="#94a3b8" stroke-width="2" />
+                <path d="M 310 150 L 190 150" stroke="#94a3b8" stroke-width="2" />
+                <path d="M 430 150 L 550 150" stroke="#94a3b8" stroke-width="2" />
+                <path d="M 130 180 L 130 230" stroke="#94a3b8" stroke-width="2" />
+                <path d="M 610 95 L 610 120" stroke="#94a3b8" stroke-width="2" />
+                <path d="M 610 180 L 610 205" stroke="#94a3b8" stroke-width="2" />
+                <path d="M 550 240 L 190 260" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 4" />
+
+                <rect x="310" y="120" width="120" height="60" rx="6" fill="#1e40af" />
+                <text x="370" y="146" fill="#ffffff" font-size="14" font-weight="600" text-anchor="middle">Employee</text>
+                <text x="370" y="164" fill="#93c5fd" font-size="11" text-anchor="middle">Core Master</text>
+
+                <rect x="310" y="15" width="120" height="50" rx="6" fill="#64748b" />
+                <text x="370" y="38" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Holiday List</text>
+                <text x="370" y="54" fill="#cbd5e1" font-size="10" text-anchor="middle">Company/Dept</text>
+
+                <rect x="310" y="230" width="120" height="50" rx="6" fill="#64748b" />
+                <text x="370" y="253" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Attendance</text>
+                <text x="370" y="269" fill="#cbd5e1" font-size="10" text-anchor="middle">Logs &amp; Status</text>
+
+                <rect x="550" y="45" width="120" height="50" rx="6" fill="#1e40af" />
+                <text x="610" y="68" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Shift Type</text>
+                <text x="610" y="84" fill="#93c5fd" font-size="10" text-anchor="middle">Time Definition</text>
+
+                <rect x="550" y="120" width="120" height="60" rx="6" fill="#1e40af" />
+                <text x="610" y="146" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Shift Schedule</text>
+                <text x="610" y="164" fill="#93c5fd" font-size="10" text-anchor="middle">Recurrence Model</text>
+
+                <rect x="550" y="205" width="120" height="50" rx="6" fill="#1e40af" />
+                <text x="610" y="228" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Shift Location</text>
+                <text x="610" y="244" fill="#93c5fd" font-size="10" text-anchor="middle">Geo-fence Radius</text>
+
+                <rect x="70" y="45" width="120" height="50" rx="6" fill="#0ea5e9" />
+                <text x="130" y="68" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Shift Request</text>
+                <text x="130" y="84" fill="#e0f2fe" font-size="10" text-anchor="middle">Workflow Link</text>
+
+                <rect x="70" y="120" width="120" height="60" rx="6" fill="#0ea5e9" />
+                <text x="130" y="146" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Shift Assignment</text>
+                <text x="130" y="164" fill="#e0f2fe" font-size="10" text-anchor="middle">Execution Entity</text>
+
+                <rect x="70" y="230" width="120" height="50" rx="6" fill="#0ea5e9" />
+                <text x="130" y="253" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Employee Checkin</text>
+                <text x="130" y="269" fill="#e0f2fe" font-size="10" text-anchor="middle">Raw Logs / Device</text>
+              </svg>
+            </div>
+            <p style="margin-top: var(--space-8); font-size: 14px; color: var(--secondary);">
+              Schedule templates + raw checkins produce clean attendance records.
+            </p>
+        """).strip(),
+        "notes_html": "Employee sits at the center. Schedule layer (blue), execution layer (sky), tracking layer (slate). We will revisit each entity in detail later. Brief mention only — this is an early preview.",
+        "transition": "Now that you've seen the entities — why shift management matters.",
+        "timing": "1.5 min",
+    },
+    {
+        "id": 5,
+        "title": "Why shift management matters",
+        "body_html": dedent("""
+            <ul class="bullet-list">
+              <li>Unstructured spreadsheets lead to coverage gaps, compliance penalties, and payroll disputes.</li>
+              <li>Critical across 24/7 sectors: healthcare, manufacturing, retail, security, logistics.</li>
+              <li>Continuous operations require systematic, automated scheduling to manage labor compliance.</li>
+            </ul>
+            <div style="display:flex; justify-content:center; margin-top: 32px;">
+              <svg viewBox="0 0 240 240" width="240" height="240">
+                <circle cx="120" cy="120" r="100" fill="none" stroke="#e2e8f0" stroke-width="3" />
+                <path d="M 120 20 A 100 100 0 0 1 207 170 L 120 120 Z" fill="#1e40af" />
+                <path d="M 207 170 A 100 100 0 0 1 33 170 L 120 120 Z" fill="#0ea5e9" />
+                <path d="M 33 170 A 100 100 0 0 1 120 20 L 120 120 Z" fill="#64748b" />
+                <text x="120" y="60"  fill="white" font-size="14" text-anchor="middle">Morning</text>
+                <text x="170" y="150" fill="white" font-size="14" text-anchor="middle">Evening</text>
+                <text x="70"  y="150" fill="white" font-size="14" text-anchor="middle">Night</text>
+              </svg>
+            </div>
+        """).strip(),
+        "notes_html": "Frame the problem space before solutions. Mention real-world examples: missed shifts in hospitals, overtime disputes in manufacturing, late-arrival penalties in retail.",
+        "transition": "Let's start with the foundation: Shift Type.",
+        "timing": "2 min",
+    },
+    {
+        "id": 6,
+        "title": "Shift Type",
+        "body_html": dedent("""
+            <p>A Shift Type is a reusable template that defines when work happens. You define Morning, Evening, and Night once, then assign employees to instances of these templates on specific dates.</p>
+            <div class="shift-cards">
+              <div class="shift-card">
+                <div class="shift-color-bar" style="background:#1e40af;"></div>
+                <div class="shift-name">Morning</div>
+                <div class="shift-time">06:00 – 14:00</div>
+                <div class="shift-hours">8 hours</div>
+              </div>
+              <div class="shift-card">
+                <div class="shift-color-bar" style="background:#0ea5e9;"></div>
+                <div class="shift-name">Evening</div>
+                <div class="shift-time">14:00 – 22:00</div>
+                <div class="shift-hours">8 hours</div>
+              </div>
+              <div class="shift-card">
+                <div class="shift-color-bar" style="background:#64748b;"></div>
+                <div class="shift-name">Night</div>
+                <div class="shift-time">22:00 – 06:00</div>
+                <div class="shift-hours">8 hours</div>
+              </div>
+            </div>
+        """).strip(),
+        "notes_html": "Shift Types are templates, not specific dates. Real example: a hospital uses 'Doctor Morning' (07:00-15:00) and 'Nurse Night' (22:00-06:00) as recurring shift types. Press 'S' to hide these notes during the talk.",
+        "transition": "But work happens at a place — that's Shift Location.",
+        "timing": "2 min",
+    },
+    {
+        "id": 7,
+        "title": "Shift Location",
+        "body_html": dedent("""
+            <ul class="bullet-list">
+              <li>Definition: physical place tied to a shift (e.g., a specific ward, factory floor).</li>
+              <li>Why it matters: prevents "buddy punching" — clocking in for absent colleagues.</li>
+              <li>Setup: GPS coordinates + allowed radius (e.g., 200m).</li>
+            </ul>
+            <div style="display:flex; justify-content:center; margin-top: 32px;">
+              <svg viewBox="0 0 320 240" width="320" height="240">
+                <rect x="0" y="0" width="320" height="240" fill="#f8fafc" />
+                <circle cx="160" cy="120" r="80" fill="#dbeafe" stroke="#1e40af" stroke-width="2" stroke-dasharray="6 4" />
+                <circle cx="160" cy="120" r="6" fill="#1e40af" />
+                <path d="M 160 110 L 156 122 L 168 122 Z" fill="#1e40af" />
+                <text x="160" y="50" fill="#0f172a" font-size="13" text-anchor="middle" font-weight="600">Allowed check-in zone</text>
+                <text x="160" y="220" fill="#64748b" font-size="11" text-anchor="middle">radius ≈ 200m</text>
+              </svg>
+            </div>
+        """).strip(),
+        "notes_html": "Especially relevant for healthcare and field work. Tie back to Attendance later — GPS check-in validates the location automatically.",
+        "transition": "Templates are scheduled — Shift Schedule.",
+        "timing": "1.5 min",
+    },
+    {
+        "id": 8,
+        "title": "Shift Schedule",
+        "body_html": dedent("""
+            <ul class="bullet-list">
+              <li>Definition: planned shifts over a date range — a template, not specific people.</li>
+              <li>Recurrence: weekly, monthly, or one-off patterns.</li>
+              <li>Used as the master template for Shift Assignment (next slides).</li>
+            </ul>
+            <div style="display:flex; justify-content:center; margin-top: 32px;">
+              <svg viewBox="0 0 480 160" width="480" height="160">
+                <rect x="0" y="0" width="480" height="160" fill="#f8fafc" />
+                <text x="20" y="20" fill="#0f172a" font-size="12" font-weight="600">Week of Sep 7 – Sep 13</text>
+                <g font-size="11" fill="#0f172a">
+                  <text x="40"  y="48">Mon</text><text x="100" y="48">Tue</text><text x="160" y="48">Wed</text>
+                  <text x="220" y="48">Thu</text><text x="280" y="48">Fri</text><text x="340" y="48">Sat</text><text x="400" y="48">Sun</text>
+                </g>
+                <rect x="20"  y="60" width="60" height="32" fill="#1e40af" />
+                <rect x="80"  y="60" width="60" height="32" fill="#0ea5e9" />
+                <rect x="140" y="60" width="60" height="32" fill="#64748b" />
+                <rect x="200" y="60" width="60" height="32" fill="#1e40af" />
+                <rect x="260" y="60" width="60" height="32" fill="#0ea5e9" />
+                <rect x="320" y="60" width="60" height="32" fill="#64748b" />
+                <rect x="380" y="60" width="60" height="32" fill="#1e40af" />
+                <text x="50"  y="80" fill="white" font-size="11" text-anchor="middle">M</text>
+                <text x="110" y="80" fill="white" font-size="11" text-anchor="middle">E</text>
+                <text x="170" y="80" fill="white" font-size="11" text-anchor="middle">N</text>
+                <text x="230" y="80" fill="white" font-size="11" text-anchor="middle">M</text>
+                <text x="290" y="80" fill="white" font-size="11" text-anchor="middle">E</text>
+                <text x="350" y="80" fill="white" font-size="11" text-anchor="middle">N</text>
+                <text x="410" y="80" fill="white" font-size="11" text-anchor="middle">M</text>
+                <text x="240" y="140" fill="#64748b" font-size="11" text-anchor="middle">Recurring weekly pattern — same template applies every week.</text>
+              </svg>
+            </div>
+        """).strip(),
+        "notes_html": "'Schedule' is the template; 'Assignment' is the actual (next slides). Distinguish these for the audience — they sound similar but mean different things.",
+        "transition": "Employees can also request changes — Shift Request.",
+        "timing": "2 min",
+    },
+    {
+        "id": 9,
+        "title": "Shift Request",
+        "body_html": dedent("""
+            <ul class="bullet-list">
+              <li>Employee-initiated: swap, leave, or change request.</li>
+              <li>Multi-level approval workflow (configurable).</li>
+              <li>Tracks request state — Pending → Approved or Rejected.</li>
+            </ul>
+            <div style="display:flex; justify-content:center; margin-top: 32px;">
+              <svg viewBox="0 0 480 120" width="480" height="120">
+                <rect x="20"  y="30" width="120" height="60" rx="8" fill="#dbeafe" stroke="#1e40af" />
+                <text x="80" y="65" fill="#0f172a" font-size="13" font-weight="600" text-anchor="middle">Employee</text>
+
+                <rect x="180" y="30" width="120" height="60" rx="8" fill="#dbeafe" stroke="#1e40af" />
+                <text x="240" y="65" fill="#0f172a" font-size="13" font-weight="600" text-anchor="middle">Manager</text>
+
+                <rect x="340" y="30" width="120" height="60" rx="8" fill="#1e40af" />
+                <text x="400" y="65" fill="white" font-size="13" font-weight="600" text-anchor="middle">HR</text>
+
+                <path d="M 140 60 L 180 60" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)" />
+                <path d="M 300 60 L 340 60" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)" />
+              </svg>
+            </div>
+        """).strip(),
+        "notes_html": "Emphasize configurability of approval chains. Different orgs use different flows — small teams may skip Manager, large teams may add Department Head.",
+        "transition": "Once approved, the assignment happens — Shift Assignment.",
+        "timing": "2 min",
+    },
+    {
+        "id": 10,
+        "title": "Shift Assignment",
+        "body_html": dedent("""
+            <ul class="bullet-list">
+              <li>Actual assignment of employee to specific shift instance (date + slot).</li>
+              <li>Validation: prevents double-booking, validates against schedule.</li>
+              <li>Notifications: employee notified automatically.</li>
+            </ul>
+            <div style="display:flex; justify-content:center; margin-top: 32px;">
+              <table class="data-table">
+                <thead><tr><th>Employee</th><th>Shift Type</th><th>Date</th><th>Status</th></tr></thead>
+                <tbody>
+                  <tr><td>A. Sharma</td><td>Morning</td><td>2026-09-12</td><td><span style="color:#1e40af;">●</span> Confirmed</td></tr>
+                  <tr><td>B. Khan</td><td>Evening</td><td>2026-09-12</td><td><span style="color:#0ea5e9;">●</span> Confirmed</td></tr>
+                  <tr><td>C. Rao</td><td>Night</td><td>2026-09-12</td><td><span style="color:#64748b;">●</span> Pending</td></tr>
+                </tbody>
+              </table>
+            </div>
+        """).strip(),
+        "notes_html": "'Assignment' = real, specific (vs 'Schedule' = template). This is where the schedule template meets actual people on actual dates.",
+        "transition": "Now the bulk + UI features — Bulk Assignment + Tool.",
+        "timing": "2 min",
+    },
+    {
+        "id": 11,
+        "title": "Bulk Assignment + Tool",
+        "body_html": dedent("""
+            <ul class="bullet-list">
+              <li><strong>Shift Schedule Assignment:</strong> apply a schedule to many employees at once.</li>
+              <li><strong>Shift Assignment Tool:</strong> drag-and-drop UI for fast monthly scheduling.</li>
+              <li>Time saving: monthly roster in minutes, not hours of manual work.</li>
+            </ul>
+            <div style="display:flex; justify-content:center; margin-top: 32px;">
+              <svg viewBox="0 0 480 180" width="480" height="180">
+                <rect x="0" y="0" width="480" height="180" fill="#f8fafc" />
+                <text x="20" y="20" fill="#64748b" font-size="11" font-weight="600">Drag-drop calendar (mockup)</text>
+                <g fill="#dbeafe" stroke="#1e40af">
+                  <rect x="20"  y="40" width="60" height="32" /><rect x="90"  y="40" width="60" height="32" />
+                  <rect x="160" y="40" width="60" height="32" /><rect x="230" y="40" width="60" height="32" />
+                  <rect x="300" y="40" width="60" height="32" /><rect x="370" y="40" width="60" height="32" />
+                </g>
+                <rect x="20"  y="80" width="80" height="24" fill="#1e40af" />
+                <text x="60" y="97" fill="white" font-size="11" text-anchor="middle">A. Sharma</text>
+                <rect x="120" y="80" width="80" height="24" fill="#0ea5e9" />
+                <text x="160" y="97" fill="white" font-size="11" text-anchor="middle">B. Khan</text>
+                <rect x="220" y="80" width="80" height="24" fill="#64748b" />
+                <text x="260" y="97" fill="white" font-size="11" text-anchor="middle">C. Rao</text>
+                <text x="240" y="140" fill="#64748b" font-size="11" text-anchor="middle">Drag cards onto date cells.</text>
+              </svg>
+            </div>
+        """).strip(),
+        "notes_html": "This is where supervisors save hours per month. Mention it explicitly — 'your monthly roster used to take 6 hours; now it takes 20 minutes'.",
+        "transition": "What does the result look like? The Roster.",
+        "timing": "2.5 min",
+    },
+    {
+        "id": 12,
+        "title": "Roster",
+        "body_html": dedent("""
+            <ul class="bullet-list" style="margin-bottom: 16px;">
+              <li>Visual calendar of who's working when.</li>
+              <li>Filters: department, role, location, week/month toggle.</li>
+              <li>Color-coded by shift type.</li>
+            </ul>
+            <div class="image-placeholder" style="border: 2px dashed #94a3b8; padding: 48px 32px; text-align: center; color: #64748b; margin-top: 32px;">
+              [Insert roster screenshot here]
+              <br><small>Roster view — calendar of employee shifts</small>
+            </div>
+        """).strip(),
+        "notes_html": "Explain filters and color coding. This is the supervisor's primary view. Roster image placeholder reserved for the actual screenshot.",
+        "transition": "Now let's track who's actually showing up — Attendance.",
+        "timing": "2 min",
+    },
+    {
+        "id": 13,
+        "title": "Attendance + Auto-attendance",
+        "body_html": dedent("""
+            <ul class="bullet-list">
+              <li>Auto-attendance via GPS check-in, biometric, or mobile.</li>
+              <li>Manual override for missed check-ins.</li>
+              <li>Real-time late-arrival detection.</li>
+            </ul>
+            <div style="display:flex; justify-content:center; margin-top: 32px;">
+              <svg viewBox="0 0 480 100" width="480" height="100">
+                <rect x="20"  y="20" width="120" height="60" rx="8" fill="#dbeafe" stroke="#1e40af" />
+                <text x="80" y="55" fill="#0f172a" font-size="13" font-weight="600" text-anchor="middle">Check-in</text>
+
+                <rect x="180" y="20" width="120" height="60" rx="8" fill="#dbeafe" stroke="#1e40af" />
+                <text x="240" y="55" fill="#0f172a" font-size="13" font-weight="600" text-anchor="middle">Match Shift</text>
+
+                <rect x="340" y="20" width="120" height="60" rx="8" fill="#1e40af" />
+                <text x="400" y="55" fill="white" font-size="13" font-weight="600" text-anchor="middle">Present / Late</text>
+
+                <path d="M 140 50 L 180 50" stroke="#94a3b8" stroke-width="2" />
+                <path d="M 300 50 L 340 50" stroke="#94a3b8" stroke-width="2" />
+              </svg>
+            </div>
+        """).strip(),
+        "notes_html": "Geo-fence + biometric tie back to Shift Location (slide 7). Manual override is essential — biometric readers fail, GPS drifts indoors.",
+        "transition": "All this data feeds into Reports.",
+        "timing": "2 min",
+    },
+    {
+        "id": 14,
+        "title": "Reports & Analytics",
+        "body_html": dedent("""
+            <ul class="bullet-list">
+              <li>Daily attendance summary.</li>
+              <li>Late arrivals and early departures.</li>
+              <li>Overtime tracking.</li>
+              <li>Department-wise headcount + compliance reports.</li>
+            </ul>
+            <div class="stats-grid">
+              <div class="stat-card"><div class="stat-label">Coverage Today</div><div class="stat-value">98.5%</div><div class="stat-trend positive">+1.2%</div></div>
+              <div class="stat-card"><div class="stat-label">Late Arrivals</div><div class="stat-value">4</div><div class="stat-trend negative">+2</div></div>
+              <div class="stat-card"><div class="stat-label">Overtime Hours</div><div class="stat-value">27h</div><div class="stat-trend neutral">—</div></div>
+              <div class="stat-card"><div class="stat-label">Pending Swaps</div><div class="stat-value">7</div><div class="stat-trend neutral">—</div></div>
+            </div>
+            <div class="chart-placeholder">
+              <svg viewBox="0 0 600 120" width="100%" height="120">
+                <polyline points="20,80 100,60 180,70 260,50 340,55 420,40 500,45 580,30" fill="none" stroke="#1e40af" stroke-width="2" />
+                <text x="20"  y="110" fill="#64748b" font-size="10">Mon</text>
+                <text x="180" y="110" fill="#64748b" font-size="10">Wed</text>
+                <text x="340" y="110" fill="#64748b" font-size="10">Fri</text>
+                <text x="500" y="110" fill="#64748b" font-size="10">Sun</text>
+              </svg>
+            </div>
+        """).strip(),
+        "notes_html": "These KPIs feed into HR decisions daily. Coverage rate drives staffing. Late arrivals trigger manager follow-up. Overtime flags compliance risks. Customize which KPIs appear per role.",
+        "transition": "What if ERPNext out-of-box doesn't fit? Custom apps.",
+        "timing": "2 min",
+    },
+    {
+        "id": 15,
+        "title": "Extending ERPNext with Custom Apps",
+        "body_html": dedent("""
+            <ul class="bullet-list">
+              <li>When ERPNext out-of-box doesn't fit: build a custom app (no fork needed).</li>
+              <li>Extend via custom fields, custom DocTypes, custom workflows, custom scripts.</li>
+              <li>Version-controlled via Git, deployable via <code>bench install-app</code>.</li>
+            </ul>
+            <div style="display:flex; justify-content:center; margin-top: 32px;">
+              <svg viewBox="0 0 480 160" width="480" height="160">
+                <rect x="20"  y="20" width="440" height="50" rx="8" fill="#dbeafe" stroke="#1e40af" stroke-width="2" />
+                <text x="240" y="50" fill="#0f172a" font-size="14" font-weight="600" text-anchor="middle">ERPNext base</text>
+                <rect x="40"  y="80" width="400" height="50" rx="8" fill="#1e40af" stroke="#1e40af" stroke-width="2" />
+                <text x="240" y="110" fill="white" font-size="14" font-weight="600" text-anchor="middle">Custom app (your code, your data)</text>
+                <path d="M 240 70 L 240 80" stroke="#1e40af" stroke-width="2" />
+              </svg>
+            </div>
+        """).strip(),
+        "notes_html": "Ownership stays with you, not locked to vendor. Custom apps sit on top of ERPNext — you don't fork, you extend. Version control + GitOps workflow is standard.",
+        "transition": "Here's how the entities relate in detail.",
+        "timing": "2 min",
+    },
+    {
+        "id": 16,
+        "title": "Schema: Shift Management Entities",
+        "body_html": dedent("""
+            <p style="margin-bottom: var(--space-8); font-size: 15px;">
+              <strong>How shift management entities relate</strong>
+            </p>
+            <div style="width:100%; display:flex; justify-content:center;">
+              <svg viewBox="0 0 740 320" width="740" height="320">
+                <path d="M 370 65 L 370 120" stroke="#94a3b8" stroke-width="2" />
+                <path d="M 370 180 L 370 230" stroke="#94a3b8" stroke-width="2" />
+                <path d="M 310 150 L 190 150" stroke="#94a3b8" stroke-width="2" />
+                <path d="M 430 150 L 550 150" stroke="#94a3b8" stroke-width="2" />
+                <path d="M 130 180 L 130 230" stroke="#94a3b8" stroke-width="2" />
+                <path d="M 610 95 L 610 120" stroke="#94a3b8" stroke-width="2" />
+                <path d="M 610 180 L 610 205" stroke="#94a3b8" stroke-width="2" />
+                <path d="M 550 240 L 190 260" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 4" />
+
+                <rect x="310" y="120" width="120" height="60" rx="6" fill="#1e40af" />
+                <text x="370" y="146" fill="#ffffff" font-size="14" font-weight="600" text-anchor="middle">Employee</text>
+                <text x="370" y="164" fill="#93c5fd" font-size="11" text-anchor="middle">Core Master</text>
+
+                <rect x="310" y="15" width="120" height="50" rx="6" fill="#64748b" />
+                <text x="370" y="38" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Holiday List</text>
+                <text x="370" y="54" fill="#cbd5e1" font-size="10" text-anchor="middle">Company/Dept</text>
+
+                <rect x="310" y="230" width="120" height="50" rx="6" fill="#64748b" />
+                <text x="370" y="253" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Attendance</text>
+                <text x="370" y="269" fill="#cbd5e1" font-size="10" text-anchor="middle">Logs &amp; Status</text>
+
+                <rect x="550" y="45" width="120" height="50" rx="6" fill="#1e40af" />
+                <text x="610" y="68" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Shift Type</text>
+                <text x="610" y="84" fill="#93c5fd" font-size="10" text-anchor="middle">Time Definition</text>
+
+                <rect x="550" y="120" width="120" height="60" rx="6" fill="#1e40af" />
+                <text x="610" y="146" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Shift Schedule</text>
+                <text x="610" y="164" fill="#93c5fd" font-size="10" text-anchor="middle">Recurrence Model</text>
+
+                <rect x="550" y="205" width="120" height="50" rx="6" fill="#1e40af" />
+                <text x="610" y="228" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Shift Location</text>
+                <text x="610" y="244" fill="#93c5fd" font-size="10" text-anchor="middle">Geo-fence Radius</text>
+
+                <rect x="70" y="45" width="120" height="50" rx="6" fill="#0ea5e9" />
+                <text x="130" y="68" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Shift Request</text>
+                <text x="130" y="84" fill="#e0f2fe" font-size="10" text-anchor="middle">Workflow Link</text>
+
+                <rect x="70" y="120" width="120" height="60" rx="6" fill="#0ea5e9" />
+                <text x="130" y="146" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Shift Assignment</text>
+                <text x="130" y="164" fill="#e0f2fe" font-size="10" text-anchor="middle">Execution Entity</text>
+
+                <rect x="70" y="230" width="120" height="50" rx="6" fill="#0ea5e9" />
+                <text x="130" y="253" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Employee Checkin</text>
+                <text x="130" y="269" fill="#e0f2fe" font-size="10" text-anchor="middle">Raw Logs / Device</text>
+              </svg>
+            </div>
+            <p style="margin-top: var(--space-8); font-size: 14px; color: var(--secondary);">
+              ERPNext's open schema means you can extend with custom fields/tables.
+            </p>
+        """).strip(),
+        "notes_html": "Walk through the central entity (Employee) and its relations. Shift Assignment is the execution hub — it bridges abstract Shift Types with actual people and locations. Employee Checkins validate real-world execution.",
+        "transition": "Why choose ERPNext + Haritha for your deployment.",
+        "timing": "3 min",
+    },
+    {
+        "id": 17,
+        "title": "Why choose ERPNext + Haritha",
+        "body_html": dedent("""
+            <ul class="bullet-list">
+              <li><strong>Open source</strong> — no license fees vs SAP / Oracle / Workday.</li>
+              <li><strong>100% custom code ownership</strong> — your code, your data, your control.</li>
+              <li><strong>Healthcare-ready</strong> — extensions available for clinical workflows.</li>
+              <li><strong>Active community</strong> — 5,000+ contributors + local partner support.</li>
+              <li><strong>Flexibility wins</strong> — configure workflows, don't fight vendor defaults.</li>
+            </ul>
+            <div style="display:flex; justify-content:center; margin-top: 32px;">
+              <table class="data-table">
+                <thead><tr><th>Capability</th><th>ERPNext + Haritha</th><th>SAP</th><th>Workday</th></tr></thead>
+                <tbody>
+                  <tr><td>License cost</td><td>Free</td><td>$$$$</td><td>$$$$</td></tr>
+                  <tr><td>Code ownership</td><td>Yours</td><td>Vendor</td><td>Vendor</td></tr>
+                  <tr><td>Custom workflows</td><td>Built-in</td><td>Add-on</td><td>Limited</td></tr>
+                </tbody>
+              </table>
+            </div>
+        """).strip(),
+        "notes_html": "Emphasize ROI for each persona: Priya (cost savings, KPI visibility), Arjun (workflow ease), Sarah (capability + cost vs alternatives).",
+        "transition": "Let's wrap up.",
+        "timing": "2 min",
+    },
+    {
+        "id": 18,
+        "title": "Conclusion + Next Steps",
+        "body_html": dedent("""
+            <ol class="numbered-list">
+              <li>ERPNext + HRMS = complete open-source stack for shift management.</li>
+              <li>Shift management covers full lifecycle — planning → scheduling → assignment → attendance → reports.</li>
+              <li>Custom apps adapt ERPNext to your industry without forking.</li>
+            </ol>
+            <h4 style="margin-top: 24px;">Next steps</h4>
+            <ul class="bullet-list">
+              <li>Explore the demo (link placeholder).</li>
+              <li>Plan a pilot deployment (4–8 weeks typical).</li>
+              <li>Contact for custom development (placeholder).</li>
+            </ul>
+        """).strip(),
+        "notes_html": "Invite Q&A. Mention how to reach for follow-ups. Thank the audience.",
+        "transition": "Thank you — Q&A starts.",
+        "timing": "2 min",
+    },
+]
+
+
+# ---------------------------------------------------------------------------
+# HTML rendering
+# ---------------------------------------------------------------------------
+
+STYLE_CSS = dedent("""
+    /* Design Tokens (§6 of v2 prompt) */
+    :root {
+      --primary: #1e40af;
+      --secondary: #64748b;
+      --accent: #0ea5e9;
+      --text: #0f172a;
+      --muted: #94a3b8;
+      --bg-odd: #ffffff;
+      --bg-even: #f8fafc;
+      --code-bg: #f1f5f9;
+      --code-text: #0f172a;
+      --space-8: 8px;
+      --space-16: 16px;
+      --space-24: 24px;
+      --space-32: 32px;
+      --space-48: 48px;
+      --space-64: 64px;
+      --font-main: Inter, system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-main);
+      font-size: 18px;
+      line-height: 1.6;
+      color: var(--text);
+      background-color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+    }
+
+    .deck-container { width: 100%; max-width: 960px; min-height: 680px; position: relative; margin: 0 auto; }
+
+    .slide {
+      display: none;
+      width: 100%;
+      min-height: 640px;
+      padding: var(--space-64) var(--space-32);
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
+      position: relative;
+      animation: slideIn 200ms ease-out;
+    }
+    .slide.active { display: flex; flex-direction: column; justify-content: flex-start; }
+    .slide:nth-child(odd)  { background-color: var(--bg-odd); }
+    .slide:nth-child(even) { background-color: var(--bg-even); }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .slide-number {
+      position: absolute; top: var(--space-32); right: var(--space-32);
+      font-size: 14px; font-weight: 600; color: var(--secondary);
+      font-family: var(--font-mono);
+    }
+
+    .slide-title {
+      font-size: 40px; font-weight: 600; line-height: 1.2;
+      color: var(--primary); margin-bottom: var(--space-24);
+    }
+
+    h3 { font-size: 24px; font-weight: 600; color: var(--text); margin-bottom: var(--space-16); }
+    h4 { font-size: 18px; font-weight: 600; color: var(--text); }
+
+    .body { flex: 1; display: flex; flex-direction: column; }
+    .body p { margin-bottom: var(--space-16); color: var(--text); }
+
+    .bullet-list { list-style: none; margin-bottom: var(--space-24); }
+    .bullet-list li {
+      position: relative; padding-left: var(--space-24);
+      margin-bottom: var(--space-8); color: var(--text);
+    }
+    .bullet-list li::before {
+      content: "•"; position: absolute; left: 0;
+      color: var(--accent); font-size: 24px; line-height: 1; top: -2px;
+    }
+
+    .numbered-list { margin-bottom: var(--space-24); padding-left: var(--space-24); }
+    .numbered-list li { margin-bottom: var(--space-8); }
+
+    code {
+      font-family: var(--font-mono); font-size: 14px;
+      background-color: var(--code-bg); color: var(--code-text);
+      padding: 2px 6px; border-radius: 4px;
+    }
+
+    /* Title-slide metadata block */
+    .metadata-block {
+      position: absolute; bottom: var(--space-32); right: var(--space-32);
+      font-size: 12px; color: var(--secondary);
+      font-family: var(--font-mono); line-height: 1.6;
+      text-align: right;
+    }
+
+    /* Speaker notes */
+    .speaker-notes {
+      display: none;
+      font-size: 14px; color: var(--secondary);
+      border-left: 3px solid var(--accent);
+      padding: 8px 16px; margin-top: var(--space-24);
+      font-style: italic; background: rgba(241, 245, 249, 0.6);
+    }
+    body.show-speaker-notes .speaker-notes { display: block; }
+
+    /* Slide 6 — Shift Type cards */
+    .shift-cards { display: flex; gap: 24px; justify-content: center; margin-top: 32px; }
+    .shift-card {
+      flex: 1; max-width: 220px; padding: 24px 16px 16px;
+      border-radius: 8px; box-shadow: 0 2px 8px rgba(15,23,42,0.06);
+      background: white; border: 1px solid #e2e8f0; position: relative;
+    }
+    .shift-color-bar { position: absolute; top: 0; left: 0; right: 0; height: 4px; border-radius: 8px 8px 0 0; }
+    .shift-name  { font-size: 20px; font-weight: 600; color: #0f172a; margin-top: 12px; }
+    .shift-time  { font-size: 16px; color: #1e40af; margin-top: 8px; font-family: 'JetBrains Mono', monospace; }
+    .shift-hours { font-size: 13px; color: #64748b; margin-top: 4px; }
+
+    /* Slide 2 — Agenda cards */
+    .agenda-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 32px; }
+    .agenda-card {
+      background: white; border: 1px solid #e2e8f0; border-radius: 8px;
+      padding: 16px; box-shadow: 0 2px 6px rgba(15,23,42,0.05);
+    }
+    .agenda-num {
+      font-size: 28px; font-weight: 700; color: var(--accent);
+      font-family: var(--font-mono); margin-bottom: 8px;
+    }
+    .agenda-card h4 { font-size: 16px; margin-bottom: 8px; color: var(--primary); }
+    .agenda-card p { font-size: 13px; color: var(--secondary); }
+
+    /* Slide 3 — Stack diagram */
+    .stack-diagram { display: flex; flex-direction: column; gap: 8px; margin-top: 32px; max-width: 480px; margin-left: auto; margin-right: auto; }
+    .stack-layer {
+      padding: 16px; border: 2px solid; border-radius: 8px;
+      text-align: center; font-size: 15px;
+    }
+    .stack-layer small { display: block; font-size: 12px; margin-top: 4px; opacity: 0.8; }
+
+    /* Slide 14 — Stats grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; margin-top: 16px; }
+    .stat-card {
+      background: white; border: 1px solid #e2e8f0; border-radius: 8px;
+      padding: 16px; text-align: center;
+    }
+    .stat-label { font-size: 13px; color: var(--secondary); }
+    .stat-value { font-size: 32px; font-weight: 700; color: var(--text); margin-top: 8px; }
+    .stat-trend { font-size: 12px; margin-top: 4px; }
+    .stat-trend.positive { color: #10b981; }
+    .stat-trend.negative { color: #ef4444; }
+    .stat-trend.neutral  { color: #64748b; }
+    .chart-placeholder { background: #f8fafc; border-radius: 8px; padding: 16px; }
+
+    /* Data table (slides 10, 17) */
+    .data-table {
+      border-collapse: collapse; font-size: 14px;
+      background: white; border: 1px solid #e2e8f0; border-radius: 8px;
+      overflow: hidden; min-width: 360px;
+    }
+    .data-table th, .data-table td {
+      padding: 8px 12px; text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .data-table th { background: #f1f5f9; font-weight: 600; color: var(--text); }
+
+    /* Controls */
+    .controls {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; max-width: 960px; margin-top: var(--space-16);
+      padding: 0 var(--space-16); color: var(--secondary); font-size: 14px;
+    }
+    .nav-buttons { display: flex; gap: 8px; }
+    .nav-buttons button {
+      background: var(--primary); color: white; border: none;
+      padding: 8px 16px; border-radius: 4px; cursor: pointer;
+      font-family: var(--font-main); font-size: 14px;
+    }
+    .nav-buttons button:hover { background: #1e3a8a; }
+    .nav-buttons button:disabled { background: var(--muted); cursor: not-allowed; }
+    .hint { font-size: 12px; color: var(--muted); }
+
+    @media print {
+      body { background: white; }
+      .slide { display: flex !important; page-break-after: always; min-height: auto; box-shadow: none; }
+      .controls { display: none; }
+      .speaker-notes { display: none !important; }
+    }
+""").strip()
+
+
+SCRIPT_JS = dedent("""
+    (function () {
+      const slides = document.querySelectorAll('.slide');
+      const total = slides.length;
+      let idx = 0;
+
+      function show(n) {
+        idx = Math.max(0, Math.min(total - 1, n));
+        slides.forEach((s, i) => s.classList.toggle('active', i === idx));
+        const counter = document.getElementById('counter');
+        if (counter) counter.textContent = (idx + 1) + ' / ' + total;
+        const prev = document.getElementById('prev-btn');
+        const next = document.getElementById('next-btn');
+        if (prev) prev.disabled = idx === 0;
+        if (next) next.disabled = idx === total - 1;
+      }
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { show(idx + 1); e.preventDefault(); }
+        else if (e.key === 'ArrowLeft' || e.key === 'PageUp')              { show(idx - 1); e.preventDefault(); }
+        else if (e.key === 'Home')                                         { show(0); }
+        else if (e.key === 'End')                                          { show(total - 1); }
+        else if (e.key === 's' || e.key === 'S')                           { document.body.classList.toggle('show-speaker-notes'); }
+      });
+
+      document.addEventListener('click', (e) => {
+        if (e.target.closest('button')) return;
+        // Right half of the slide advances, left half goes back.
+        const w = window.innerWidth;
+        if (e.clientX > w / 2) show(idx + 1); else show(idx - 1);
+      });
+
+      document.getElementById('prev-btn').addEventListener('click', () => show(idx - 1));
+      document.getElementById('next-btn').addEventListener('click', () => show(idx + 1));
+
+      show(0);
+    })();
+""").strip()
+
+
+def render_slide(slide: dict) -> str:
+    n = slide["id"]
+    parts = [
+        f'    <section class="slide" id="slide-{n}">',
+        f'      <div class="slide-number">{n} / 18</div>',
+        f'      <h2 class="slide-title">{slide["title"]}</h2>',
+        '      <div class="body">',
+        slide["body_html"],
+        '      </div>',
+    ]
+    if slide.get("metadata_block"):
+        parts.append(
+            '      <div class="metadata-block">'
+            'Version 2.0<br>Date 2026-09-12<br>Audience: General'
+            '</div>'
+        )
+    notes_inner = (
+        slide["notes_html"]
+        + f'<br><br><strong>Transition:</strong> {slide["transition"]}'
+        + f'<br><br><strong>Timing:</strong> {slide["timing"]}'
+    )
+    parts.append(f'      <aside class="speaker-notes">{notes_inner}</aside>')
+    parts.append('    </section>')
+    parts.append('')
+    return "\n".join(parts)
+
+
+def render_html(slides: list[dict]) -> str:
+    body_sections = "\n".join(render_slide(s) for s in slides)
+    return dedent(f"""\
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Shift Management with ERPNext HRMS</title>
+          <style>
+        {STYLE_CSS}
+          </style>
+        </head>
+        <body>
+          <div class="deck-container">
+        {body_sections}
+          </div>
+          <div class="controls">
+            <div class="hint">←/→ to navigate · S to toggle speaker notes</div>
+            <div class="nav-buttons">
+              <button id="prev-btn">‹ Prev</button>
+              <span id="counter">1 / {len(slides)}</span>
+              <button id="next-btn">Next ›</button>
+            </div>
+          </div>
+          <script>
+        {SCRIPT_JS}
+          </script>
+          <!-- REVIEW NOTES
+               Generated by prompts/build_deck.py from prompts/shift-management-cmm-l5-presentation-v2.md.
+               Structure: 18 slides, slide-4 and slide-16 both Schema (duplicate), counter N / 18.
+               Roster image placeholder reserved on slide 12.
+          -->
+        </body>
+        </html>
+        """)
+
+
+# ---------------------------------------------------------------------------
+# Validation: cross-check the v2 prompt structure
+# ---------------------------------------------------------------------------
+
+def validate_prompt(prompt_text: str) -> list[str]:
+    """Return a list of human-readable validation messages."""
+    issues: list[str] = []
+    slide_specs = re.findall(r"\*\*Slide (\d+)\s*[—–-]\s*([^*]+)\*\*", prompt_text)
+    if not slide_specs:
+        issues.append("No slide specs found (expected lines like '**Slide N — Title**').")
+        return issues
+    seen = []
+    for n_str, title in slide_specs:
+        n = int(n_str)
+        if 1 <= n <= 18 and n not in seen:
+            seen.append(n)
+    seen_sorted = sorted(seen)
+    if len(seen_sorted) != 18:
+        issues.append(f"v2.md has {len(seen_sorted)} slide specs; expected 18.")
+        missing = [n for n in range(1, 19) if n not in seen_sorted]
+        if missing:
+            issues.append(f"  Missing slide numbers: {missing}")
+    if 4 not in seen_sorted:
+        issues.append("Slide 4 spec missing — Schema duplicate position invalid.")
+    if 16 not in seen_sorted:
+        issues.append("Slide 16 spec missing — Schema original position invalid.")
+    if 12 not in seen_sorted:
+        issues.append("Slide 12 spec missing — Roster placeholder slide invalid.")
+    return issues
+
+
+def main() -> int:
+    if not PROMPT_PATH.exists():
+        print(f"FATAL: prompt not found at {PROMPT_PATH}", file=sys.stderr)
+        return 2
+
+    prompt_text = PROMPT_PATH.read_text(encoding="utf-8")
+    issues = validate_prompt(prompt_text)
+    print("[validate] v2.md structure:")
+    if issues:
+        for line in issues:
+            print(f"  ! {line}")
+    else:
+        print("  ok — 18 slide specs, schema at #4 and #16, roster at #12.")
+
+    print(f"[slides] generator has {len(SLIDES)} slides defined.")
+    if len(SLIDES) != 18:
+        print(f"FATAL: generator defines {len(SLIDES)} slides; expected 18.", file=sys.stderr)
+        return 3
+
+    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    html = render_html(SLIDES)
+    OUTPUT_PATH.write_text(html, encoding="utf-8")
+
+    size = OUTPUT_PATH.stat().st_size
+    print(f"[write] {OUTPUT_PATH.relative_to(REPO_ROOT)} ({size} bytes)")
+
+    # Sanity checks on the generated output.
+    body = OUTPUT_PATH.read_text(encoding="utf-8")
+    counters = re.findall(r"(\d+) / 18", body)
+    print(f"[check] counter instances in HTML: {len(counters)} (expected >= 18).")
+    for n in range(1, 19):
+        if f'id="slide-{n}"' not in body:
+            print(f"[check] ! slide-{n} missing in HTML.", file=sys.stderr)
+    if 'id="slide-4"' in body and 'Schema' in body.split('id="slide-4"', 1)[1].split('</section>', 1)[0]:
+        print("[check] ok — slide-4 contains Schema.")
+    if 'id="slide-16"' in body and 'Schema' in body.split('id="slide-16"', 1)[1].split('</section>', 1)[0]:
+        print("[check] ok — slide-16 contains Schema.")
+    if '[Insert roster screenshot here]' in body:
+        print("[check] ok — roster image placeholder present.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
