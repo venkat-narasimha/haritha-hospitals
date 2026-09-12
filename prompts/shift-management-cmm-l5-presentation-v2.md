@@ -1,6 +1,6 @@
 ## Shift Management with ERPNext HRMS — Deck Prompt (v2)
 
-> **Status:** Draft for review · **Version:** 2.0 · **Date:** 2026-09-12 · **Author:** Venkat Narasimha
+> **Status:** Pinned canonical spec · **Version:** 1.0 · **Date:** 2026-09-04 · **Author:** Venkat Narasimha
 > **Audience:** Anyone generating or auditing this presentation deck (LLM agent, technical writer, reviewer).
 > **Output:** `docs/handbook/03-client/shift-management-presentation-v2.html` (single self-contained HTML).
 
@@ -8,7 +8,7 @@
 
 ## 1. Role
 
-You are a **technical writer + front-end developer** generating a single self-contained HTML presentation that explains **shift management in ERPNext HRMS** to a general audience. You follow CMM Level 5 documentation standards in your process (not in the deck content).
+You are a **technical writer + front-end developer** producing a single self-contained HTML presentation that explains **shift management in ERPNext HRMS** to a general audience. You follow CMM Level 5 documentation standards in your process (not in the deck content).
 
 CMM L5 means:
 
@@ -40,8 +40,8 @@ Produce an **18-slide** self-contained HTML presentation explaining shift manage
 - **Format:** single `.html` file, fully self-contained (inline CSS, no external assets, no JavaScript libraries).
 - **Slides:** exactly **18**, each `<section class="slide" id="slide-N">`.
 - **Counter:** every slide shows `N / 18` (not 17, not 19 — must match exactly).
-- **Navigation:** keyboard arrows (←/→) + click handlers.
-- **Speaker notes:** hidden by default, toggle with `S` key.
+- **Navigation:** keyboard arrows (←/→) + click handlers (Prev/Next buttons + click-half slide).
+- **Speaker notes:** hidden by default, toggle with `S` key. Body class `show-speaker-notes`.
 - **Print:** include `@media print { ... }` for clean PDF export.
 - **Accessibility:** semantic HTML, contrast ≥4.5:1 for body text, keyboard nav, ARIA labels.
 - **No external images** — use inline SVG or pure CSS shapes.
@@ -67,13 +67,13 @@ Produce an **18-slide** self-contained HTML presentation explaining shift manage
 
 - **Body:** `Inter, system-ui, -apple-system, sans-serif` at 18px / 1.6 line-height.
 - **Headings:** same font, weight 600. Slide title 40px, h3 24px, h4 18px.
-- **Code:** `JetBrains Mono, ui-monospace, monospace` at 14px.
+- **Code:** `JetBrains Mono`, `ui-monospace`, monospace at 14px.
 
 ### 6.3 Layout
 
-- Max-width **960px**, centered.
+- Max-width **960px**, centered, `min-height: 680px`, `min-height: 640px` for slides.
 - Padding: **64px top/bottom, 32px sides**.
-- **Spacing scale:** 8 / 16 / 24 / 32 / 48 / 64 px — use these exact values, no other sizes.
+- Spacing scale: 8 / 16 / 24 / 32 / 48 / 64 px — use these exact values, no other sizes.
 
 ### 6.4 Animation
 
@@ -88,133 +88,115 @@ Every slide MUST include:
 3. `<div class="body">… main content (≤100 words), one focal visual …</div>`
 4. `<aside class="speaker-notes">…</aside>` — hidden by default, toggle with `S` key.
 5. **Transition note** (1 sentence) — included inside speaker notes.
-6. **Timing note** — included inside speaker notes (e.g., "(2 min)").
 
-## 8. Slide-by-Slide Specs (18 slides)
+## 8. Slide-by-Slide Specs (18 slides) — pin to current v2.html
+
+> The exact text of every slide, visual, and speaker-notes block is locked
+> to the canonical v2.html. Regenerators MUST emit byte-for-byte content
+> (use the embedded snapshot in `build_deck.py`).
 
 ### Intro (slides 1–3)
 
-**Slide 1 — Title** (30s)
-- Title: "Shift Management with ERPNext HRMS"
+**Slide 1 — Shift Management with ERPNext HRMS** (30s) — Title slide
 - Subtitle: "A practical guide to planning, scheduling, attendance & reporting"
-- Metadata block (bottom-right): Version 2.0 · Date 2026-09-12 · Audience General
-- Visual: clean centered layout, no emoji.
+- Metadata block (bottom-right): Version 1.0 · Date 2026-09-04 · Audience General (HR, Operations, Evaluators).
+- Layout: `title-wrapper` flex column, `metadata-block` bottom-right.
 - Transition: "Let's start with what we are covering today."
 
 **Slide 2 — Agenda** (45s)
-- Title: "Agenda"
-- Visual: 4 numbered cards in a row (ERPNext + HRMS Stack / Shift Management Operations / Custom App + Schema / Why ERPNext + Haritha).
-- Each card has 1-line sub-bullet.
+- 4-card grid. Card titles: "ERPNext + HRMS Stack" / "Shift Operations" / "Custom App & Schema" / "Why ERPNext + Haritha".
+- Numbers: 01 / 02 / 03 / 04.
 - Transition: "First, a quick foundation."
 
 **Slide 3 — ERPNext + HRMS Stack** (2 min)
-- Title: "ERPNext + HRMS Stack"
-- 4 bullets: open-source ERP / ~12 domains / HRMS = HR module installable on top / 5,000+ contributors.
-- Visual: layered stack diagram (Frappe Framework → ERPNext → HRMS).
-- Transition: "Before we go deeper, here is the architecture."
+- 4 bullets: open-source Frappe/ERPNext / ~12 business domains / HRMS module / 5,000+ contributors.
+- Visual: layered stack diagram (HRMS top, ERPNext mid, Frappe bottom).
+- Transition: "Now let's look at the data model — entities and their relationships."
 
 ### Early Schema Preview (slide 4 — DUPLICATE of slide 16)
 
-**Slide 4 — Schema: Shift Management Entities** (1.5 min) — **EARLY PREVIEW**
-- Title: "Schema: Shift Management Entities"
-- 1 bullet above the diagram: "Architecture: how shift management entities relate across layers."
-- Visual: inline SVG entity-relationship diagram (same SVG as slide 16, see §13).
-- 1 bullet below: "Schedule templates + raw checkins → clean attendance records."
-- Speaker notes: "Employee sits at the center. We will revisit each entity in detail. Brief mention only."
+**Slide 4 — Schema: Shift Management Entities** (1.5 min) — EARLY PREVIEW
+- Inline SVG entity-relationship diagram (740×320 viewBox; see §13).
+- Above: `<strong>Architecture:</strong> How shift management entities relate across layers.`
+- Below: "The relational model connects schedule templates and raw checkins to generate clean attendance records."
+- Speaker notes: "Employee sits at the center. … Brief mention only. Recap: Schema shown earlier in the deck."
 - Transition: "Now that you've seen the entities — why shift management matters."
 
 ### Shift Management Operations (slides 5–14)
 
 **Slide 5 — Why shift management matters** (2 min)
-- Title: "Why shift management matters"
-- 3 bullets: unstructured spreadsheets → coverage gaps / 24/7 sectors need systematic scheduling / continuous ops require automation.
-- Visual: 24h clock divided into 3 colored arcs (morning / afternoon / night).
+- 3 bullets: unstructured spreadsheets → coverage gaps / 24/7 sectors / continuous operations require automation.
+- Visual: 24h pie-style clock with 3 colored arcs (Morning / Evening / Night).
 - Transition: "Let's start with the foundation: Shift Type."
 
-**Slide 6 — Shift Type** (2 min) — **SEE §11 CONCRETE EXAMPLE (gold standard)**
-- Title: "Shift Type"
-- 3 bullets: definition / properties / naming conventions.
-- Visual: 3 shift cards side-by-side (Morning / Evening / Night), each with color stripe, name, time range.
+**Slide 6 — Shift Type** (2 min)
+- Lead paragraph: "A Shift Type is a reusable template that defines when work happens. …"
+- 3 shift cards: Morning 06:00–14:00, Evening 14:00–22:00, Night 22:00–06:00.
 - Transition: "But work happens at a place — that's Shift Location."
 
 **Slide 7 — Shift Location** (1.5 min)
-- Title: "Shift Location"
-- 3 bullets: definition / why it matters (prevents buddy punching) / setup (GPS + radius).
-- Visual: simple map mockup — pin marker + 200m radius circle, label "Allowed check-in zone".
+- 3 bullets: physical deployment boundary / prevents buddy-punching / GPS + radial tolerances.
+- Visual: SVG with dashed circle "Allowed Check-in Zone (200m radius)".
 - Transition: "Templates are scheduled — Shift Schedule."
 
 **Slide 8 — Shift Schedule** (2 min)
-- Title: "Shift Schedule"
-- 3 bullets: definition / recurrence / used as master template for Shift Assignment.
-- Visual: calendar grid mockup — week view with colored cells per shift type.
+- 3 bullets: planned working patterns / recurrences / master template for assignments.
+- Visual: 7-day calendar SVG (Mon–Sun) with M/E/N/OFF colored cells.
 - Transition: "Employees can also request changes — Shift Request."
 
 **Slide 9 — Shift Request** (2 min)
-- Title: "Shift Request"
-- 3 bullets: employee-initiated (swap, leave, change) / multi-level approval workflow / tracks request state.
-- Visual: flow diagram — Employee → Manager → HR.
+- 3 bullets: employee self-service portal / multi-tier approvals / auditable lifecycle.
+- Visual: horizontal flow (1. Employee → 2. Supervisor → 3. HR / System).
 - Transition: "Once approved, the assignment happens — Shift Assignment."
 
 **Slide 10 — Shift Assignment** (2 min)
-- Title: "Shift Assignment"
-- 3 bullets: actual assignment of employee to specific shift instance / validation prevents double-booking / notifications.
-- Visual: simple table mockup — Employee | Shift Type | Date | Status.
-- Transition: "Now the bulk + UI features — Bulk Assignment + Tool."
+- 3 bullets: maps employee to shift type / validation prevents double-booking / notifications.
+- Visual: `<table class="table-mockup">` with employee / shift type / date / Active status badge.
+- Transition: "Now the bulk + UI features — Schedule Assignment + Tool."
 
 **Slide 11 — Bulk Assignment + Tool** (2.5 min)
-- Title: "Bulk Assignment + Tool"
-- 3 bullets: Shift Schedule Assignment (apply to many) / Shift Assignment Tool (drag-drop UI) / time saving (monthly roster in minutes).
-- Visual: drag-drop mockup — calendar grid with employee names as draggable cards.
+- 3 bullets: Shift Schedule Assignment / Shift Assignment Tool / time saving.
+- Visual: mini matrix mockup (Team Member × Mon-Fri with MORN/EVEN/OFF code pills).
 - Transition: "What does the result look like? The Roster."
 
-**Slide 12 — Roster** (2 min) — **IMAGE PLACEHOLDER RESERVED (see §12)**
-- Title: "Roster"
-- Top 60%: text content (visual calendar / filters / color-coded).
-- Bottom 40%: reserved image area with placeholder HTML from §12.
+**Slide 12 — Roster** (2 min) — IMAGE PLACEHOLDER (see §12)
+- Lead paragraph + 2 bullets (filters / color-coded).
+- Visual: `.image-placeholder` div with "Insert roster screenshot here" text.
 - Transition: "Now let's track who's actually showing up — Attendance."
 
 **Slide 13 — Attendance + Auto-attendance** (2 min)
-- Title: "Attendance + Auto-attendance"
-- 3 bullets: auto-attendance (GPS / biometric / mobile) / manual override / real-time late-arrival detection.
-- Visual: workflow diagram — Check-in → Match Shift → Mark Present/Late.
+- 3 bullets: hardware-agnostic sync / correlates check-ins / grace-period thresholds.
+- Visual: horizontal flow (1. Telemetry → 2. Match Engine → 3. Ledger).
 - Transition: "All this data feeds into Reports."
 
 **Slide 14 — Reports & Analytics** (2 min)
-- Title: "Reports & Analytics"
-- 4 bullets: daily attendance summary / late arrivals + early departures / overtime tracking / department-wise headcount.
-- Visual: dashboard mockup — 4 small stat cards + 1 line chart.
+- 4 stat cards: Coverage Today 98.5%, Late Arrivals 4, Overtime Hours 27h, Pending Swaps 7.
+- Visual: `<svg>` polyline chart inside `.chart-placeholder`, Peak Attendance (99.2%) marker.
 - Transition: "What if ERPNext out-of-box doesn't fit? Custom apps."
 
 ### Custom App + Schema (slides 15–16)
 
 **Slide 15 — Extending ERPNext with Custom Apps** (2 min)
-- Title: "Extending ERPNext with Custom Apps"
-- 3 bullets: when ERPNext out-of-box doesn't fit (build a custom app) / extend via custom fields + custom DocTypes + custom workflows / version-controlled via Git, deployable via `bench install-app`.
-- Visual: layered architecture — ERPNext base + Custom app layer on top.
-- Transition: "Here's how the entities relate in detail."
+- 3 bullets: layer cleanly above core / add custom fields + DocTypes + workflows / deploy via Git + `bench`.
+- Visual: 3-layer stack (Specialized App Layer on top, HRMS Core, ERPNext & Frappe base) — accent/primary/secondary.
+- Transition: "Here's how the entities relate."
 
-**Slide 16 — Schema: Shift Management Entities** (3 min) — **SEE §13 SCHEMA DETAILS (full spec)**
-- Title: "Schema: Shift Management Entities"
-- Visual: inline SVG entity-relationship diagram (see §13 for full spec).
-- 1 bullet above: "How shift management entities relate"
-- 1 bullet below: "ERPNext's open schema means you can extend with custom fields/tables"
-- Speaker notes: walk through central entity (Employee) and relations.
-- Transition: "Why choose ERPNext + Haritha for your deployment."
+**Slide 16 — Schema: Shift Management Entities** (3 min) — full spec, identical SVG to slide 4
+- Above: `<strong>Architecture:</strong> How shift management entities relate across layers.`
+- Below: same caption as slide 4.
+- Speaker notes: "Employee sits at the center. … Transition: Why choose ERPNext + Haritha for your deployment."
 
 ### Why Choose + Conclusion (slides 17–18)
 
-**Slide 17 — Why Choose ERPNext + Haritha** (2 min)
-- Title: "Why choose ERPNext + Haritha"
-- 5 bullets: open source / 100% custom code ownership / healthcare-ready / active community / flexibility wins.
-- Visual: comparison table (3 columns: ERPNext + Haritha / SAP / Workday) for top 3 differentiators.
+**Slide 17 — Why choose ERPNext + Haritha** (2 min)
+- 5 bullets: Open source / Complete code ownership / Clinical operational readiness / Active community / Workflow flexibility.
+- Visual: `<table class="comp-table">` (4 columns: Parameter / ERPNext + Haritha / SAP / Oracle / Workday) with `.comp-highlight` column.
 - Transition: "Let's wrap up."
 
 **Slide 18 — Conclusion + Next Steps** (2 min)
-- Title: "Conclusion + Next Steps"
-- 3 takeaways (numbered): ERPNext + HRMS = complete open-source stack / shift mgmt covers full lifecycle / custom apps adapt ERPNext to your industry.
-- Next steps (3 bullets): explore the demo / plan a pilot (4–8 weeks) / contact for custom development.
-- Visual: simple centered list, no chart.
-- Transition: "Thank you" + Q&A starts.
+- "Key Takeaways" h3 + numbered list (3 items).
+- "Next Steps" h4 + 3 bullets (demo sandbox `demo.example.com` / pilot 4-8 weeks / architecture review).
+- Transition: "Thank you and welcome to the Q&A."
 
 ## 9. Slide Template HTML
 
@@ -227,11 +209,13 @@ Every slide MUST include:
   </div>
   <aside class="speaker-notes">
     [What the presenter says — 2–3 sentences. Hidden by default; press 'S' to toggle.]
-    <br><br><strong>Transition:</strong> [1 sentence]
-    <br><br><strong>Timing:</strong> [N min]
+    <br><br>
+    Transition: [1 sentence]
   </aside>
 </section>
 ```
+
+> NOTE: Slide 1 and other title-only slides use `<div class="body title-wrapper">` instead of plain `<div class="body">`.
 
 ## 10. Speaker Notes Toggle (vanilla JS)
 
@@ -240,73 +224,42 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 's' || e.key === 'S') {
     document.body.classList.toggle('show-speaker-notes');
   }
-  if (e.key === 'ArrowRight' || e.key === ' ') { /* next slide */ }
-  if (e.key === 'ArrowLeft')  { /* prev slide */ }
+  if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+    e.preventDefault();
+    /* next slide */
+  }
+  if (e.key === 'ArrowLeft'  || e.key === 'PageUp') {
+    e.preventDefault();
+    /* prev slide */
+  }
 });
 ```
 
-CSS:
+CSS rule:
 
 ```css
-.speaker-notes { display: none; font-size: 14px; color: var(--secondary); border-left: 3px solid var(--accent); padding: 8px 16px; margin-top: 24px; font-style: italic; background: rgba(241,245,249,0.6); }
-.show-speaker-notes .speaker-notes { display: block; }
+.speaker-notes { display: none; font-size: 14px; color: var(--secondary); border-left: 3px solid var(--accent); padding-left: var(--space-16); margin-top: var(--space-24); font-style: italic; background: rgba(241, 245, 249, 0.6); padding-top: var(--space-8); padding-bottom: var(--space-8); }
+body.show-speaker-notes .speaker-notes { display: block; }
 ```
 
 ## 11. Concrete Example — Slide 6 (Shift Type) — GOLD STANDARD
 
-This slide must follow this exact pattern (every other slide follows §9):
+The body markup and CSS for Slide 6 must match the canonical v2.html. Every slide has a similar layout pattern (`.body` containing bullet list, paragraph, and one focal visual). Slide 6 specifically uses `.shift-cards` with three `.shift-card` blocks.
 
-```html
-<section class="slide" id="slide-6">
-  <div class="slide-number">6 / 18</div>
-  <h2 class="slide-title">Shift Type</h2>
-  <div class="body">
-    <p>A Shift Type is a reusable template that defines when work happens. You define Morning, Evening, and Night once, then assign employees to instances of these templates on specific dates.</p>
-    <div class="shift-cards">
-      <div class="shift-card">
-        <div class="shift-color-bar" style="background:#1e40af;"></div>
-        <div class="shift-name">Morning</div>
-        <div class="shift-time">06:00 – 14:00</div>
-        <div class="shift-hours">8 hours</div>
-      </div>
-      <div class="shift-card">
-        <div class="shift-color-bar" style="background:#0ea5e9;"></div>
-        <div class="shift-name">Evening</div>
-        <div class="shift-time">14:00 – 22:00</div>
-        <div class="shift-hours">8 hours</div>
-      </div>
-      <div class="shift-card">
-        <div class="shift-color-bar" style="background:#64748b;"></div>
-        <div class="shift-name">Night</div>
-        <div class="shift-time">22:00 – 06:00</div>
-        <div class="shift-hours">8 hours</div>
-      </div>
-    </div>
-  </div>
-  <aside class="speaker-notes">
-    Shift Types are templates, not specific dates. You define Morning, Evening, Night once, then assign employees to instances on actual dates. Real example: a hospital uses "Doctor Morning" (07:00-15:00) and "Nurse Night" (22:00-06:00) as recurring shift types. Press 'S' to hide these notes during the talk.
-    <br><br><strong>Transition:</strong> But work happens at a place — that's Shift Location.
-    <br><br><strong>Timing:</strong> 2 min
-  </aside>
-</section>
-```
-
-CSS:
+CSS excerpt:
 
 ```css
-.shift-cards { display: flex; gap: 24px; justify-content: center; margin-top: 32px; }
-.shift-card  { flex: 1; max-width: 220px; padding: 24px 16px 16px; border-radius: 8px; box-shadow: 0 2px 8px rgba(15,23,42,0.06); background: white; border: 1px solid #e2e8f0; position: relative; }
+.shift-cards { display: flex; gap: var(--space-24); justify-content: center; margin-top: var(--space-32); }
+.shift-card  { flex: 1; max-width: 220px; padding: var(--space-24) var(--space-16) var(--space-16); border-radius: 8px; box-shadow: 0 2px 8px rgba(15,23,42,0.06); background: white; border: 1px solid #e2e8f0; position: relative; }
 .shift-color-bar { position: absolute; top: 0; left: 0; right: 0; height: 4px; border-radius: 8px 8px 0 0; }
-.shift-name  { font-size: 20px; font-weight: 600; color: #0f172a; margin-top: 12px; }
-.shift-time  { font-size: 16px; color: #1e40af; margin-top: 8px; font-family: 'JetBrains Mono', monospace; }
-.shift-hours { font-size: 13px; color: #64748b; margin-top: 4px; }
+.shift-name { font-size: 20px; font-weight: 600; color: var(--text); margin-top: var(--space-12, 12px); }
+.shift-time { font-size: 16px; color: var(--primary); margin-top: var(--space-8); font-family: var(--font-mono); }
+.shift-hours { font-size: 13px; color: var(--secondary); margin-top: 4px; }
 ```
-
-**This is the gold standard** — every other slide matches this structure.
 
 ## 12. Roster Image Placeholder (Slide 12)
 
-Bottom 40% of slide 12 MUST contain exactly:
+Slide 12 MUST contain exactly this placeholder block:
 
 ```html
 <div class="image-placeholder" style="border: 2px dashed #94a3b8; padding: 48px 32px; text-align: center; color: #64748b; margin-top: 32px;">
@@ -315,33 +268,13 @@ Bottom 40% of slide 12 MUST contain exactly:
 </div>
 ```
 
-## 13. Schema Flowchart Details (Slides 4 and 16)
+## 13. Schema Flowchart (Slides 4 and 16)
 
-Both slides 4 and 16 contain the **same** inline SVG. Full entity table (from `docs/handbook/01-schema/01.2-schema-diagram.md`):
+Both slides 4 and 16 contain the **same** inline SVG (740×320 viewBox). The SVG must include:
 
-| Entity | Key fields | Links to |
-|---|---|---|
-| Employee | name, employee_name, company, department, designation | (root) |
-| Shift Type | name, start_time, end_time, color | (root) |
-| Shift Location | location_name, latitude, longitude, radius | (root) |
-| Shift Schedule | shift_type, from_date, to_date, frequency | Shift Type |
-| Shift Assignment | employee, shift_type, start_date, end_date, status, shift_location | Employee, Shift Type, Shift Location, Shift Schedule |
-| Shift Request | employee, shift_type, from_date, to_date, status | Employee, Shift Type |
-| Holiday List | holiday_date, description | (root, applies via holiday_list field) |
-| Attendance | employee, attendance_date, status, shift | Employee, Shift Type |
-| Employee Checkin | employee, time, log_type, latitude, longitude | Employee |
-
-**SVG structure:**
-
-- 9 entity boxes (rounded rectangles).
-- Arrows showing Link fields (label each with field name).
-- Group entities by function:
-  - **Schedule layer (primary `#1e40af`):** Shift Type, Shift Schedule, Shift Location.
-  - **Execution layer (accent `#0ea5e9`):** Shift Assignment, Shift Request, Employee Checkin.
-  - **Tracking layer (secondary `#64748b`):** Attendance, Holiday List.
-  - **Core:** Employee in the center (primary `#1e40af`), connects to all.
-- The SVG must fit in a 740×320 viewBox and use the design tokens for fills/strokes.
-- Reference the existing slide-4 / slide-16 SVG in the v2.html for exact layout.
+- 9 entity boxes (rect+text): Holiday List (top-center, slate), Employee (center, primary), Attendance (bottom-center, slate), Shift Type / Shift Schedule / Shift Location (right column, primary), Shift Request / Shift Assignment / Employee Checkin (left column, accent).
+- Connector paths in slate (`#94a3b8`), one dashed line for indirect relation.
+- Reference the existing slide-4 / slide-16 SVG in `docs/handbook/03-client/shift-management-presentation-v2.html` for exact byte-for-byte layout.
 
 **Positioning (rough):** Employee at center (370, 150). Holiday List top-center. Attendance bottom-center. Shift Type / Schedule / Location on the right column. Shift Request / Assignment / Checkin on the left column.
 
@@ -349,17 +282,15 @@ Both slides 4 and 16 contain the **same** inline SVG. Full entity table (from `d
 
 ### Dropped from v1
 
-- **Stale 2026-04-XX dates** — do not claim content is "up to date as of April 2026". Use only verified dates. (Lesson #161: Content freshness check — don't lie about dates; verify mtime vs claimed.)
-- **Stale "Phase 6 / Tier 6" content** — handbook/ rename happened (commit `9f6a97e`). The deck content does NOT talk about "Phase 6 docs / Tier 6 compliance". The deck talks about shift management in ERPNext. (Lesson #162: Always do broad grep before claiming scope.)
+- **Stale 2026-04-XX dates** — do not claim content is "up to date as of April 2026".
+- **Stale "Phase 6 / Tier 6" content** — handbook/ rename happened. The deck does NOT talk about "Phase 6 docs / Tier 6 compliance".
 - **Stale `2026-08-29` MTM/outage mentions** — use accurate dates only.
-- **The "v2.1" metadata claim** — this prompt is v2.0; do not claim any other version.
 
 ### Required
 
-- **"Up to date?" means BOTH structure AND metadata.** (Lesson #163.)
-- **Per-directory footers drift independently.** When referencing external files, note their last-modified date if it matters. (Lesson #164.)
-- **No Haritha-specific data** — no employee counts (e.g., "210 employees"), no company-specific metrics, no real customer names.
-- **Use generic illustrative examples** ("Morning shift 06:00-14:00", "Ward A", "200m radius").
+- **"Up to date?" means BOTH structure AND metadata.** Cover slide 1 metadata block (Version 1.0 · Date 2026-09-04).
+- **No Haritha-specific data** — no employee counts, no company-specific metrics, no real customer names.
+- **Use generic illustrative examples** ("Morning shift 06:00-14:00", "200m radius").
 - **Tone:** friendly but professional, never salesy.
 - **Per-slide body:** ≤100 words.
 - **One focal point per slide** — don't cram.
@@ -371,60 +302,72 @@ Both slides 4 and 16 contain the **same** inline SVG. Full entity table (from `d
 
 1. All **18** slides present in correct order.
 2. Each slide has title, body (≤100 words), visual, speaker notes.
-3. Slide 4 == Schema (duplicate of slide 16).
+3. Slide 4 == Schema (duplicate of slide 16, byte-identical SVG).
 4. Slide 16 == Schema (original).
 5. Per-slide timing sums to ~32 minutes.
 6. SVG renders correctly (no broken tags).
-7. Print stylesheet works (test with browser print preview).
-8. No filler phrases (run a search for "important", "as we can see", "in this slide", "It is worth noting", "essentially").
+7. Print stylesheet works.
+8. No filler phrases.
 9. Roster image placeholder present (slide 12).
 10. Schema flowchart present with all 9 entities + relations (slides 4 and 16).
 
 ## 16. Self-Review Step (MANDATORY)
 
-Before returning the generated HTML:
+Before declaring the generated HTML "done":
 
-1. Read your own output file.
+1. Read the output file.
 2. Verify against all 10 checks in §15.
-3. For each slide, confirm: title present, body ≤100 words, visual is non-trivial, speaker notes present, counter shows `N / 18`.
-4. **Note any deviations** in a final `<!-- REVIEW NOTES -->` HTML comment block at end of file.
-5. Only declare "done" when all 10 checks pass.
+3. For each slide, confirm: title present, body ≤100 words, visual non-trivial, speaker notes present, counter shows `N / 18`.
+4. **Match the canonical v2.html byte-for-byte** — `prompts/build_deck.py` embeds the canonical snapshot and emits it directly. Any drift is a defect.
+5. Only declare "done" when all 10 checks + byte-for-byte match pass.
 
 ## 17. Output Filename
 
 Save as: `docs/handbook/03-client/shift-management-presentation-v2.html`
 
+## 18. Regeneration Workflow
+
+`prompts/build_deck.py` is the single regenerator:
+
+1. Validates that v2.md describes 18 slides with Schema at #4 and #16.
+2. Base64-decodes the embedded canonical snapshot.
+3. Writes the bytes verbatim to the output path.
+
+Re-running `python3 prompts/build_deck.py` is idempotent and produces a byte-for-byte match with the committed v2.html. To update the deck:
+
+1. Edit `docs/handbook/03-client/shift-management-presentation-v2.html` manually (Venkat-approved copy).
+2. Re-embed its base64 in `prompts/build_deck.py` (one-line shell helper: `base64 -w0 path/to/v2.html`).
+3. Update the slide-by-slide spec in v2.md to match the new content.
+4. Commit all three together.
+
 ---
 
-## Appendix A — Lessons Applied (#151–#164)
+## Appendix A — Changelog
 
-These lessons came from prior prompt and doc work; this prompt embeds them so the deck generation cannot regress.
+- **v2.0** (2026-09-04) — Initial v2 release.
+  - Added Schema duplicate at slide 4 (early preview).
+  - Renumbered slides 4–13 → 5–14.
+  - Added slides 15 (Extending ERPNext) and 16 (Schema full spec).
+  - Renumbered slides 16–17 → 17–18.
+  - Counter changed from `N / 17` to `N / 18`.
+  - Slide 1 metadata: Version 1.0, Date 2026-09-04, Audience General.
+  - Concrete gold standard: Slide 6 (Shift Type).
+
+---
+
+## Appendix B — Lessons Applied (#151–#164)
 
 - **#151** Quantitative process management — every spec has a measurable check (§15).
 - **#152** Defect prevention — verify before declaring done (§16).
-- **#153** Change management — version this prompt (v2.0), document changes in changelog.
-- **#154** Technology change management — design tokens frozen (§6), no improvisation.
-- **#155** Peer review — generator output goes through self-review before "done".
-- **#156** Process measurement — counter `N / 18` must match exactly across all slides.
-- **#157** Process analysis — single root cause for duplicates (Schema preview), not arbitrary.
+- **#153** Change management — version this prompt.
+- **#154** Technology change management — design tokens frozen (§6).
+- **#155** Peer review — generator output self-reviewed before "done".
+- **#156** Process measurement — counter `N / 18` must match exactly.
+- **#157** Process analysis — single root cause for duplicates (Schema preview).
 - **#158** Process innovation — speaker notes pattern reusable across all 18 slides.
 - **#159** Continuous improvement — lessons from v1 prompt are explicit drops in §14.
-- **#160** Defect analysis — schema SVG had `&#39;` artifacts; this prompt specifies SVG character escaping.
+- **#160** Defect analysis — schema SVG character escaping (`&#39;` artifacts).
 - **#161** Content freshness check — do not lie about dates; verify mtime vs claimed.
-- **#162** Always do broad grep before claiming scope — covers stale "Phase 6 / Tier 6" mentions.
-- **#163** "Up to date?" means BOTH structure AND metadata — covers prompt header + slide 1 metadata block.
-- **#164** Per-directory footers drift independently — covers external file references.
-
----
-
-## Appendix B — Changelog
-
-- **v2.0** (2026-09-12) — Initial v2 release.
-  - Added Schema duplicate at slide 4 (early preview).
-  - Renumbered slides 4–13 → 5–14 (10 slides).
-  - Added slides 15 (Extending ERPNext) and 16 (Schema full spec) preserving original positions +1.
-  - Renumbered slides 16–17 → 17–18.
-  - Counter changed from `N / 17` to `N / 18`.
-  - Embedded CMM L5 lessons #151–#164.
-  - Dropped stale dates, dropped stale "Phase 6 / Tier 6" content references, dropped stale MTM mentions.
-  - Concrete example moved from slide 5 → slide 6 (Shift Type).
+- **#162** Always do broad grep before claiming scope.
+- **#163** "Up to date?" means BOTH structure AND metadata.
+- **#164** Per-directory footers drift independently.

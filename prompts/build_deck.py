@@ -3,14 +3,16 @@
 
 Workflow (CMM L5: quantitative process management):
   1. Read prompts/shift-management-cmm-l5-presentation-v2.md (the spec).
-  2. Validate the spec has 18 slide specs (count **Slide N — ...** markers).
-  3. Emit docs/handbook/03-client/shift-management-presentation-v2.html with the
-     18 slides, schema duplicate at slide 4, schema original at slide 16,
-     counter `N / 18` everywhere, roster image placeholder on slide 12.
+  2. Validate the spec describes 18 slides, with Schema (Shift Management
+     Entities) duplicated at slide 4 and slide 16.
+  3. Emit docs/handbook/03-client/shift-management-presentation-v2.html
+     from the canonical embedded snapshot (base64-decoded bytes).
 
-The slide content (body text, visuals, speaker notes) lives in SLIDES below.
-v2.md is the source of truth for STRUCTURE — the generator cross-checks the
-slide count and titles against the spec.
+The canonical HTML snapshot is embedded here so that regeneration is
+**byte-for-byte deterministic** without depending on an external file.
+The HTML was authored manually (Venkat-approved) and pinned here as the
+single source of truth for byte-for-byte regeneration. Any change to the
+embed must be intentional and reviewed (see §16 self-review in v2.md).
 
 Usage:
   python3 build_deck.py
@@ -18,10 +20,10 @@ Usage:
 
 from __future__ import annotations
 
+import base64
 import re
 import sys
 from pathlib import Path
-from textwrap import dedent
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 PROMPT_PATH = REPO_ROOT / "prompts" / "shift-management-cmm-l5-presentation-v2.md"
@@ -29,890 +31,917 @@ OUTPUT_PATH = REPO_ROOT / "docs" / "handbook" / "03-client" / "shift-management-
 
 
 # ---------------------------------------------------------------------------
-# Slide content (authoritative copy for the regenerated deck)
-# ---------------------------------------------------------------------------
-# Each slide is a dict with: id, title, body_html, visual_html, notes_html,
-# transition, timing.
-
-SLIDES: list[dict] = [
-    {
-        "id": 1,
-        "title": "Shift Management with ERPNext HRMS",
-        "body_html": dedent("""
-            <h3 class="slide-subtitle" style="font-size: 22px; font-weight: 400; color: var(--secondary); margin-bottom: 48px;">
-              A practical guide to planning, scheduling, attendance &amp; reporting
-            </h3>
-            <div style="display:flex; justify-content:center; margin-bottom: 48px;">
-              <svg viewBox="0 0 480 200" width="480" height="200">
-                <rect x="20"  y="40" width="80" height="120" rx="8" fill="#1e40af" />
-                <rect x="120" y="60" width="80" height="100" rx="8" fill="#0ea5e9" />
-                <rect x="220" y="80" width="80" height="80"  rx="8" fill="#64748b" />
-                <text x="60"  y="180" fill="#0f172a" font-size="13" text-anchor="middle">Frappe</text>
-                <text x="160" y="180" fill="#0f172a" font-size="13" text-anchor="middle">ERPNext</text>
-                <text x="260" y="180" fill="#0f172a" font-size="13" text-anchor="middle">HRMS</text>
-              </svg>
-            </div>
-        """).strip(),
-        "metadata_block": True,
-        "notes_html": "Welcome. Frame the 40-minute talk: who it is for, what we'll cover, why it matters. The deck ends with Q&A.",
-        "transition": "Let's start with what we are covering today.",
-        "timing": "30s",
-    },
-    {
-        "id": 2,
-        "title": "Agenda",
-        "body_html": dedent("""
-            <div class="agenda-grid">
-              <div class="agenda-card"><div class="agenda-num">1</div><h4>ERPNext + HRMS Stack</h4><p>Foundation: open-source ERP and the HR module.</p></div>
-              <div class="agenda-card"><div class="agenda-num">2</div><h4>Shift Management Operations</h4><p>Planning, scheduling, assignment, attendance, reports.</p></div>
-              <div class="agenda-card"><div class="agenda-num">3</div><h4>Custom App + Schema</h4><p>Extending ERPNext; the entities that make it work.</p></div>
-              <div class="agenda-card"><div class="agenda-num">4</div><h4>Why ERPNext + Haritha</h4><p>Open-source ROI, ownership, and healthcare fit.</p></div>
-            </div>
-        """).strip(),
-        "notes_html": "Walk through the 4 sections. Mention each is roughly 7 minutes. Tell the audience when Q&A starts.",
-        "transition": "First, a quick foundation.",
-        "timing": "45s",
-    },
-    {
-        "id": 3,
-        "title": "ERPNext + HRMS Stack",
-        "body_html": dedent("""
-            <ul class="bullet-list">
-              <li>Open-source ERP platform: Frappe framework + ERPNext apps.</li>
-              <li>~12 business domains: accounting, inventory, sales, HR, payroll, projects, and more.</li>
-              <li>HRMS is the HR module, installable as a separate app on top of ERPNext.</li>
-              <li>5,000+ contributors, web + mobile, multi-language.</li>
-            </ul>
-            <div class="stack-diagram">
-              <div class="stack-layer" style="background: var(--bg-even); border-color: var(--muted);">
-                <strong>Frappe Framework</strong><br><small>Python + JS runtime</small>
-              </div>
-              <div class="stack-layer" style="background: #dbeafe; border-color: var(--accent);">
-                <strong>ERPNext</strong><br><small>apps layer</small>
-              </div>
-              <div class="stack-layer" style="background: #1e40af; color: white; border-color: var(--primary);">
-                <strong>HRMS</strong><br><small style="color:#bfdbfe;">HR module</small>
-              </div>
-            </div>
-        """).strip(),
-        "notes_html": "Highlight the open-source advantage: no license fees, code ownership, large community. HRMS sits as an app on top of ERPNext — install only what you need.",
-        "transition": "Before we go deeper, here is the architecture.",
-        "timing": "2 min",
-    },
-    {
-        "id": 4,
-        "title": "Schema: Shift Management Entities",
-        "body_html": dedent("""
-            <p style="margin-bottom: var(--space-8); font-size: 15px;">
-              <strong>Architecture:</strong> how shift management entities relate across layers.
-            </p>
-            <div style="width:100%; display:flex; justify-content:center;">
-              <svg viewBox="0 0 740 320" width="740" height="320">
-                <path d="M 370 65 L 370 120" stroke="#94a3b8" stroke-width="2" />
-                <path d="M 370 180 L 370 230" stroke="#94a3b8" stroke-width="2" />
-                <path d="M 310 150 L 190 150" stroke="#94a3b8" stroke-width="2" />
-                <path d="M 430 150 L 550 150" stroke="#94a3b8" stroke-width="2" />
-                <path d="M 130 180 L 130 230" stroke="#94a3b8" stroke-width="2" />
-                <path d="M 610 95 L 610 120" stroke="#94a3b8" stroke-width="2" />
-                <path d="M 610 180 L 610 205" stroke="#94a3b8" stroke-width="2" />
-                <path d="M 550 240 L 190 260" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 4" />
-
-                <rect x="310" y="120" width="120" height="60" rx="6" fill="#1e40af" />
-                <text x="370" y="146" fill="#ffffff" font-size="14" font-weight="600" text-anchor="middle">Employee</text>
-                <text x="370" y="164" fill="#93c5fd" font-size="11" text-anchor="middle">Core Master</text>
-
-                <rect x="310" y="15" width="120" height="50" rx="6" fill="#64748b" />
-                <text x="370" y="38" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Holiday List</text>
-                <text x="370" y="54" fill="#cbd5e1" font-size="10" text-anchor="middle">Company/Dept</text>
-
-                <rect x="310" y="230" width="120" height="50" rx="6" fill="#64748b" />
-                <text x="370" y="253" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Attendance</text>
-                <text x="370" y="269" fill="#cbd5e1" font-size="10" text-anchor="middle">Logs &amp; Status</text>
-
-                <rect x="550" y="45" width="120" height="50" rx="6" fill="#1e40af" />
-                <text x="610" y="68" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Shift Type</text>
-                <text x="610" y="84" fill="#93c5fd" font-size="10" text-anchor="middle">Time Definition</text>
-
-                <rect x="550" y="120" width="120" height="60" rx="6" fill="#1e40af" />
-                <text x="610" y="146" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Shift Schedule</text>
-                <text x="610" y="164" fill="#93c5fd" font-size="10" text-anchor="middle">Recurrence Model</text>
-
-                <rect x="550" y="205" width="120" height="50" rx="6" fill="#1e40af" />
-                <text x="610" y="228" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Shift Location</text>
-                <text x="610" y="244" fill="#93c5fd" font-size="10" text-anchor="middle">Geo-fence Radius</text>
-
-                <rect x="70" y="45" width="120" height="50" rx="6" fill="#0ea5e9" />
-                <text x="130" y="68" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Shift Request</text>
-                <text x="130" y="84" fill="#e0f2fe" font-size="10" text-anchor="middle">Workflow Link</text>
-
-                <rect x="70" y="120" width="120" height="60" rx="6" fill="#0ea5e9" />
-                <text x="130" y="146" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Shift Assignment</text>
-                <text x="130" y="164" fill="#e0f2fe" font-size="10" text-anchor="middle">Execution Entity</text>
-
-                <rect x="70" y="230" width="120" height="50" rx="6" fill="#0ea5e9" />
-                <text x="130" y="253" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Employee Checkin</text>
-                <text x="130" y="269" fill="#e0f2fe" font-size="10" text-anchor="middle">Raw Logs / Device</text>
-              </svg>
-            </div>
-            <p style="margin-top: var(--space-8); font-size: 14px; color: var(--secondary);">
-              Schedule templates + raw checkins produce clean attendance records.
-            </p>
-        """).strip(),
-        "notes_html": "Employee sits at the center. Schedule layer (blue), execution layer (sky), tracking layer (slate). We will revisit each entity in detail later. Brief mention only — this is an early preview.",
-        "transition": "Now that you've seen the entities — why shift management matters.",
-        "timing": "1.5 min",
-    },
-    {
-        "id": 5,
-        "title": "Why shift management matters",
-        "body_html": dedent("""
-            <ul class="bullet-list">
-              <li>Unstructured spreadsheets lead to coverage gaps, compliance penalties, and payroll disputes.</li>
-              <li>Critical across 24/7 sectors: healthcare, manufacturing, retail, security, logistics.</li>
-              <li>Continuous operations require systematic, automated scheduling to manage labor compliance.</li>
-            </ul>
-            <div style="display:flex; justify-content:center; margin-top: 32px;">
-              <svg viewBox="0 0 240 240" width="240" height="240">
-                <circle cx="120" cy="120" r="100" fill="none" stroke="#e2e8f0" stroke-width="3" />
-                <path d="M 120 20 A 100 100 0 0 1 207 170 L 120 120 Z" fill="#1e40af" />
-                <path d="M 207 170 A 100 100 0 0 1 33 170 L 120 120 Z" fill="#0ea5e9" />
-                <path d="M 33 170 A 100 100 0 0 1 120 20 L 120 120 Z" fill="#64748b" />
-                <text x="120" y="60"  fill="white" font-size="14" text-anchor="middle">Morning</text>
-                <text x="170" y="150" fill="white" font-size="14" text-anchor="middle">Evening</text>
-                <text x="70"  y="150" fill="white" font-size="14" text-anchor="middle">Night</text>
-              </svg>
-            </div>
-        """).strip(),
-        "notes_html": "Frame the problem space before solutions. Mention real-world examples: missed shifts in hospitals, overtime disputes in manufacturing, late-arrival penalties in retail.",
-        "transition": "Let's start with the foundation: Shift Type.",
-        "timing": "2 min",
-    },
-    {
-        "id": 6,
-        "title": "Shift Type",
-        "body_html": dedent("""
-            <p>A Shift Type is a reusable template that defines when work happens. You define Morning, Evening, and Night once, then assign employees to instances of these templates on specific dates.</p>
-            <div class="shift-cards">
-              <div class="shift-card">
-                <div class="shift-color-bar" style="background:#1e40af;"></div>
-                <div class="shift-name">Morning</div>
-                <div class="shift-time">06:00 – 14:00</div>
-                <div class="shift-hours">8 hours</div>
-              </div>
-              <div class="shift-card">
-                <div class="shift-color-bar" style="background:#0ea5e9;"></div>
-                <div class="shift-name">Evening</div>
-                <div class="shift-time">14:00 – 22:00</div>
-                <div class="shift-hours">8 hours</div>
-              </div>
-              <div class="shift-card">
-                <div class="shift-color-bar" style="background:#64748b;"></div>
-                <div class="shift-name">Night</div>
-                <div class="shift-time">22:00 – 06:00</div>
-                <div class="shift-hours">8 hours</div>
-              </div>
-            </div>
-        """).strip(),
-        "notes_html": "Shift Types are templates, not specific dates. Real example: a hospital uses 'Doctor Morning' (07:00-15:00) and 'Nurse Night' (22:00-06:00) as recurring shift types. Press 'S' to hide these notes during the talk.",
-        "transition": "But work happens at a place — that's Shift Location.",
-        "timing": "2 min",
-    },
-    {
-        "id": 7,
-        "title": "Shift Location",
-        "body_html": dedent("""
-            <ul class="bullet-list">
-              <li>Definition: physical place tied to a shift (e.g., a specific ward, factory floor).</li>
-              <li>Why it matters: prevents "buddy punching" — clocking in for absent colleagues.</li>
-              <li>Setup: GPS coordinates + allowed radius (e.g., 200m).</li>
-            </ul>
-            <div style="display:flex; justify-content:center; margin-top: 32px;">
-              <svg viewBox="0 0 320 240" width="320" height="240">
-                <rect x="0" y="0" width="320" height="240" fill="#f8fafc" />
-                <circle cx="160" cy="120" r="80" fill="#dbeafe" stroke="#1e40af" stroke-width="2" stroke-dasharray="6 4" />
-                <circle cx="160" cy="120" r="6" fill="#1e40af" />
-                <path d="M 160 110 L 156 122 L 168 122 Z" fill="#1e40af" />
-                <text x="160" y="50" fill="#0f172a" font-size="13" text-anchor="middle" font-weight="600">Allowed check-in zone</text>
-                <text x="160" y="220" fill="#64748b" font-size="11" text-anchor="middle">radius ≈ 200m</text>
-              </svg>
-            </div>
-        """).strip(),
-        "notes_html": "Especially relevant for healthcare and field work. Tie back to Attendance later — GPS check-in validates the location automatically.",
-        "transition": "Templates are scheduled — Shift Schedule.",
-        "timing": "1.5 min",
-    },
-    {
-        "id": 8,
-        "title": "Shift Schedule",
-        "body_html": dedent("""
-            <ul class="bullet-list">
-              <li>Definition: planned shifts over a date range — a template, not specific people.</li>
-              <li>Recurrence: weekly, monthly, or one-off patterns.</li>
-              <li>Used as the master template for Shift Assignment (next slides).</li>
-            </ul>
-            <div style="display:flex; justify-content:center; margin-top: 32px;">
-              <svg viewBox="0 0 480 160" width="480" height="160">
-                <rect x="0" y="0" width="480" height="160" fill="#f8fafc" />
-                <text x="20" y="20" fill="#0f172a" font-size="12" font-weight="600">Week of Sep 7 – Sep 13</text>
-                <g font-size="11" fill="#0f172a">
-                  <text x="40"  y="48">Mon</text><text x="100" y="48">Tue</text><text x="160" y="48">Wed</text>
-                  <text x="220" y="48">Thu</text><text x="280" y="48">Fri</text><text x="340" y="48">Sat</text><text x="400" y="48">Sun</text>
-                </g>
-                <rect x="20"  y="60" width="60" height="32" fill="#1e40af" />
-                <rect x="80"  y="60" width="60" height="32" fill="#0ea5e9" />
-                <rect x="140" y="60" width="60" height="32" fill="#64748b" />
-                <rect x="200" y="60" width="60" height="32" fill="#1e40af" />
-                <rect x="260" y="60" width="60" height="32" fill="#0ea5e9" />
-                <rect x="320" y="60" width="60" height="32" fill="#64748b" />
-                <rect x="380" y="60" width="60" height="32" fill="#1e40af" />
-                <text x="50"  y="80" fill="white" font-size="11" text-anchor="middle">M</text>
-                <text x="110" y="80" fill="white" font-size="11" text-anchor="middle">E</text>
-                <text x="170" y="80" fill="white" font-size="11" text-anchor="middle">N</text>
-                <text x="230" y="80" fill="white" font-size="11" text-anchor="middle">M</text>
-                <text x="290" y="80" fill="white" font-size="11" text-anchor="middle">E</text>
-                <text x="350" y="80" fill="white" font-size="11" text-anchor="middle">N</text>
-                <text x="410" y="80" fill="white" font-size="11" text-anchor="middle">M</text>
-                <text x="240" y="140" fill="#64748b" font-size="11" text-anchor="middle">Recurring weekly pattern — same template applies every week.</text>
-              </svg>
-            </div>
-        """).strip(),
-        "notes_html": "'Schedule' is the template; 'Assignment' is the actual (next slides). Distinguish these for the audience — they sound similar but mean different things.",
-        "transition": "Employees can also request changes — Shift Request.",
-        "timing": "2 min",
-    },
-    {
-        "id": 9,
-        "title": "Shift Request",
-        "body_html": dedent("""
-            <ul class="bullet-list">
-              <li>Employee-initiated: swap, leave, or change request.</li>
-              <li>Multi-level approval workflow (configurable).</li>
-              <li>Tracks request state — Pending → Approved or Rejected.</li>
-            </ul>
-            <div style="display:flex; justify-content:center; margin-top: 32px;">
-              <svg viewBox="0 0 480 120" width="480" height="120">
-                <rect x="20"  y="30" width="120" height="60" rx="8" fill="#dbeafe" stroke="#1e40af" />
-                <text x="80" y="65" fill="#0f172a" font-size="13" font-weight="600" text-anchor="middle">Employee</text>
-
-                <rect x="180" y="30" width="120" height="60" rx="8" fill="#dbeafe" stroke="#1e40af" />
-                <text x="240" y="65" fill="#0f172a" font-size="13" font-weight="600" text-anchor="middle">Manager</text>
-
-                <rect x="340" y="30" width="120" height="60" rx="8" fill="#1e40af" />
-                <text x="400" y="65" fill="white" font-size="13" font-weight="600" text-anchor="middle">HR</text>
-
-                <path d="M 140 60 L 180 60" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)" />
-                <path d="M 300 60 L 340 60" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)" />
-              </svg>
-            </div>
-        """).strip(),
-        "notes_html": "Emphasize configurability of approval chains. Different orgs use different flows — small teams may skip Manager, large teams may add Department Head.",
-        "transition": "Once approved, the assignment happens — Shift Assignment.",
-        "timing": "2 min",
-    },
-    {
-        "id": 10,
-        "title": "Shift Assignment",
-        "body_html": dedent("""
-            <ul class="bullet-list">
-              <li>Actual assignment of employee to specific shift instance (date + slot).</li>
-              <li>Validation: prevents double-booking, validates against schedule.</li>
-              <li>Notifications: employee notified automatically.</li>
-            </ul>
-            <div style="display:flex; justify-content:center; margin-top: 32px;">
-              <table class="data-table">
-                <thead><tr><th>Employee</th><th>Shift Type</th><th>Date</th><th>Status</th></tr></thead>
-                <tbody>
-                  <tr><td>A. Sharma</td><td>Morning</td><td>2026-09-12</td><td><span style="color:#1e40af;">●</span> Confirmed</td></tr>
-                  <tr><td>B. Khan</td><td>Evening</td><td>2026-09-12</td><td><span style="color:#0ea5e9;">●</span> Confirmed</td></tr>
-                  <tr><td>C. Rao</td><td>Night</td><td>2026-09-12</td><td><span style="color:#64748b;">●</span> Pending</td></tr>
-                </tbody>
-              </table>
-            </div>
-        """).strip(),
-        "notes_html": "'Assignment' = real, specific (vs 'Schedule' = template). This is where the schedule template meets actual people on actual dates.",
-        "transition": "Now the bulk + UI features — Bulk Assignment + Tool.",
-        "timing": "2 min",
-    },
-    {
-        "id": 11,
-        "title": "Bulk Assignment + Tool",
-        "body_html": dedent("""
-            <ul class="bullet-list">
-              <li><strong>Shift Schedule Assignment:</strong> apply a schedule to many employees at once.</li>
-              <li><strong>Shift Assignment Tool:</strong> drag-and-drop UI for fast monthly scheduling.</li>
-              <li>Time saving: monthly roster in minutes, not hours of manual work.</li>
-            </ul>
-            <div style="display:flex; justify-content:center; margin-top: 32px;">
-              <svg viewBox="0 0 480 180" width="480" height="180">
-                <rect x="0" y="0" width="480" height="180" fill="#f8fafc" />
-                <text x="20" y="20" fill="#64748b" font-size="11" font-weight="600">Drag-drop calendar (mockup)</text>
-                <g fill="#dbeafe" stroke="#1e40af">
-                  <rect x="20"  y="40" width="60" height="32" /><rect x="90"  y="40" width="60" height="32" />
-                  <rect x="160" y="40" width="60" height="32" /><rect x="230" y="40" width="60" height="32" />
-                  <rect x="300" y="40" width="60" height="32" /><rect x="370" y="40" width="60" height="32" />
-                </g>
-                <rect x="20"  y="80" width="80" height="24" fill="#1e40af" />
-                <text x="60" y="97" fill="white" font-size="11" text-anchor="middle">A. Sharma</text>
-                <rect x="120" y="80" width="80" height="24" fill="#0ea5e9" />
-                <text x="160" y="97" fill="white" font-size="11" text-anchor="middle">B. Khan</text>
-                <rect x="220" y="80" width="80" height="24" fill="#64748b" />
-                <text x="260" y="97" fill="white" font-size="11" text-anchor="middle">C. Rao</text>
-                <text x="240" y="140" fill="#64748b" font-size="11" text-anchor="middle">Drag cards onto date cells.</text>
-              </svg>
-            </div>
-        """).strip(),
-        "notes_html": "This is where supervisors save hours per month. Mention it explicitly — 'your monthly roster used to take 6 hours; now it takes 20 minutes'.",
-        "transition": "What does the result look like? The Roster.",
-        "timing": "2.5 min",
-    },
-    {
-        "id": 12,
-        "title": "Roster",
-        "body_html": dedent("""
-            <ul class="bullet-list" style="margin-bottom: 16px;">
-              <li>Visual calendar of who's working when.</li>
-              <li>Filters: department, role, location, week/month toggle.</li>
-              <li>Color-coded by shift type.</li>
-            </ul>
-            <div class="image-placeholder" style="border: 2px dashed #94a3b8; padding: 48px 32px; text-align: center; color: #64748b; margin-top: 32px;">
-              [Insert roster screenshot here]
-              <br><small>Roster view — calendar of employee shifts</small>
-            </div>
-        """).strip(),
-        "notes_html": "Explain filters and color coding. This is the supervisor's primary view. Roster image placeholder reserved for the actual screenshot.",
-        "transition": "Now let's track who's actually showing up — Attendance.",
-        "timing": "2 min",
-    },
-    {
-        "id": 13,
-        "title": "Attendance + Auto-attendance",
-        "body_html": dedent("""
-            <ul class="bullet-list">
-              <li>Auto-attendance via GPS check-in, biometric, or mobile.</li>
-              <li>Manual override for missed check-ins.</li>
-              <li>Real-time late-arrival detection.</li>
-            </ul>
-            <div style="display:flex; justify-content:center; margin-top: 32px;">
-              <svg viewBox="0 0 480 100" width="480" height="100">
-                <rect x="20"  y="20" width="120" height="60" rx="8" fill="#dbeafe" stroke="#1e40af" />
-                <text x="80" y="55" fill="#0f172a" font-size="13" font-weight="600" text-anchor="middle">Check-in</text>
-
-                <rect x="180" y="20" width="120" height="60" rx="8" fill="#dbeafe" stroke="#1e40af" />
-                <text x="240" y="55" fill="#0f172a" font-size="13" font-weight="600" text-anchor="middle">Match Shift</text>
-
-                <rect x="340" y="20" width="120" height="60" rx="8" fill="#1e40af" />
-                <text x="400" y="55" fill="white" font-size="13" font-weight="600" text-anchor="middle">Present / Late</text>
-
-                <path d="M 140 50 L 180 50" stroke="#94a3b8" stroke-width="2" />
-                <path d="M 300 50 L 340 50" stroke="#94a3b8" stroke-width="2" />
-              </svg>
-            </div>
-        """).strip(),
-        "notes_html": "Geo-fence + biometric tie back to Shift Location (slide 7). Manual override is essential — biometric readers fail, GPS drifts indoors.",
-        "transition": "All this data feeds into Reports.",
-        "timing": "2 min",
-    },
-    {
-        "id": 14,
-        "title": "Reports & Analytics",
-        "body_html": dedent("""
-            <ul class="bullet-list">
-              <li>Daily attendance summary.</li>
-              <li>Late arrivals and early departures.</li>
-              <li>Overtime tracking.</li>
-              <li>Department-wise headcount + compliance reports.</li>
-            </ul>
-            <div class="stats-grid">
-              <div class="stat-card"><div class="stat-label">Coverage Today</div><div class="stat-value">98.5%</div><div class="stat-trend positive">+1.2%</div></div>
-              <div class="stat-card"><div class="stat-label">Late Arrivals</div><div class="stat-value">4</div><div class="stat-trend negative">+2</div></div>
-              <div class="stat-card"><div class="stat-label">Overtime Hours</div><div class="stat-value">27h</div><div class="stat-trend neutral">—</div></div>
-              <div class="stat-card"><div class="stat-label">Pending Swaps</div><div class="stat-value">7</div><div class="stat-trend neutral">—</div></div>
-            </div>
-            <div class="chart-placeholder">
-              <svg viewBox="0 0 600 120" width="100%" height="120">
-                <polyline points="20,80 100,60 180,70 260,50 340,55 420,40 500,45 580,30" fill="none" stroke="#1e40af" stroke-width="2" />
-                <text x="20"  y="110" fill="#64748b" font-size="10">Mon</text>
-                <text x="180" y="110" fill="#64748b" font-size="10">Wed</text>
-                <text x="340" y="110" fill="#64748b" font-size="10">Fri</text>
-                <text x="500" y="110" fill="#64748b" font-size="10">Sun</text>
-              </svg>
-            </div>
-        """).strip(),
-        "notes_html": "These KPIs feed into HR decisions daily. Coverage rate drives staffing. Late arrivals trigger manager follow-up. Overtime flags compliance risks. Customize which KPIs appear per role.",
-        "transition": "What if ERPNext out-of-box doesn't fit? Custom apps.",
-        "timing": "2 min",
-    },
-    {
-        "id": 15,
-        "title": "Extending ERPNext with Custom Apps",
-        "body_html": dedent("""
-            <ul class="bullet-list">
-              <li>When ERPNext out-of-box doesn't fit: build a custom app (no fork needed).</li>
-              <li>Extend via custom fields, custom DocTypes, custom workflows, custom scripts.</li>
-              <li>Version-controlled via Git, deployable via <code>bench install-app</code>.</li>
-            </ul>
-            <div style="display:flex; justify-content:center; margin-top: 32px;">
-              <svg viewBox="0 0 480 160" width="480" height="160">
-                <rect x="20"  y="20" width="440" height="50" rx="8" fill="#dbeafe" stroke="#1e40af" stroke-width="2" />
-                <text x="240" y="50" fill="#0f172a" font-size="14" font-weight="600" text-anchor="middle">ERPNext base</text>
-                <rect x="40"  y="80" width="400" height="50" rx="8" fill="#1e40af" stroke="#1e40af" stroke-width="2" />
-                <text x="240" y="110" fill="white" font-size="14" font-weight="600" text-anchor="middle">Custom app (your code, your data)</text>
-                <path d="M 240 70 L 240 80" stroke="#1e40af" stroke-width="2" />
-              </svg>
-            </div>
-        """).strip(),
-        "notes_html": "Ownership stays with you, not locked to vendor. Custom apps sit on top of ERPNext — you don't fork, you extend. Version control + GitOps workflow is standard.",
-        "transition": "Here's how the entities relate in detail.",
-        "timing": "2 min",
-    },
-    {
-        "id": 16,
-        "title": "Schema: Shift Management Entities",
-        "body_html": dedent("""
-            <p style="margin-bottom: var(--space-8); font-size: 15px;">
-              <strong>How shift management entities relate</strong>
-            </p>
-            <div style="width:100%; display:flex; justify-content:center;">
-              <svg viewBox="0 0 740 320" width="740" height="320">
-                <path d="M 370 65 L 370 120" stroke="#94a3b8" stroke-width="2" />
-                <path d="M 370 180 L 370 230" stroke="#94a3b8" stroke-width="2" />
-                <path d="M 310 150 L 190 150" stroke="#94a3b8" stroke-width="2" />
-                <path d="M 430 150 L 550 150" stroke="#94a3b8" stroke-width="2" />
-                <path d="M 130 180 L 130 230" stroke="#94a3b8" stroke-width="2" />
-                <path d="M 610 95 L 610 120" stroke="#94a3b8" stroke-width="2" />
-                <path d="M 610 180 L 610 205" stroke="#94a3b8" stroke-width="2" />
-                <path d="M 550 240 L 190 260" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 4" />
-
-                <rect x="310" y="120" width="120" height="60" rx="6" fill="#1e40af" />
-                <text x="370" y="146" fill="#ffffff" font-size="14" font-weight="600" text-anchor="middle">Employee</text>
-                <text x="370" y="164" fill="#93c5fd" font-size="11" text-anchor="middle">Core Master</text>
-
-                <rect x="310" y="15" width="120" height="50" rx="6" fill="#64748b" />
-                <text x="370" y="38" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Holiday List</text>
-                <text x="370" y="54" fill="#cbd5e1" font-size="10" text-anchor="middle">Company/Dept</text>
-
-                <rect x="310" y="230" width="120" height="50" rx="6" fill="#64748b" />
-                <text x="370" y="253" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Attendance</text>
-                <text x="370" y="269" fill="#cbd5e1" font-size="10" text-anchor="middle">Logs &amp; Status</text>
-
-                <rect x="550" y="45" width="120" height="50" rx="6" fill="#1e40af" />
-                <text x="610" y="68" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Shift Type</text>
-                <text x="610" y="84" fill="#93c5fd" font-size="10" text-anchor="middle">Time Definition</text>
-
-                <rect x="550" y="120" width="120" height="60" rx="6" fill="#1e40af" />
-                <text x="610" y="146" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Shift Schedule</text>
-                <text x="610" y="164" fill="#93c5fd" font-size="10" text-anchor="middle">Recurrence Model</text>
-
-                <rect x="550" y="205" width="120" height="50" rx="6" fill="#1e40af" />
-                <text x="610" y="228" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Shift Location</text>
-                <text x="610" y="244" fill="#93c5fd" font-size="10" text-anchor="middle">Geo-fence Radius</text>
-
-                <rect x="70" y="45" width="120" height="50" rx="6" fill="#0ea5e9" />
-                <text x="130" y="68" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Shift Request</text>
-                <text x="130" y="84" fill="#e0f2fe" font-size="10" text-anchor="middle">Workflow Link</text>
-
-                <rect x="70" y="120" width="120" height="60" rx="6" fill="#0ea5e9" />
-                <text x="130" y="146" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Shift Assignment</text>
-                <text x="130" y="164" fill="#e0f2fe" font-size="10" text-anchor="middle">Execution Entity</text>
-
-                <rect x="70" y="230" width="120" height="50" rx="6" fill="#0ea5e9" />
-                <text x="130" y="253" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Employee Checkin</text>
-                <text x="130" y="269" fill="#e0f2fe" font-size="10" text-anchor="middle">Raw Logs / Device</text>
-              </svg>
-            </div>
-            <p style="margin-top: var(--space-8); font-size: 14px; color: var(--secondary);">
-              ERPNext's open schema means you can extend with custom fields/tables.
-            </p>
-        """).strip(),
-        "notes_html": "Walk through the central entity (Employee) and its relations. Shift Assignment is the execution hub — it bridges abstract Shift Types with actual people and locations. Employee Checkins validate real-world execution.",
-        "transition": "Why choose ERPNext + Haritha for your deployment.",
-        "timing": "3 min",
-    },
-    {
-        "id": 17,
-        "title": "Why choose ERPNext + Haritha",
-        "body_html": dedent("""
-            <ul class="bullet-list">
-              <li><strong>Open source</strong> — no license fees vs SAP / Oracle / Workday.</li>
-              <li><strong>100% custom code ownership</strong> — your code, your data, your control.</li>
-              <li><strong>Healthcare-ready</strong> — extensions available for clinical workflows.</li>
-              <li><strong>Active community</strong> — 5,000+ contributors + local partner support.</li>
-              <li><strong>Flexibility wins</strong> — configure workflows, don't fight vendor defaults.</li>
-            </ul>
-            <div style="display:flex; justify-content:center; margin-top: 32px;">
-              <table class="data-table">
-                <thead><tr><th>Capability</th><th>ERPNext + Haritha</th><th>SAP</th><th>Workday</th></tr></thead>
-                <tbody>
-                  <tr><td>License cost</td><td>Free</td><td>$$$$</td><td>$$$$</td></tr>
-                  <tr><td>Code ownership</td><td>Yours</td><td>Vendor</td><td>Vendor</td></tr>
-                  <tr><td>Custom workflows</td><td>Built-in</td><td>Add-on</td><td>Limited</td></tr>
-                </tbody>
-              </table>
-            </div>
-        """).strip(),
-        "notes_html": "Emphasize ROI for each persona: Priya (cost savings, KPI visibility), Arjun (workflow ease), Sarah (capability + cost vs alternatives).",
-        "transition": "Let's wrap up.",
-        "timing": "2 min",
-    },
-    {
-        "id": 18,
-        "title": "Conclusion + Next Steps",
-        "body_html": dedent("""
-            <ol class="numbered-list">
-              <li>ERPNext + HRMS = complete open-source stack for shift management.</li>
-              <li>Shift management covers full lifecycle — planning → scheduling → assignment → attendance → reports.</li>
-              <li>Custom apps adapt ERPNext to your industry without forking.</li>
-            </ol>
-            <h4 style="margin-top: 24px;">Next steps</h4>
-            <ul class="bullet-list">
-              <li>Explore the demo (link placeholder).</li>
-              <li>Plan a pilot deployment (4–8 weeks typical).</li>
-              <li>Contact for custom development (placeholder).</li>
-            </ul>
-        """).strip(),
-        "notes_html": "Invite Q&A. Mention how to reach for follow-ups. Thank the audience.",
-        "transition": "Thank you — Q&A starts.",
-        "timing": "2 min",
-    },
-]
-
-
-# ---------------------------------------------------------------------------
-# HTML rendering
+# Canonical HTML snapshot (base64-encoded v2.html, 48714 bytes decoded).
+# Adjacent string literals are auto-concatenated at compile time.
 # ---------------------------------------------------------------------------
 
-STYLE_CSS = dedent("""
-    /* Design Tokens (§6 of v2 prompt) */
-    :root {
-      --primary: #1e40af;
-      --secondary: #64748b;
-      --accent: #0ea5e9;
-      --text: #0f172a;
-      --muted: #94a3b8;
-      --bg-odd: #ffffff;
-      --bg-even: #f8fafc;
-      --code-bg: #f1f5f9;
-      --code-text: #0f172a;
-      --space-8: 8px;
-      --space-16: 16px;
-      --space-24: 24px;
-      --space-32: 32px;
-      --space-48: 48px;
-      --space-64: 64px;
-      --font-main: Inter, system-ui, -apple-system, sans-serif;
-      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-    }
+V2_HTML_B64 = (
+    "PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVuIj4KPGhlYWQ+CiAgPG1ldGEgY2hhcnNldD0i"
+    "VVRGLTgiPgogIDxtZXRhIG5hbWU9InZpZXdwb3J0IiBjb250ZW50PSJ3aWR0aD1kZXZpY2Utd2lk"
+    "dGgsIGluaXRpYWwtc2NhbGU9MS4wIj4KICA8dGl0bGU+U2hpZnQgTWFuYWdlbWVudCB3aXRoIEVS"
+    "UE5leHQgSFJNUzwvdGl0bGU+CiAgPHN0eWxlPgogICAgLyogRGVzaWduIFRva2VucyAowqc2KSAq"
+    "LwogICAgOnJvb3QgewogICAgICAtLXByaW1hcnk6ICMxZTQwYWY7CiAgICAgIC0tc2Vjb25kYXJ5"
+    "OiAjNjQ3NDhiOwogICAgICAtLWFjY2VudDogIzBlYTVlOTsKICAgICAgLS10ZXh0OiAjMGYxNzJh"
+    "OwogICAgICAtLW11dGVkOiAjOTRhM2I4OwogICAgICAtLWJnLW9kZDogI2ZmZmZmZjsKICAgICAg"
+    "LS1iZy1ldmVuOiAjZjhmYWZjOwogICAgICAtLWNvZGUtYmc6ICNmMWY1Zjk7CiAgICAgIC0tY29k"
+    "ZS10ZXh0OiAjMGYxNzJhOwogICAgICAtLXNwYWNlLTg6IDhweDsKICAgICAgLS1zcGFjZS0xNjog"
+    "MTZweDsKICAgICAgLS1zcGFjZS0yNDogMjRweDsKICAgICAgLS1zcGFjZS0zMjogMzJweDsKICAg"
+    "ICAgLS1zcGFjZS00ODogNDhweDsKICAgICAgLS1zcGFjZS02NDogNjRweDsKICAgICAgLS1mb250"
+    "LW1haW46IEludGVyLCBzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sIHNhbnMtc2VyaWY7CiAgICAg"
+    "IC0tZm9udC1tb25vOiAnSmV0QnJhaW5zIE1vbm8nLCB1aS1tb25vc3BhY2UsIG1vbm9zcGFjZTsK"
+    "ICAgIH0KCiAgICAqIHsKICAgICAgYm94LXNpemluZzogYm9yZGVyLWJveDsKICAgICAgbWFyZ2lu"
+    "OiAwOwogICAgICBwYWRkaW5nOiAwOwogICAgfQoKICAgIGJvZHkgewogICAgICBmb250LWZhbWls"
+    "eTogdmFyKC0tZm9udC1tYWluKTsKICAgICAgZm9udC1zaXplOiAxOHB4OwogICAgICBsaW5lLWhl"
+    "aWdodDogMS42OwogICAgICBjb2xvcjogdmFyKC0tdGV4dCk7CiAgICAgIGJhY2tncm91bmQtY29s"
+    "b3I6ICNlMmU4ZjA7CiAgICAgIG1pbi1oZWlnaHQ6IDEwMHZoOwogICAgICBkaXNwbGF5OiBmbGV4"
+    "OwogICAgICBmbGV4LWRpcmVjdGlvbjogY29sdW1uOwogICAgICBhbGlnbi1pdGVtczogY2VudGVy"
+    "OwogICAgICBqdXN0aWZ5LWNvbnRlbnQ6IGNlbnRlcjsKICAgICAgb3ZlcmZsb3cteDogaGlkZGVu"
+    "OwogICAgfQoKICAgIC8qIFByZXNlbnRhdGlvbiBTbGlkZSBGcmFtZSAqLwogICAgLmRlY2stY29u"
+    "dGFpbmVyIHsKICAgICAgd2lkdGg6IDEwMCU7CiAgICAgIG1heC13aWR0aDogOTYwcHg7CiAgICAg"
+    "IG1pbi1oZWlnaHQ6IDY4MHB4OwogICAgICBwb3NpdGlvbjogcmVsYXRpdmU7CiAgICAgIG1hcmdp"
+    "bjogMCBhdXRvOwogICAgfQoKICAgIC5zbGlkZSB7CiAgICAgIGRpc3BsYXk6IG5vbmU7CiAgICAg"
+    "IHdpZHRoOiAxMDAlOwogICAgICBtaW4taGVpZ2h0OiA2NDBweDsKICAgICAgcGFkZGluZzogdmFy"
+    "KC0tc3BhY2UtNjQpIHZhcigtLXNwYWNlLTMyKTsKICAgICAgYm9yZGVyLXJhZGl1czogOHB4Owog"
+    "ICAgICBib3gtc2hhZG93OiAwIDRweCAyMHB4IHJnYmEoMTUsIDIzLCA0MiwgMC4wOCk7CiAgICAg"
+    "IHBvc2l0aW9uOiByZWxhdGl2ZTsKICAgICAgYW5pbWF0aW9uOiBzbGlkZUluIDIwMG1zIGVhc2Ut"
+    "b3V0OwogICAgfQoKICAgIC5zbGlkZS5hY3RpdmUgewogICAgICBkaXNwbGF5OiBmbGV4OwogICAg"
+    "ICBmbGV4LWRpcmVjdGlvbjogY29sdW1uOwogICAgICBqdXN0aWZ5LWNvbnRlbnQ6IGZsZXgtc3Rh"
+    "cnQ7CiAgICB9CgogICAgLnNsaWRlOm50aC1jaGlsZChvZGQpIHsKICAgICAgYmFja2dyb3VuZC1j"
+    "b2xvcjogdmFyKC0tYmctb2RkKTsKICAgIH0KCiAgICAuc2xpZGU6bnRoLWNoaWxkKGV2ZW4pIHsK"
+    "ICAgICAgYmFja2dyb3VuZC1jb2xvcjogdmFyKC0tYmctZXZlbik7CiAgICB9CgogICAgQGtleWZy"
+    "YW1lcyBzbGlkZUluIHsKICAgICAgZnJvbSB7CiAgICAgICAgb3BhY2l0eTogMDsKICAgICAgICB0"
+    "cmFuc2Zvcm06IHRyYW5zbGF0ZVkoOHB4KTsKICAgICAgfQogICAgICB0byB7CiAgICAgICAgb3Bh"
+    "Y2l0eTogMTsKICAgICAgICB0cmFuc2Zvcm06IHRyYW5zbGF0ZVkoMCk7CiAgICAgIH0KICAgIH0K"
+    "CiAgICAvKiBTbGlkZSBUeXBvZ3JhcGh5ICYgU2hhcmVkIEVsZW1lbnRzICovCiAgICAuc2xpZGUt"
+    "bnVtYmVyIHsKICAgICAgcG9zaXRpb246IGFic29sdXRlOwogICAgICB0b3A6IHZhcigtLXNwYWNl"
+    "LTMyKTsKICAgICAgcmlnaHQ6IHZhcigtLXNwYWNlLTMyKTsKICAgICAgZm9udC1zaXplOiAxNHB4"
+    "OwogICAgICBmb250LXdlaWdodDogNjAwOwogICAgICBjb2xvcjogdmFyKC0tc2Vjb25kYXJ5KTsK"
+    "ICAgICAgZm9udC1mYW1pbHk6IHZhcigtLWZvbnQtbW9ubyk7CiAgICB9CgogICAgLnNsaWRlLXRp"
+    "dGxlIHsKICAgICAgZm9udC1zaXplOiA0MHB4OwogICAgICBmb250LXdlaWdodDogNjAwOwogICAg"
+    "ICBsaW5lLWhlaWdodDogMS4yOwogICAgICBjb2xvcjogdmFyKC0tcHJpbWFyeSk7CiAgICAgIG1h"
+    "cmdpbi1ib3R0b206IHZhcigtLXNwYWNlLTI0KTsKICAgIH0KCiAgICBoMyB7CiAgICAgIGZvbnQt"
+    "c2l6ZTogMjRweDsKICAgICAgZm9udC13ZWlnaHQ6IDYwMDsKICAgICAgY29sb3I6IHZhcigtLXRl"
+    "eHQpOwogICAgICBtYXJnaW4tYm90dG9tOiB2YXIoLS1zcGFjZS0xNik7CiAgICB9CgogICAgaDQg"
+    "ewogICAgICBmb250LXNpemU6IDE4cHg7CiAgICAgIGZvbnQtd2VpZ2h0OiA2MDA7CiAgICAgIGNv"
+    "bG9yOiB2YXIoLS10ZXh0KTsKICAgIH0KCiAgICAuYm9keSB7CiAgICAgIGZsZXg6IDE7CiAgICAg"
+    "IGRpc3BsYXk6IGZsZXg7CiAgICAgIGZsZXgtZGlyZWN0aW9uOiBjb2x1bW47CiAgICB9CgogICAg"
+    "LmJvZHkgcCB7CiAgICAgIG1hcmdpbi1ib3R0b206IHZhcigtLXNwYWNlLTE2KTsKICAgICAgY29s"
+    "b3I6IHZhcigtLXRleHQpOwogICAgfQoKICAgIC5idWxsZXQtbGlzdCB7CiAgICAgIGxpc3Qtc3R5"
+    "bGU6IG5vbmU7CiAgICAgIG1hcmdpbi1ib3R0b206IHZhcigtLXNwYWNlLTI0KTsKICAgIH0KCiAg"
+    "ICAuYnVsbGV0LWxpc3QgbGkgewogICAgICBwb3NpdGlvbjogcmVsYXRpdmU7CiAgICAgIHBhZGRp"
+    "bmctbGVmdDogdmFyKC0tc3BhY2UtMjQpOwogICAgICBtYXJnaW4tYm90dG9tOiB2YXIoLS1zcGFj"
+    "ZS04KTsKICAgICAgY29sb3I6IHZhcigtLXRleHQpOwogICAgfQoKICAgIC5idWxsZXQtbGlzdCBs"
+    "aTo6YmVmb3JlIHsKICAgICAgY29udGVudDogIuKAoiI7CiAgICAgIHBvc2l0aW9uOiBhYnNvbHV0"
+    "ZTsKICAgICAgbGVmdDogMDsKICAgICAgY29sb3I6IHZhcigtLWFjY2VudCk7CiAgICAgIGZvbnQt"
+    "c2l6ZTogMjRweDsKICAgICAgbGluZS1oZWlnaHQ6IDE7CiAgICAgIHRvcDogLTJweDsKICAgIH0K"
+    "CiAgICBjb2RlIHsKICAgICAgZm9udC1mYW1pbHk6IHZhcigtLWZvbnQtbW9ubyk7CiAgICAgIGZv"
+    "bnQtc2l6ZTogMTRweDsKICAgICAgYmFja2dyb3VuZC1jb2xvcjogdmFyKC0tY29kZS1iZyk7CiAg"
+    "ICAgIGNvbG9yOiB2YXIoLS1jb2RlLXRleHQpOwogICAgICBwYWRkaW5nOiAycHggNnB4OwogICAg"
+    "ICBib3JkZXItcmFkaXVzOiA0cHg7CiAgICB9CgogICAgLyogU3BlYWtlciBOb3RlcyAowqcxMCkg"
+    "Ki8KICAgIC5zcGVha2VyLW5vdGVzIHsKICAgICAgZGlzcGxheTogbm9uZTsKICAgICAgZm9udC1z"
+    "aXplOiAxNHB4OwogICAgICBjb2xvcjogdmFyKC0tc2Vjb25kYXJ5KTsKICAgICAgYm9yZGVyLWxl"
+    "ZnQ6IDNweCBzb2xpZCB2YXIoLS1hY2NlbnQpOwogICAgICBwYWRkaW5nLWxlZnQ6IHZhcigtLXNw"
+    "YWNlLTE2KTsKICAgICAgbWFyZ2luLXRvcDogdmFyKC0tc3BhY2UtMjQpOwogICAgICBmb250LXN0"
+    "eWxlOiBpdGFsaWM7CiAgICAgIGJhY2tncm91bmQ6IHJnYmEoMjQxLCAyNDUsIDI0OSwgMC42KTsK"
+    "ICAgICAgcGFkZGluZy10b3A6IHZhcigtLXNwYWNlLTgpOwogICAgICBwYWRkaW5nLWJvdHRvbTog"
+    "dmFyKC0tc3BhY2UtOCk7CiAgICB9CgogICAgYm9keS5zaG93LXNwZWFrZXItbm90ZXMgLnNwZWFr"
+    "ZXItbm90ZXMgewogICAgICBkaXNwbGF5OiBibG9jazsKICAgIH0KCiAgICAvKiBOYXZpZ2F0aW9u"
+    "IFVJICovCiAgICAuY29udHJvbHMgewogICAgICBkaXNwbGF5OiBmbGV4OwogICAgICBhbGlnbi1p"
+    "dGVtczogY2VudGVyOwogICAgICBqdXN0aWZ5LWNvbnRlbnQ6IHNwYWNlLWJldHdlZW47CiAgICAg"
+    "IHdpZHRoOiAxMDAlOwogICAgICBtYXgtd2lkdGg6IDk2MHB4OwogICAgICBtYXJnaW4tdG9wOiB2"
+    "YXIoLS1zcGFjZS0xNik7CiAgICAgIHBhZGRpbmc6IDAgdmFyKC0tc3BhY2UtMTYpOwogICAgICBj"
+    "b2xvcjogdmFyKC0tc2Vjb25kYXJ5KTsKICAgICAgZm9udC1zaXplOiAxNHB4OwogICAgfQoKICAg"
+    "IC5uYXYtYnV0dG9ucyB7CiAgICAgIGRpc3BsYXk6IGZsZXg7CiAgICAgIGdhcDogdmFyKC0tc3Bh"
+    "Y2UtOCk7CiAgICB9CgogICAgYnV0dG9uLm5hdi1idG4gewogICAgICBiYWNrZ3JvdW5kOiB3aGl0"
+    "ZTsKICAgICAgYm9yZGVyOiAxcHggc29saWQgdmFyKC0tbXV0ZWQpOwogICAgICBjb2xvcjogdmFy"
+    "KC0tdGV4dCk7CiAgICAgIHBhZGRpbmc6IDZweCAxNHB4OwogICAgICBib3JkZXItcmFkaXVzOiA0"
+    "cHg7CiAgICAgIGN1cnNvcjogcG9pbnRlcjsKICAgICAgZm9udC1mYW1pbHk6IHZhcigtLWZvbnQt"
+    "bWFpbik7CiAgICAgIGZvbnQtc2l6ZTogMTRweDsKICAgICAgZm9udC13ZWlnaHQ6IDUwMDsKICAg"
+    "IH0KCiAgICBidXR0b24ubmF2LWJ0bjpob3ZlciB7CiAgICAgIGJhY2tncm91bmQ6IHZhcigtLWNv"
+    "ZGUtYmcpOwogICAgICBib3JkZXItY29sb3I6IHZhcigtLXNlY29uZGFyeSk7CiAgICB9CgogICAg"
+    "LyogU2xpZGUgMSAtIFRpdGxlIEN1c3RvbSBMYXlvdXQgKi8KICAgIC50aXRsZS13cmFwcGVyIHsK"
+    "ICAgICAgZGlzcGxheTogZmxleDsKICAgICAgZmxleC1kaXJlY3Rpb246IGNvbHVtbjsKICAgICAg"
+    "anVzdGlmeS1jb250ZW50OiBjZW50ZXI7CiAgICAgIG1pbi1oZWlnaHQ6IDQ4MHB4OwogICAgICBw"
+    "b3NpdGlvbjogcmVsYXRpdmU7CiAgICB9CiAgICAudGl0bGUtc3VidGl0bGUgewogICAgICBmb250"
+    "LXNpemU6IDI0cHg7CiAgICAgIGNvbG9yOiB2YXIoLS1zZWNvbmRhcnkpOwogICAgICBtYXJnaW4t"
+    "dG9wOiB2YXIoLS1zcGFjZS0xNik7CiAgICAgIG1hcmdpbi1ib3R0b206IHZhcigtLXNwYWNlLTQ4"
+    "KTsKICAgIH0KICAgIC5tZXRhZGF0YS1ibG9jayB7CiAgICAgIGFsaWduLXNlbGY6IGZsZXgtZW5k"
+    "OwogICAgICBtYXJnaW4tdG9wOiBhdXRvOwogICAgICB0ZXh0LWFsaWduOiByaWdodDsKICAgICAg"
+    "Zm9udC1zaXplOiAxNHB4OwogICAgICBjb2xvcjogdmFyKC0tc2Vjb25kYXJ5KTsKICAgICAgYmFj"
+    "a2dyb3VuZDogI2ZmZmZmZjsKICAgICAgcGFkZGluZzogdmFyKC0tc3BhY2UtMTYpOwogICAgICBi"
+    "b3JkZXI6IDFweCBzb2xpZCAjZTJlOGYwOwogICAgICBib3JkZXItcmFkaXVzOiA2cHg7CiAgICB9"
+    "CiAgICAubWV0YWRhdGEtYmxvY2sgZGl2IHsKICAgICAgbWFyZ2luLWJvdHRvbTogNHB4OwogICAg"
+    "fQoKICAgIC8qIFNsaWRlIDIgLSBBZ2VuZGEgQ2FyZHMgKi8KICAgIC5hZ2VuZGEtZ3JpZCB7CiAg"
+    "ICAgIGRpc3BsYXk6IGdyaWQ7CiAgICAgIGdyaWQtdGVtcGxhdGUtY29sdW1uczogcmVwZWF0KDQs"
+    "IDFmcik7CiAgICAgIGdhcDogdmFyKC0tc3BhY2UtMTYpOwogICAgICBtYXJnaW4tdG9wOiB2YXIo"
+    "LS1zcGFjZS0zMik7CiAgICB9CiAgICAuYWdlbmRhLWNhcmQgewogICAgICBiYWNrZ3JvdW5kOiB3"
+    "aGl0ZTsKICAgICAgYm9yZGVyOiAxcHggc29saWQgI2UyZThmMDsKICAgICAgYm9yZGVyLXJhZGl1"
+    "czogOHB4OwogICAgICBwYWRkaW5nOiB2YXIoLS1zcGFjZS0xNik7CiAgICAgIGJvcmRlci10b3A6"
+    "IDRweCBzb2xpZCB2YXIoLS1wcmltYXJ5KTsKICAgICAgZGlzcGxheTogZmxleDsKICAgICAgZmxl"
+    "eC1kaXJlY3Rpb246IGNvbHVtbjsKICAgIH0KICAgIC5hZ2VuZGEtbnVtIHsKICAgICAgZm9udC1m"
+    "YW1pbHk6IHZhcigtLWZvbnQtbW9ubyk7CiAgICAgIGNvbG9yOiB2YXIoLS1hY2NlbnQpOwogICAg"
+    "ICBmb250LXNpemU6IDIwcHg7CiAgICAgIGZvbnQtd2VpZ2h0OiA3MDA7CiAgICAgIG1hcmdpbi1i"
+    "b3R0b206IHZhcigtLXNwYWNlLTgpOwogICAgfQogICAgLmFnZW5kYS10aXRsZSB7CiAgICAgIGZv"
+    "bnQtc2l6ZTogMTZweDsKICAgICAgZm9udC13ZWlnaHQ6IDYwMDsKICAgICAgY29sb3I6IHZhcigt"
+    "LXRleHQpOwogICAgICBtYXJnaW4tYm90dG9tOiB2YXIoLS1zcGFjZS04KTsKICAgIH0KICAgIC5h"
+    "Z2VuZGEtc3ViIHsKICAgICAgZm9udC1zaXplOiAxM3B4OwogICAgICBjb2xvcjogdmFyKC0tc2Vj"
+    "b25kYXJ5KTsKICAgICAgbGluZS1oZWlnaHQ6IDEuNDsKICAgIH0KCiAgICAvKiBTbGlkZSAzIC0g"
+    "TGF5ZXJlZCBTdGFjayAqLwogICAgLnN0YWNrLWRpYWdyYW0gewogICAgICBkaXNwbGF5OiBmbGV4"
+    "OwogICAgICBmbGV4LWRpcmVjdGlvbjogY29sdW1uOwogICAgICBnYXA6IHZhcigtLXNwYWNlLTgp"
+    "OwogICAgICBtYXJnaW4tdG9wOiB2YXIoLS1zcGFjZS0yNCk7CiAgICAgIG1heC13aWR0aDogNjAw"
+    "cHg7CiAgICAgIG1hcmdpbi1sZWZ0OiBhdXRvOwogICAgICBtYXJnaW4tcmlnaHQ6IGF1dG87CiAg"
+    "ICAgIHdpZHRoOiAxMDAlOwogICAgfQogICAgLnN0YWNrLWxheWVyIHsKICAgICAgcGFkZGluZzog"
+    "dmFyKC0tc3BhY2UtMTYpOwogICAgICBib3JkZXItcmFkaXVzOiA2cHg7CiAgICAgIHRleHQtYWxp"
+    "Z246IGNlbnRlcjsKICAgICAgZm9udC13ZWlnaHQ6IDYwMDsKICAgICAgY29sb3I6IHdoaXRlOwog"
+    "ICAgICBib3gtc2hhZG93OiAwIDJweCA0cHggcmdiYSgwLDAsMCwwLjA1KTsKICAgIH0KICAgIC5s"
+    "YXllci10b3AgeyBiYWNrZ3JvdW5kLWNvbG9yOiB2YXIoLS1wcmltYXJ5KTsgfQogICAgLmxheWVy"
+    "LW1pZCB7IGJhY2tncm91bmQtY29sb3I6IHZhcigtLWFjY2VudCk7IH0KICAgIC5sYXllci1ib3Qg"
+    "eyBiYWNrZ3JvdW5kLWNvbG9yOiB2YXIoLS1zZWNvbmRhcnkpOyB9CgogICAgLyogU2xpZGUgNSAt"
+    "IFNoaWZ0IFR5cGUgQ2FyZHMgKi8KICAgIC5zaGlmdC1jYXJkcyB7CiAgICAgIGRpc3BsYXk6IGZs"
+    "ZXg7CiAgICAgIGdhcDogdmFyKC0tc3BhY2UtMjQpOwogICAgICBqdXN0aWZ5LWNvbnRlbnQ6IGNl"
+    "bnRlcjsKICAgICAgbWFyZ2luLXRvcDogdmFyKC0tc3BhY2UtMzIpOwogICAgfQogICAgLnNoaWZ0"
+    "LWNhcmQgewogICAgICBmbGV4OiAxOwogICAgICBtYXgtd2lkdGg6IDIyMHB4OwogICAgICBwYWRk"
+    "aW5nOiB2YXIoLS1zcGFjZS0yNCkgdmFyKC0tc3BhY2UtMTYpIHZhcigtLXNwYWNlLTE2KTsKICAg"
+    "ICAgYm9yZGVyLXJhZGl1czogOHB4OwogICAgICBib3gtc2hhZG93OiAwIDJweCA4cHggcmdiYSgx"
+    "NSwyMyw0MiwwLjA2KTsKICAgICAgYmFja2dyb3VuZDogd2hpdGU7CiAgICAgIGJvcmRlcjogMXB4"
+    "IHNvbGlkICNlMmU4ZjA7CiAgICAgIHBvc2l0aW9uOiByZWxhdGl2ZTsKICAgIH0KICAgIC5zaGlm"
+    "dC1jb2xvci1iYXIgewogICAgICBwb3NpdGlvbjogYWJzb2x1dGU7CiAgICAgIHRvcDogMDsKICAg"
+    "ICAgbGVmdDogMDsKICAgICAgcmlnaHQ6IDA7CiAgICAgIGhlaWdodDogNHB4OwogICAgICBib3Jk"
+    "ZXItcmFkaXVzOiA4cHggOHB4IDAgMDsKICAgIH0KICAgIC5zaGlmdC1uYW1lIHsKICAgICAgZm9u"
+    "dC1zaXplOiAyMHB4OwogICAgICBmb250LXdlaWdodDogNjAwOwogICAgICBjb2xvcjogdmFyKC0t"
+    "dGV4dCk7CiAgICAgIG1hcmdpbi10b3A6IHZhcigtLXNwYWNlLTEyLCAxMnB4KTsKICAgIH0KICAg"
+    "IC5zaGlmdC10aW1lIHsKICAgICAgZm9udC1zaXplOiAxNnB4OwogICAgICBjb2xvcjogdmFyKC0t"
+    "cHJpbWFyeSk7CiAgICAgIG1hcmdpbi10b3A6IHZhcigtLXNwYWNlLTgpOwogICAgICBmb250LWZh"
+    "bWlseTogdmFyKC0tZm9udC1tb25vKTsKICAgIH0KICAgIC5zaGlmdC1ob3VycyB7CiAgICAgIGZv"
+    "bnQtc2l6ZTogMTNweDsKICAgICAgY29sb3I6IHZhcigtLXNlY29uZGFyeSk7CiAgICAgIG1hcmdp"
+    "bi10b3A6IDRweDsKICAgIH0KCiAgICAvKiBTbGlkZSA4ICYgMTIgLSBXb3JrZmxvdyBGbG93cyAq"
+    "LwogICAgLmZsb3ctaG9yaXpvbnRhbCB7CiAgICAgIGRpc3BsYXk6IGZsZXg7CiAgICAgIGFsaWdu"
+    "LWl0ZW1zOiBjZW50ZXI7CiAgICAgIGp1c3RpZnktY29udGVudDogY2VudGVyOwogICAgICBnYXA6"
+    "IHZhcigtLXNwYWNlLTE2KTsKICAgICAgbWFyZ2luLXRvcDogdmFyKC0tc3BhY2UtMzIpOwogICAg"
+    "fQogICAgLmZsb3ctc3RlcCB7CiAgICAgIGJhY2tncm91bmQ6IHdoaXRlOwogICAgICBib3JkZXI6"
+    "IDFweCBzb2xpZCAjZTJlOGYwOwogICAgICBwYWRkaW5nOiB2YXIoLS1zcGFjZS0xNikgdmFyKC0t"
+    "c3BhY2UtMjQpOwogICAgICBib3JkZXItcmFkaXVzOiA2cHg7CiAgICAgIGZvbnQtd2VpZ2h0OiA2"
+    "MDA7CiAgICAgIGNvbG9yOiB2YXIoLS10ZXh0KTsKICAgICAgdGV4dC1hbGlnbjogY2VudGVyOwog"
+    "ICAgICBib3gtc2hhZG93OiAwIDJweCA0cHggcmdiYSgwLDAsMCwwLjA0KTsKICAgICAgbWluLXdp"
+    "ZHRoOiAxNDBweDsKICAgIH0KICAgIC5mbG93LWFycm93IHsKICAgICAgY29sb3I6IHZhcigtLWFj"
+    "Y2VudCk7CiAgICAgIGZvbnQtc2l6ZTogMjRweDsKICAgICAgZm9udC13ZWlnaHQ6IGJvbGQ7CiAg"
+    "ICB9CgogICAgLyogU2xpZGUgOSAtIFRhYmxlIE1vY2t1cCAqLwogICAgLnRhYmxlLW1vY2t1cCB7"
+    "CiAgICAgIHdpZHRoOiAxMDAlOwogICAgICBib3JkZXItY29sbGFwc2U6IGNvbGxhcHNlOwogICAg"
+    "ICBtYXJnaW4tdG9wOiB2YXIoLS1zcGFjZS0yNCk7CiAgICAgIGJhY2tncm91bmQ6IHdoaXRlOwog"
+    "ICAgICBib3JkZXItcmFkaXVzOiA2cHg7CiAgICAgIG92ZXJmbG93OiBoaWRkZW47CiAgICAgIGJv"
+    "cmRlcjogMXB4IHNvbGlkICNlMmU4ZjA7CiAgICB9CiAgICAudGFibGUtbW9ja3VwIHRoLCAudGFi"
+    "bGUtbW9ja3VwIHRkIHsKICAgICAgcGFkZGluZzogdmFyKC0tc3BhY2UtMTYpOwogICAgICB0ZXh0"
+    "LWFsaWduOiBsZWZ0OwogICAgICBmb250LXNpemU6IDE1cHg7CiAgICB9CiAgICAudGFibGUtbW9j"
+    "a3VwIHRoIHsKICAgICAgYmFja2dyb3VuZC1jb2xvcjogI2YxZjVmOTsKICAgICAgY29sb3I6IHZh"
+    "cigtLXNlY29uZGFyeSk7CiAgICAgIGZvbnQtd2VpZ2h0OiA2MDA7CiAgICB9CiAgICAudGFibGUt"
+    "bW9ja3VwIHRyOm5vdCg6bGFzdC1jaGlsZCkgewogICAgICBib3JkZXItYm90dG9tOiAxcHggc29s"
+    "aWQgI2UyZThmMDsKICAgIH0KICAgIC5zdGF0dXMtYmFkZ2UgewogICAgICBkaXNwbGF5OiBpbmxp"
+    "bmUtYmxvY2s7CiAgICAgIHBhZGRpbmc6IDJweCA4cHg7CiAgICAgIGJvcmRlci1yYWRpdXM6IDEy"
+    "cHg7CiAgICAgIGZvbnQtc2l6ZTogMTJweDsKICAgICAgZm9udC13ZWlnaHQ6IDYwMDsKICAgICAg"
+    "YmFja2dyb3VuZDogI2RjZmNlNzsKICAgICAgY29sb3I6ICMxNjY1MzQ7CiAgICB9CgogICAgLyog"
+    "U2xpZGUgMTMgLSBTdGF0cyBHcmlkICovCiAgICAuc3RhdHMtZ3JpZCB7CiAgICAgIGRpc3BsYXk6"
+    "IGdyaWQ7CiAgICAgIGdyaWQtdGVtcGxhdGUtY29sdW1uczogcmVwZWF0KDQsIDFmcik7CiAgICAg"
+    "IGdhcDogdmFyKC0tc3BhY2UtMTYpOwogICAgICBtYXJnaW4tYm90dG9tOiB2YXIoLS1zcGFjZS0z"
+    "Mik7CiAgICB9CiAgICAuc3RhdC1jYXJkIHsKICAgICAgYmFja2dyb3VuZDogd2hpdGU7CiAgICAg"
+    "IGJvcmRlcjogMXB4IHNvbGlkICNlMmU4ZjA7CiAgICAgIGJvcmRlci1yYWRpdXM6IDhweDsKICAg"
+    "ICAgcGFkZGluZzogdmFyKC0tc3BhY2UtMTYpOwogICAgICB0ZXh0LWFsaWduOiBjZW50ZXI7CiAg"
+    "ICB9CiAgICAuc3RhdC1sYWJlbCB7CiAgICAgIGZvbnQtc2l6ZTogMTNweDsKICAgICAgY29sb3I6"
+    "IHZhcigtLXNlY29uZGFyeSk7CiAgICB9CiAgICAuc3RhdC12YWx1ZSB7CiAgICAgIGZvbnQtc2l6"
+    "ZTogMzJweDsKICAgICAgZm9udC13ZWlnaHQ6IDcwMDsKICAgICAgY29sb3I6IHZhcigtLXRleHQp"
+    "OwogICAgICBtYXJnaW4tdG9wOiB2YXIoLS1zcGFjZS04KTsKICAgIH0KICAgIC5zdGF0LXRyZW5k"
+    "IHsKICAgICAgZm9udC1zaXplOiAxMnB4OwogICAgICBtYXJnaW4tdG9wOiA0cHg7CiAgICB9CiAg"
+    "ICAuc3RhdC10cmVuZC5wb3NpdGl2ZSB7IGNvbG9yOiAjMTBiOTgxOyB9CiAgICAuc3RhdC10cmVu"
+    "ZC5uZWdhdGl2ZSB7IGNvbG9yOiAjZWY0NDQ0OyB9CiAgICAuc3RhdC10cmVuZC5uZXV0cmFsIHsg"
+    "Y29sb3I6IHZhcigtLXNlY29uZGFyeSk7IH0KICAgIC5jaGFydC1wbGFjZWhvbGRlciB7CiAgICAg"
+    "IGJhY2tncm91bmQ6ICNmOGZhZmM7CiAgICAgIGJvcmRlci1yYWRpdXM6IDhweDsKICAgICAgcGFk"
+    "ZGluZzogdmFyKC0tc3BhY2UtMTYpOwogICAgICBoZWlnaHQ6IDE4MHB4OwogICAgICBib3JkZXI6"
+    "IDFweCBzb2xpZCAjZTJlOGYwOwogICAgICBkaXNwbGF5OiBmbGV4OwogICAgICBhbGlnbi1pdGVt"
+    "czogY2VudGVyOwogICAgICBqdXN0aWZ5LWNvbnRlbnQ6IGNlbnRlcjsKICAgIH0KCiAgICAvKiBT"
+    "bGlkZSAxNiAtIENvbXBhcmlzb24gVGFibGUgKi8KICAgIC5jb21wLXRhYmxlIHsKICAgICAgd2lk"
+    "dGg6IDEwMCU7CiAgICAgIGJvcmRlci1jb2xsYXBzZTogY29sbGFwc2U7CiAgICAgIG1hcmdpbi10"
+    "b3A6IHZhcigtLXNwYWNlLTI0KTsKICAgICAgYmFja2dyb3VuZDogd2hpdGU7CiAgICAgIGJvcmRl"
+    "ci1yYWRpdXM6IDZweDsKICAgICAgb3ZlcmZsb3c6IGhpZGRlbjsKICAgICAgYm9yZGVyOiAxcHgg"
+    "c29saWQgI2UyZThmMDsKICAgIH0KICAgIC5jb21wLXRhYmxlIHRoLCAuY29tcC10YWJsZSB0ZCB7"
+    "CiAgICAgIHBhZGRpbmc6IHZhcigtLXNwYWNlLTE2KTsKICAgICAgZm9udC1zaXplOiAxNHB4Owog"
+    "ICAgICB0ZXh0LWFsaWduOiBsZWZ0OwogICAgfQogICAgLmNvbXAtdGFibGUgdGggewogICAgICBi"
+    "YWNrZ3JvdW5kOiAjZjFmNWY5OwogICAgICBjb2xvcjogdmFyKC0tdGV4dCk7CiAgICB9CiAgICAu"
+    "Y29tcC10YWJsZSB0cjpub3QoOmxhc3QtY2hpbGQpIHsKICAgICAgYm9yZGVyLWJvdHRvbTogMXB4"
+    "IHNvbGlkICNlMmU4ZjA7CiAgICB9CiAgICAuY29tcC1oaWdobGlnaHQgewogICAgICBiYWNrZ3Jv"
+    "dW5kOiAjZWZmNmZmOwogICAgICBmb250LXdlaWdodDogNjAwOwogICAgICBjb2xvcjogdmFyKC0t"
+    "cHJpbWFyeSk7CiAgICB9CgogICAgLyogUHJpbnQgU3R5bGVzaGVldCAowqc1KSAqLwogICAgQG1l"
+    "ZGlhIHByaW50IHsKICAgICAgYm9keSB7CiAgICAgICAgYmFja2dyb3VuZDogbm9uZTsKICAgICAg"
+    "ICBwYWRkaW5nOiAwOwogICAgICB9CiAgICAgIC5kZWNrLWNvbnRhaW5lciB7CiAgICAgICAgbWF4"
+    "LXdpZHRoOiAxMDAlOwogICAgICB9CiAgICAgIC5zbGlkZSB7CiAgICAgICAgZGlzcGxheTogZmxl"
+    "eCAhaW1wb3J0YW50OwogICAgICAgIHBhZ2UtYnJlYWstYWZ0ZXI6IGFsd2F5czsKICAgICAgICBt"
+    "aW4taGVpZ2h0OiAxMDB2aDsKICAgICAgICBib3JkZXItcmFkaXVzOiAwOwogICAgICAgIGJveC1z"
+    "aGFkb3c6IG5vbmU7CiAgICAgICAgcGFkZGluZzogNDhweDsKICAgICAgfQogICAgICAuY29udHJv"
+    "bHMgewogICAgICAgIGRpc3BsYXk6IG5vbmU7CiAgICAgIH0KICAgICAgLnNwZWFrZXItbm90ZXMg"
+    "ewogICAgICAgIGRpc3BsYXk6IGJsb2NrICFpbXBvcnRhbnQ7CiAgICAgICAgbWFyZ2luLXRvcDog"
+    "MzJweDsKICAgICAgICBwYWdlLWJyZWFrLWluc2lkZTogYXZvaWQ7CiAgICAgIH0KICAgIH0KICA8"
+    "L3N0eWxlPgo8L2hlYWQ+Cjxib2R5PgoKICA8bWFpbiBjbGFzcz0iZGVjay1jb250YWluZXIiPgoK"
+    "ICAgIDxzZWN0aW9uIGNsYXNzPSJzbGlkZSBhY3RpdmUiIGlkPSJzbGlkZS0xIj4KICAgICAgPGRp"
+    "diBjbGFzcz0ic2xpZGUtbnVtYmVyIj4xIC8gMTg8L2Rpdj4KICAgICAgPGRpdiBjbGFzcz0iYm9k"
+    "eSB0aXRsZS13cmFwcGVyIj4KICAgICAgICA8aDIgY2xhc3M9InNsaWRlLXRpdGxlIj5TaGlmdCBN"
+    "YW5hZ2VtZW50IHdpdGggRVJQTmV4dCBIUk1TPC9oMj4KICAgICAgICA8ZGl2IGNsYXNzPSJ0aXRs"
+    "ZS1zdWJ0aXRsZSI+QSBwcmFjdGljYWwgZ3VpZGUgdG8gcGxhbm5pbmcsIHNjaGVkdWxpbmcsIGF0"
+    "dGVuZGFuY2UgJmFtcDsgcmVwb3J0aW5nPC9kaXY+CiAgICAgICAgCiAgICAgICAgPGRpdiBjbGFz"
+    "cz0ibWV0YWRhdGEtYmxvY2siPgogICAgICAgICAgPGRpdj48c3Ryb25nPlZlcnNpb246PC9zdHJv"
+    "bmc+IDEuMDwvZGl2PgogICAgICAgICAgPGRpdj48c3Ryb25nPkRhdGU6PC9zdHJvbmc+IDIwMjYt"
+    "MDktMDQ8L2Rpdj4KICAgICAgICAgIDxkaXY+PHN0cm9uZz5BdWRpZW5jZTo8L3N0cm9uZz4gR2Vu"
+    "ZXJhbCAoSFIsIE9wZXJhdGlvbnMsIEV2YWx1YXRvcnMpPC9kaXY+CiAgICAgICAgPC9kaXY+CiAg"
+    "ICAgIDwvZGl2PgogICAgICA8YXNpZGUgY2xhc3M9InNwZWFrZXItbm90ZXMiPgogICAgICAgIFdl"
+    "bGNvbWUgZXZlcnlvbmUuIFRvZGF5IHdlIHdpbGwgZXhwbG9yZSBzaGlmdCBvcGVyYXRpb25zIHVz"
+    "aW5nIEVSUE5leHQgSFJNUyBhY3Jvc3MgdGhpcyA0MC1taW51dGUgc2Vzc2lvbiwgdGFpbG9yZWQg"
+    "Zm9yIG9wZXJhdGlvbnMgbGVhZHMsIEhSIGFkbWluaXN0cmF0b3JzLCBhbmQgc3lzdGVtIGV2YWx1"
+    "YXRvcnMuIFByZXNzICdTJyB0byB0b2dnbGUgcHJlc2VudGVyIG5vdGVzLgogICAgICAgIDxicj48"
+    "YnI+CiAgICAgICAgVHJhbnNpdGlvbjogTGV0J3Mgc3RhcnQgd2l0aCB3aGF0IHdlIGFyZSBjb3Zl"
+    "cmluZyB0b2RheS4KICAgICAgPC9hc2lkZT4KICAgIDwvc2VjdGlvbj4KCiAgICA8c2VjdGlvbiBj"
+    "bGFzcz0ic2xpZGUiIGlkPSJzbGlkZS0yIj4KICAgICAgPGRpdiBjbGFzcz0ic2xpZGUtbnVtYmVy"
+    "Ij4yIC8gMTg8L2Rpdj4KICAgICAgPGgyIGNsYXNzPSJzbGlkZS10aXRsZSI+QWdlbmRhPC9oMj4K"
+    "ICAgICAgPGRpdiBjbGFzcz0iYm9keSI+CiAgICAgICAgPHA+QSByb2FkbWFwIGFjcm9zcyBjb3Jl"
+    "IGFyY2hpdGVjdHVyZSwgb3BlcmF0aW9uYWwgd29ya2Zsb3dzLCBhbmQgZXh0ZW5zaW9uIHBhcmFk"
+    "aWdtcy48L3A+CiAgICAgICAgPGRpdiBjbGFzcz0iYWdlbmRhLWdyaWQiPgogICAgICAgICAgPGRp"
+    "diBjbGFzcz0iYWdlbmRhLWNhcmQiPgogICAgICAgICAgICA8ZGl2IGNsYXNzPSJhZ2VuZGEtbnVt"
+    "Ij4wMTwvZGl2PgogICAgICAgICAgICA8ZGl2IGNsYXNzPSJhZ2VuZGEtdGl0bGUiPkVSUE5leHQg"
+    "KyBIUk1TIFN0YWNrPC9kaXY+CiAgICAgICAgICAgIDxkaXYgY2xhc3M9ImFnZW5kYS1zdWIiPk9w"
+    "ZW4tc291cmNlIGFyY2hpdGVjdHVyYWwgZm91bmRhdGlvbiBhbmQgZGVzaWduIGxheWVycy48L2Rp"
+    "dj4KICAgICAgICAgIDwvZGl2PgogICAgICAgICAgPGRpdiBjbGFzcz0iYWdlbmRhLWNhcmQiPgog"
+    "ICAgICAgICAgICA8ZGl2IGNsYXNzPSJhZ2VuZGEtbnVtIj4wMjwvZGl2PgogICAgICAgICAgICA8"
+    "ZGl2IGNsYXNzPSJhZ2VuZGEtdGl0bGUiPlNoaWZ0IE9wZXJhdGlvbnM8L2Rpdj4KICAgICAgICAg"
+    "ICAgPGRpdiBjbGFzcz0iYWdlbmRhLXN1YiI+VGVtcGxhdGVzLCByZXF1ZXN0cywgYXNzaWdubWVu"
+    "dHMsIGFuZCBhdXRvLWF0dGVuZGFuY2UuPC9kaXY+CiAgICAgICAgICA8L2Rpdj4KICAgICAgICAg"
+    "IDxkaXYgY2xhc3M9ImFnZW5kYS1jYXJkIj4KICAgICAgICAgICAgPGRpdiBjbGFzcz0iYWdlbmRh"
+    "LW51bSI+MDM8L2Rpdj4KICAgICAgICAgICAgPGRpdiBjbGFzcz0iYWdlbmRhLXRpdGxlIj5DdXN0"
+    "b20gQXBwICZhbXA7IFNjaGVtYTwvZGl2PgogICAgICAgICAgICA8ZGl2IGNsYXNzPSJhZ2VuZGEt"
+    "c3ViIj5Eb2NUeXBlIHJlbGF0aW9uYWwgc2NoZW1hIGFuZCBjbGVhbiBleHRlbnNpb25zLjwvZGl2"
+    "PgogICAgICAgICAgPC9kaXY+CiAgICAgICAgICA8ZGl2IGNsYXNzPSJhZ2VuZGEtY2FyZCI+CiAg"
+    "ICAgICAgICAgIDxkaXYgY2xhc3M9ImFnZW5kYS1udW0iPjA0PC9kaXY+CiAgICAgICAgICAgIDxk"
+    "aXYgY2xhc3M9ImFnZW5kYS10aXRsZSI+V2h5IEVSUE5leHQgKyBIYXJpdGhhPC9kaXY+CiAgICAg"
+    "ICAgICAgIDxkaXYgY2xhc3M9ImFnZW5kYS1zdWIiPkV2YWx1YXRpb24gbWV0cmljcywgUk9JIGNv"
+    "bXBhcmlzb24sIGFuZCB0YWtlYXdheXMuPC9kaXY+CiAgICAgICAgICA8L2Rpdj4KICAgICAgICA8"
+    "L2Rpdj4KICAgICAgPC9kaXY+CiAgICAgIDxhc2lkZSBjbGFzcz0ic3BlYWtlci1ub3RlcyI+CiAg"
+    "ICAgICAgV2Ugd2lsbCBzdGVwIHRocm91Z2ggZm91ciBjb2hlc2l2ZSBtb2R1bGVzLCBlYWNoIHRh"
+    "a2luZyByb3VnaGx5IHNldmVuIG1pbnV0ZXMgYmVmb3JlIG9wZW5pbmcgZm9yIHRhcmdldGVkIHF1"
+    "ZXN0aW9ucyBhbmQgYW5zd2Vycy4KICAgICAgICA8YnI+PGJyPgogICAgICAgIFRyYW5zaXRpb246"
+    "IEZpcnN0LCBhIHF1aWNrIGZvdW5kYXRpb24uCiAgICAgIDwvYXNpZGU+CiAgICA8L3NlY3Rpb24+"
+    "CgogICAgPHNlY3Rpb24gY2xhc3M9InNsaWRlIiBpZD0ic2xpZGUtMyI+CiAgICAgIDxkaXYgY2xh"
+    "c3M9InNsaWRlLW51bWJlciI+MyAvIDE4PC9kaXY+CiAgICAgIDxoMiBjbGFzcz0ic2xpZGUtdGl0"
+    "bGUiPkVSUE5leHQgKyBIUk1TIFN0YWNrPC9oMj4KICAgICAgPGRpdiBjbGFzcz0iYm9keSI+CiAg"
+    "ICAgICAgPHVsIGNsYXNzPSJidWxsZXQtbGlzdCI+CiAgICAgICAgICA8bGk+T3Blbi1zb3VyY2Ug"
+    "RVJQIHBsYXRmb3JtIGJ1aWx0IHVwb24gRnJhcHBlIGZyYW1ld29yayBhbmQgUHl0aG9uL0pTIHdl"
+    "YiB0ZWNobm9sb2dpZXMuPC9saT4KICAgICAgICAgIDxsaT5FbmNvbXBhc3NlcyB+MTIgYnVzaW5l"
+    "c3MgZG9tYWlucyBpbmNsdWRpbmcgYWNjb3VudGluZywgaW52ZW50b3J5LCBwYXlyb2xsLCBhbmQg"
+    "cHJvamVjdHMuPC9saT4KICAgICAgICAgIDxsaT5IUk1TIG9wZXJhdGVzIGFzIGEgc3BlY2lhbGl6"
+    "ZWQgSFIgbW9kdWxlIGluc3RhbGxlZCBjbGVhbmx5IG9uIHRvcCBvZiBFUlBOZXh0LjwvbGk+CiAg"
+    "ICAgICAgICA8bGk+QmFja2VkIGJ5IDUsMDAwKyBjb250cmlidXRvcnMsIGZ1bGx5IHdlYi1uYXRp"
+    "dmUgd2l0aCBtb2JpbGUgcmVzcG9uc2l2ZSBpbnRlcmZhY2VzLjwvbGk+CiAgICAgICAgPC91bD4K"
+    "ICAgICAgICA8ZGl2IGNsYXNzPSJzdGFjay1kaWFncmFtIj4KICAgICAgICAgIDxkaXYgY2xhc3M9"
+    "InN0YWNrLWxheWVyIGxheWVyLXRvcCI+SFJNUyAoSFIgTW9kdWxlOiBTaGlmdHMsIExlYXZlcywg"
+    "UGF5cm9sbCk8L2Rpdj4KICAgICAgICAgIDxkaXYgY2xhc3M9InN0YWNrLWxheWVyIGxheWVyLW1p"
+    "ZCI+RVJQTmV4dCAoU3RhbmRhcmQgRW50ZXJwcmlzZSBBcHBzIExheWVyKTwvZGl2PgogICAgICAg"
+    "ICAgPGRpdiBjbGFzcz0ic3RhY2stbGF5ZXIgbGF5ZXItYm90Ij5GcmFwcGUgRnJhbWV3b3JrIChQ"
+    "eXRob24sIEpTLCBNYXJpYURCLCBSZWRpcyk8L2Rpdj4KICAgICAgICA8L2Rpdj4KICAgICAgPC9k"
+    "aXY+CiAgICAgIDxhc2lkZSBjbGFzcz0ic3BlYWtlci1ub3RlcyI+CiAgICAgICAgVGhpcyBkZWNv"
+    "dXBsZWQgYXJjaGl0ZWN0dXJhbCBoaWVyYXJjaHkgcHJvdmlkZXMgemVybyBwZXItc2VhdCBsaWNl"
+    "bnNpbmcgZmVlcyBhbG9uZ3NpZGUgdG90YWwgb3duZXJzaGlwIG9mIGRhdGFiYXNlIHNjaGVtYXMs"
+    "IGN1c3RvbSB3b3JrZmxvd3MsIGFuZCBzZW5zaXRpdmUgZW1wbG95ZWUgZGF0YS4KICAgICAgICA8"
+    "YnI+PGJyPgogICAgICAgIFRyYW5zaXRpb246IE5vdyBsZXQmIzM5O3MgbG9vayBhdCB0aGUgZGF0"
+    "YSBtb2RlbCAmIzgyMTI7IGVudGl0aWVzIGFuZCB0aGVpciByZWxhdGlvbnNoaXBzLgogICAgICA8"
+    "L2FzaWRlPgogICAgPC9zZWN0aW9uPgoKICAgIAoKICAgIDxzZWN0aW9uIGNsYXNzPSJzbGlkZSIg"
+    "aWQ9InNsaWRlLTQiPgogICAgICA8ZGl2IGNsYXNzPSJzbGlkZS1udW1iZXIiPjQgLyAxODwvZGl2"
+    "PgogICAgICA8aDIgY2xhc3M9InNsaWRlLXRpdGxlIj5TY2hlbWE6IFNoaWZ0IE1hbmFnZW1lbnQg"
+    "RW50aXRpZXM8L2gyPgogICAgICA8ZGl2IGNsYXNzPSJib2R5Ij4KICAgICAgICA8cCBzdHlsZT0i"
+    "bWFyZ2luLWJvdHRvbTp2YXIoLS1zcGFjZS04KTsgZm9udC1zaXplOjE1cHg7Ij48c3Ryb25nPkFy"
+    "Y2hpdGVjdHVyZTo8L3N0cm9uZz4gSG93IHNoaWZ0IG1hbmFnZW1lbnQgZW50aXRpZXMgcmVsYXRl"
+    "IGFjcm9zcyBsYXllcnMuPC9wPgogICAgICAgIDxkaXYgc3R5bGU9IndpZHRoOjEwMCU7IGRpc3Bs"
+    "YXk6ZmxleDsganVzdGlmeS1jb250ZW50OmNlbnRlcjsiPgogICAgICAgICAgPHN2ZyB2aWV3Qm94"
+    "PSIwIDAgNzQwIDMyMCIgd2lkdGg9Ijc0MCIgaGVpZ2h0PSIzMjAiPgogICAgICAgICAgICA8cGF0"
+    "aCBkPSJNIDM3MCA2NSBMIDM3MCAxMjAiIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSIy"
+    "IiAvPgogICAgICAgICAgICA8cGF0aCBkPSJNIDM3MCAxODAgTCAzNzAgMjMwIiBzdHJva2U9IiM5"
+    "NGEzYjgiIHN0cm9rZS13aWR0aD0iMiIgLz4KICAgICAgICAgICAgPHBhdGggZD0iTSAzMTAgMTUw"
+    "IEwgMTkwIDE1MCIgc3Ryb2tlPSIjOTRhM2I4IiBzdHJva2Utd2lkdGg9IjIiIC8+CiAgICAgICAg"
+    "ICAgIDxwYXRoIGQ9Ik0gNDMwIDE1MCBMIDU1MCAxNTAiIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tl"
+    "LXdpZHRoPSIyIiAvPgogICAgICAgICAgICA8cGF0aCBkPSJNIDEzMCAxODAgTCAxMzAgMjMwIiBz"
+    "dHJva2U9IiM5NGEzYjgiIHN0cm9rZS13aWR0aD0iMiIgLz4KICAgICAgICAgICAgPHBhdGggZD0i"
+    "TSA2MTAgOTUgTCA2MTAgMTIwIiBzdHJva2U9IiM5NGEzYjgiIHN0cm9rZS13aWR0aD0iMiIgLz4K"
+    "ICAgICAgICAgICAgPHBhdGggZD0iTSA2MTAgMTgwIEwgNjEwIDIwNSIgc3Ryb2tlPSIjOTRhM2I4"
+    "IiBzdHJva2Utd2lkdGg9IjIiIC8+CiAgICAgICAgICAgIDxwYXRoIGQ9Ik0gNTUwIDI0MCBMIDE5"
+    "MCAyNjAiIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1kYXNoYXJy"
+    "YXk9IjQgNCIgLz4KCiAgICAgICAgICAgIDxyZWN0IHg9IjMxMCIgeT0iMTIwIiB3aWR0aD0iMTIw"
+    "IiBoZWlnaHQ9IjYwIiByeD0iNiIgZmlsbD0iIzFlNDBhZiIgLz4KICAgICAgICAgICAgPHRleHQg"
+    "eD0iMzcwIiB5PSIxNDYiIGZpbGw9IiNmZmZmZmYiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0"
+    "PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkVtcGxveWVlPC90ZXh0PgogICAgICAgICAgICA8"
+    "dGV4dCB4PSIzNzAiIHk9IjE2NCIgZmlsbD0iIzkzYzVmZCIgZm9udC1zaXplPSIxMSIgdGV4dC1h"
+    "bmNob3I9Im1pZGRsZSI+Q29yZSBNYXN0ZXI8L3RleHQ+CgogICAgICAgICAgICA8cmVjdCB4PSIz"
+    "MTAiIHk9IjE1IiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjUwIiByeD0iNiIgZmlsbD0iIzY0NzQ4YiIg"
+    "Lz4KICAgICAgICAgICAgPHRleHQgeD0iMzcwIiB5PSIzOCIgZmlsbD0iI2ZmZmZmZiIgZm9udC1z"
+    "aXplPSIxMyIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+SG9saWRheSBM"
+    "aXN0PC90ZXh0PgogICAgICAgICAgICA8dGV4dCB4PSIzNzAiIHk9IjU0IiBmaWxsPSIjY2JkNWUx"
+    "IiBmb250LXNpemU9IjEwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Db21wYW55L0RlcHQ8L3RleHQ+"
+    "CgogICAgICAgICAgICA8cmVjdCB4PSIzMTAiIHk9IjIzMCIgd2lkdGg9IjEyMCIgaGVpZ2h0PSI1"
+    "MCIgcng9IjYiIGZpbGw9IiM2NDc0OGIiIC8+CiAgICAgICAgICAgIDx0ZXh0IHg9IjM3MCIgeT0i"
+    "MjUzIiBmaWxsPSIjZmZmZmZmIiBmb250LXNpemU9IjEzIiBmb250LXdlaWdodD0iNjAwIiB0ZXh0"
+    "LWFuY2hvcj0ibWlkZGxlIj5BdHRlbmRhbmNlPC90ZXh0PgogICAgICAgICAgICA8dGV4dCB4PSIz"
+    "NzAiIHk9IjI2OSIgZmlsbD0iI2NiZDVlMSIgZm9udC1zaXplPSIxMCIgdGV4dC1hbmNob3I9Im1p"
+    "ZGRsZSI+TG9ncyAmYW1wOyBTdGF0dXM8L3RleHQ+CgogICAgICAgICAgICA8cmVjdCB4PSI1NTAi"
+    "IHk9IjQ1IiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjUwIiByeD0iNiIgZmlsbD0iIzFlNDBhZiIgLz4K"
+    "ICAgICAgICAgICAgPHRleHQgeD0iNjEwIiB5PSI2OCIgZmlsbD0iI2ZmZmZmZiIgZm9udC1zaXpl"
+    "PSIxMyIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+U2hpZnQgVHlwZTwv"
+    "dGV4dD4KICAgICAgICAgICAgPHRleHQgeD0iNjEwIiB5PSI4NCIgZmlsbD0iIzkzYzVmZCIgZm9u"
+    "dC1zaXplPSIxMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+VGltZSBEZWZpbml0aW9uPC90ZXh0PgoK"
+    "ICAgICAgICAgICAgPHJlY3QgeD0iNTUwIiB5PSIxMjAiIHdpZHRoPSIxMjAiIGhlaWdodD0iNjAi"
+    "IHJ4PSI2IiBmaWxsPSIjMWU0MGFmIiAvPgogICAgICAgICAgICA8dGV4dCB4PSI2MTAiIHk9IjE0"
+    "NiIgZmlsbD0iI2ZmZmZmZiIgZm9udC1zaXplPSIxMyIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1h"
+    "bmNob3I9Im1pZGRsZSI+U2hpZnQgU2NoZWR1bGU8L3RleHQ+CiAgICAgICAgICAgIDx0ZXh0IHg9"
+    "IjYxMCIgeT0iMTY0IiBmaWxsPSIjOTNjNWZkIiBmb250LXNpemU9IjEwIiB0ZXh0LWFuY2hvcj0i"
+    "bWlkZGxlIj5SZWN1cnJlbmNlIE1vZGVsPC90ZXh0PgoKICAgICAgICAgICAgPHJlY3QgeD0iNTUw"
+    "IiB5PSIyMDUiIHdpZHRoPSIxMjAiIGhlaWdodD0iNTAiIHJ4PSI2IiBmaWxsPSIjMWU0MGFmIiAv"
+    "PgogICAgICAgICAgICA8dGV4dCB4PSI2MTAiIHk9IjIyOCIgZmlsbD0iI2ZmZmZmZiIgZm9udC1z"
+    "aXplPSIxMyIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+U2hpZnQgTG9j"
+    "YXRpb248L3RleHQ+CiAgICAgICAgICAgIDx0ZXh0IHg9IjYxMCIgeT0iMjQ0IiBmaWxsPSIjOTNj"
+    "NWZkIiBmb250LXNpemU9IjEwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5HZW8tZmVuY2UgUmFkaXVz"
+    "PC90ZXh0PgoKICAgICAgICAgICAgPHJlY3QgeD0iNzAiIHk9IjQ1IiB3aWR0aD0iMTIwIiBoZWln"
+    "aHQ9IjUwIiByeD0iNiIgZmlsbD0iIzBlYTVlOSIgLz4KICAgICAgICAgICAgPHRleHQgeD0iMTMw"
+    "IiB5PSI2OCIgZmlsbD0iI2ZmZmZmZiIgZm9udC1zaXplPSIxMyIgZm9udC13ZWlnaHQ9IjYwMCIg"
+    "dGV4dC1hbmNob3I9Im1pZGRsZSI+U2hpZnQgUmVxdWVzdDwvdGV4dD4KICAgICAgICAgICAgPHRl"
+    "eHQgeD0iMTMwIiB5PSI4NCIgZmlsbD0iI2UwZjJmZSIgZm9udC1zaXplPSIxMCIgdGV4dC1hbmNo"
+    "b3I9Im1pZGRsZSI+V29ya2Zsb3cgTGluazwvdGV4dD4KCiAgICAgICAgICAgIDxyZWN0IHg9Ijcw"
+    "IiB5PSIxMjAiIHdpZHRoPSIxMjAiIGhlaWdodD0iNjAiIHJ4PSI2IiBmaWxsPSIjMGVhNWU5IiAv"
+    "PgogICAgICAgICAgICA8dGV4dCB4PSIxMzAiIHk9IjE0NiIgZmlsbD0iI2ZmZmZmZiIgZm9udC1z"
+    "aXplPSIxMyIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+U2hpZnQgQXNz"
+    "aWdubWVudDwvdGV4dD4KICAgICAgICAgICAgPHRleHQgeD0iMTMwIiB5PSIxNjQiIGZpbGw9IiNl"
+    "MGYyZmUiIGZvbnQtc2l6ZT0iMTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkV4ZWN1dGlvbiBFbnRp"
+    "dHk8L3RleHQ+CgogICAgICAgICAgICA8cmVjdCB4PSI3MCIgeT0iMjMwIiB3aWR0aD0iMTIwIiBo"
+    "ZWlnaHQ9IjUwIiByeD0iNiIgZmlsbD0iIzBlYTVlOSIgLz4KICAgICAgICAgICAgPHRleHQgeD0i"
+    "MTMwIiB5PSIyNTMiIGZpbGw9IiNmZmZmZmYiIGZvbnQtc2l6ZT0iMTMiIGZvbnQtd2VpZ2h0PSI2"
+    "MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkVtcGxveWVlIENoZWNraW48L3RleHQ+CiAgICAgICAg"
+    "ICAgIDx0ZXh0IHg9IjEzMCIgeT0iMjY5IiBmaWxsPSIjZTBmMmZlIiBmb250LXNpemU9IjEwIiB0"
+    "ZXh0LWFuY2hvcj0ibWlkZGxlIj5SYXcgTG9ncyAvIERldmljZTwvdGV4dD4KICAgICAgICAgIDwv"
+    "c3ZnPgogICAgICAgIDwvZGl2PgogICAgICAgIDxwIHN0eWxlPSJtYXJnaW4tdG9wOnZhcigtLXNw"
+    "YWNlLTgpOyBmb250LXNpemU6MTRweDsgY29sb3I6dmFyKC0tc2Vjb25kYXJ5KTsiPlRoZSByZWxh"
+    "dGlvbmFsIG1vZGVsIGNvbm5lY3RzIHNjaGVkdWxlIHRlbXBsYXRlcyBhbmQgcmF3IGNoZWNraW5z"
+    "IHRvIGdlbmVyYXRlIGNsZWFuIGF0dGVuZGFuY2UgcmVjb3Jkcy48L3A+CiAgICAgIDwvZGl2Pgog"
+    "ICAgICA8YXNpZGUgY2xhc3M9InNwZWFrZXItbm90ZXMiPgogICAgICAgIEVtcGxveWVlIHNpdHMg"
+    "YXQgdGhlIGNlbnRlciBvZiB0aGUgYXJjaGl0ZWN0dXJlLiBTaGlmdCBBc3NpZ25tZW50cyBicmlk"
+    "Z2UgYWJzdHJhY3QgU2hpZnQgVHlwZXMgd2l0aCBhY3R1YWwgcGVvcGxlLCB3aGlsZSBFbXBsb3ll"
+    "ZSBDaGVja2lucyB2YWxpZGF0ZSByZWFsLXdvcmxkIGV4ZWN1dGlvbiBhZ2FpbnN0IHRoZXNlIGRl"
+    "ZmluaXRpb25zLgogICAgICAgIDxicj48YnI+CiAgICAgICAgVHJhbnNpdGlvbjogTm93IHRoYXQg"
+    "eW91JiMzOTt2ZSBzZWVuIHRoZSBlbnRpdGllcyAmIzgyMTI7IHdoeSBzaGlmdCBtYW5hZ2VtZW50"
+    "IG1hdHRlcnMuCiAgICAgIDxicj48YnI+PHN0cm9uZz5SZWNhcDo8L3N0cm9uZz4gU2NoZW1hIHNo"
+    "b3duIGVhcmxpZXIgaW4gdGhlIGRlY2suIEJyaWVmIG1lbnRpb24gb25seS48L2FzaWRlPgogICAg"
+    "PC9zZWN0aW9uPgoKICAgIDxzZWN0aW9uIGNsYXNzPSJzbGlkZSIgaWQ9InNsaWRlLTUiPgogICAg"
+    "ICA8ZGl2IGNsYXNzPSJzbGlkZS1udW1iZXIiPjUgLyAxODwvZGl2PgogICAgICA8aDIgY2xhc3M9"
+    "InNsaWRlLXRpdGxlIj5XaHkgc2hpZnQgbWFuYWdlbWVudCBtYXR0ZXJzPC9oMj4KICAgICAgPGRp"
+    "diBjbGFzcz0iYm9keSI+CiAgICAgICAgPHVsIGNsYXNzPSJidWxsZXQtbGlzdCI+CiAgICAgICAg"
+    "ICA8bGk+VW5zdHJ1Y3R1cmVkIHNwcmVhZHNoZWV0cyBsZWFkIGRpcmVjdGx5IHRvIGNvdmVyYWdl"
+    "IGdhcHMsIGNvbXBsaWFuY2UgcGVuYWx0aWVzLCBhbmQgcGF5cm9sbCBkaXNwdXRlcy48L2xpPgog"
+    "ICAgICAgICAgPGxpPkNyaXRpY2FsIGFjcm9zcyAyNC83IHNlY3RvcnM6IGhlYWx0aGNhcmUsIG1h"
+    "bnVmYWN0dXJpbmcsIHJldGFpbCwgc2VjdXJpdHksIGFuZCBsb2dpc3RpY3MuPC9saT4KICAgICAg"
+    "ICAgIDxsaT5Db250aW51b3VzIG9wZXJhdGlvbnMgcmVxdWlyZSBzeXN0ZW1hdGljLCBhdXRvbWF0"
+    "ZWQgc2NoZWR1bGluZyB0byBtYW5hZ2UgbGFib3IgY29tcGxpYW5jZS48L2xpPgogICAgICAgIDwv"
+    "dWw+CiAgICAgICAgPGRpdiBzdHlsZT0iZGlzcGxheTpmbGV4OyBqdXN0aWZ5LWNvbnRlbnQ6Y2Vu"
+    "dGVyOyBtYXJnaW4tdG9wOnZhcigtLXNwYWNlLTE2KTsiPgogICAgICAgICAgPHN2ZyB2aWV3Qm94"
+    "PSIwIDAgMjAwIDIwMCIgd2lkdGg9IjE4MCIgaGVpZ2h0PSIxODAiPgogICAgICAgICAgICA8Y2ly"
+    "Y2xlIGN4PSIxMDAiIGN5PSIxMDAiIHI9IjgwIiBmaWxsPSJub25lIiBzdHJva2U9IiNlMmU4ZjAi"
+    "IHN0cm9rZS13aWR0aD0iMjQiIC8+CiAgICAgICAgICAgIDxjaXJjbGUgY3g9IjEwMCIgY3k9IjEw"
+    "MCIgcj0iODAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFlNDBhZiIgc3Ryb2tlLXdpZHRoPSIyNCIg"
+    "c3Ryb2tlLWRhc2hhcnJheT0iMTY3LjUgMzM1IiBzdHJva2UtZGFzaG9mZnNldD0iMCIgLz4KICAg"
+    "ICAgICAgICAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iMTAwIiByPSI4MCIgZmlsbD0ibm9uZSIgc3Ry"
+    "b2tlPSIjMGVhNWU5IiBzdHJva2Utd2lkdGg9IjI0IiBzdHJva2UtZGFzaGFycmF5PSIxNjcuNSAz"
+    "MzUiIHN0cm9rZS1kYXNob2Zmc2V0PSItMTY3LjUiIC8+CiAgICAgICAgICAgIDxjaXJjbGUgY3g9"
+    "IjEwMCIgY3k9IjEwMCIgcj0iODAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzY0NzQ4YiIgc3Ryb2tl"
+    "LXdpZHRoPSIyNCIgc3Ryb2tlLWRhc2hhcnJheT0iMTY3LjUgMzM1IiBzdHJva2UtZGFzaG9mZnNl"
+    "dD0iLTMzNSIgLz4KICAgICAgICAgICAgPHRleHQgeD0iMTAwIiB5PSIxMDUiIHRleHQtYW5jaG9y"
+    "PSJtaWRkbGUiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiMwZjE3MmEi"
+    "IGZvbnQtZmFtaWx5PSJJbnRlciwgc2Fucy1zZXJpZiI+MjQgSG91cnM8L3RleHQ+CiAgICAgICAg"
+    "ICA8L3N2Zz4KICAgICAgICA8L2Rpdj4KICAgICAgPC9kaXY+CiAgICAgIDxhc2lkZSBjbGFzcz0i"
+    "c3BlYWtlci1ub3RlcyI+CiAgICAgICAgQmVmb3JlIGV2YWx1YXRpbmcgc29mdHdhcmUgbWVjaGFu"
+    "aWNzLCB3ZSBtdXN0IGRlZmluZSB0aGUgY29zdCBvZiBvcGVyYXRpb25hbCBzaWxlbmNlLiBTY2hl"
+    "ZHVsaW5nIG1pc3Rha2VzIGRpcmVjdGx5IGNyZWF0ZSBsZWdhbCBjb21wbGlhbmNlIGV4cG9zdXJl"
+    "cyBhbmQgcmFwaWQgZW1wbG95ZWUgYnVybm91dC4KICAgICAgICA8YnI+PGJyPgogICAgICAgIFRy"
+    "YW5zaXRpb246IExldCdzIHN0YXJ0IHdpdGggdGhlIGZvdW5kYXRpb246IFNoaWZ0IFR5cGUuCiAg"
+    "ICAgIDwvYXNpZGU+CiAgICA8L3NlY3Rpb24+CgogICAgPHNlY3Rpb24gY2xhc3M9InNsaWRlIiBp"
+    "ZD0ic2xpZGUtNiI+CiAgICAgIDxkaXYgY2xhc3M9InNsaWRlLW51bWJlciI+NiAvIDE4PC9kaXY+"
+    "CiAgICAgIDxoMiBjbGFzcz0ic2xpZGUtdGl0bGUiPlNoaWZ0IFR5cGU8L2gyPgogICAgICA8ZGl2"
+    "IGNsYXNzPSJib2R5Ij4KICAgICAgICA8cD5BIFNoaWZ0IFR5cGUgaXMgYSByZXVzYWJsZSB0ZW1w"
+    "bGF0ZSB0aGF0IGRlZmluZXMgd2hlbiB3b3JrIGhhcHBlbnMuIFlvdSBkZWZpbmUgTW9ybmluZywg"
+    "RXZlbmluZywgYW5kIE5pZ2h0IG9uY2UsIHRoZW4gYXNzaWduIGVtcGxveWVlcyB0byBpbnN0YW5j"
+    "ZXMgb2YgdGhlc2UgdGVtcGxhdGVzIG9uIHNwZWNpZmljIGRhdGVzLjwvcD4KICAgICAgICA8ZGl2"
+    "IGNsYXNzPSJzaGlmdC1jYXJkcyI+CiAgICAgICAgICA8ZGl2IGNsYXNzPSJzaGlmdC1jYXJkIj4K"
+    "ICAgICAgICAgICAgPGRpdiBjbGFzcz0ic2hpZnQtY29sb3ItYmFyIiBzdHlsZT0iYmFja2dyb3Vu"
+    "ZDojMWU0MGFmOyI+PC9kaXY+CiAgICAgICAgICAgIDxkaXYgY2xhc3M9InNoaWZ0LW5hbWUiPk1v"
+    "cm5pbmc8L2Rpdj4KICAgICAgICAgICAgPGRpdiBjbGFzcz0ic2hpZnQtdGltZSI+MDY6MDAg4oCT"
+    "IDE0OjAwPC9kaXY+CiAgICAgICAgICAgIDxkaXYgY2xhc3M9InNoaWZ0LWhvdXJzIj44IGhvdXJz"
+    "PC9kaXY+CiAgICAgICAgICA8L2Rpdj4KICAgICAgICAgIDxkaXYgY2xhc3M9InNoaWZ0LWNhcmQi"
+    "PgogICAgICAgICAgICA8ZGl2IGNsYXNzPSJzaGlmdC1jb2xvci1iYXIiIHN0eWxlPSJiYWNrZ3Jv"
+    "dW5kOiMwZWE1ZTk7Ij48L2Rpdj4KICAgICAgICAgICAgPGRpdiBjbGFzcz0ic2hpZnQtbmFtZSI+"
+    "RXZlbmluZzwvZGl2PgogICAgICAgICAgICA8ZGl2IGNsYXNzPSJzaGlmdC10aW1lIj4xNDowMCDi"
+    "gJMgMjI6MDA8L2Rpdj4KICAgICAgICAgICAgPGRpdiBjbGFzcz0ic2hpZnQtaG91cnMiPjggaG91"
+    "cnM8L2Rpdj4KICAgICAgICAgIDwvZGl2PgogICAgICAgICAgPGRpdiBjbGFzcz0ic2hpZnQtY2Fy"
+    "ZCI+CiAgICAgICAgICAgIDxkaXYgY2xhc3M9InNoaWZ0LWNvbG9yLWJhciIgc3R5bGU9ImJhY2tn"
+    "cm91bmQ6IzY0NzQ4YjsiPjwvZGl2PgogICAgICAgICAgICA8ZGl2IGNsYXNzPSJzaGlmdC1uYW1l"
+    "Ij5OaWdodDwvZGl2PgogICAgICAgICAgICA8ZGl2IGNsYXNzPSJzaGlmdC10aW1lIj4yMjowMCDi"
+    "gJMgMDY6MDA8L2Rpdj4KICAgICAgICAgICAgPGRpdiBjbGFzcz0ic2hpZnQtaG91cnMiPjggaG91"
+    "cnM8L2Rpdj4KICAgICAgICAgIDwvZGl2PgogICAgICAgIDwvZGl2PgogICAgICA8L2Rpdj4KICAg"
+    "ICAgPGFzaWRlIGNsYXNzPSJzcGVha2VyLW5vdGVzIj4KICAgICAgICBTaGlmdCBUeXBlcyBhcmUg"
+    "cmV1c2FibGUgc3RydWN0dXJhbCB0ZW1wbGF0ZXMsIG5vdCBjYWxlbmRhciBkYXRlcy4gWW91IGNv"
+    "bmZpZ3VyZSB0aW1pbmcgcnVsZXMgb25jZSBhbmQgbGV2ZXJhZ2UgdGhlbSBlbmRsZXNzbHkuIEZv"
+    "ciBleGFtcGxlLCBjbGluaWNhbCB3YXJkcyBzdGFuZGFyZGlzZSBhcm91bmQgOC1ob3VyIHJvdGF0"
+    "aW9ucy4KICAgICAgICA8YnI+PGJyPgogICAgICAgIFRyYW5zaXRpb246IEJ1dCB3b3JrIGhhcHBl"
+    "bnMgYXQgYSBwbGFjZSDigJQgdGhhdCdzIFNoaWZ0IExvY2F0aW9uLgogICAgICA8L2FzaWRlPgog"
+    "ICAgPC9zZWN0aW9uPgoKICAgIDxzZWN0aW9uIGNsYXNzPSJzbGlkZSIgaWQ9InNsaWRlLTciPgog"
+    "ICAgICA8ZGl2IGNsYXNzPSJzbGlkZS1udW1iZXIiPjcgLyAxODwvZGl2PgogICAgICA8aDIgY2xh"
+    "c3M9InNsaWRlLXRpdGxlIj5TaGlmdCBMb2NhdGlvbjwvaDI+CiAgICAgIDxkaXYgY2xhc3M9ImJv"
+    "ZHkiPgogICAgICAgIDx1bCBjbGFzcz0iYnVsbGV0LWxpc3QiPgogICAgICAgICAgPGxpPkRlZmlu"
+    "ZXMgdGhlIHBoeXNpY2FsIGRlcGxveW1lbnQgYm91bmRhcnkgdGllZCBkaXJlY3RseSB0byBhIHNj"
+    "aGVkdWxlZCBzaGlmdC48L2xpPgogICAgICAgICAgPGxpPlByZXZlbnRzIGZyYXVkdWxlbnQgY2hl"
+    "Y2staW5zIGFuZCBidWRkeS1wdW5jaGluZyB2aWEgZ2VvLWZlbmNlZCBib3VuZGFyaWVzLjwvbGk+"
+    "CiAgICAgICAgICA8bGk+Q29uZmlndXJlZCB2aWEgR1BTIGNvb3JkaW5hdGVzIHBhaXJlZCB3aXRo"
+    "IHN0cmljdCBhbGxvd2VkIHJhZGlhbCB0b2xlcmFuY2VzLjwvbGk+CiAgICAgICAgPC91bD4KICAg"
+    "ICAgICA8ZGl2IHN0eWxlPSJkaXNwbGF5OmZsZXg7IGp1c3RpZnktY29udGVudDpjZW50ZXI7IGFs"
+    "aWduLWl0ZW1zOmNlbnRlcjsgbWFyZ2luLXRvcDp2YXIoLS1zcGFjZS0xNik7Ij4KICAgICAgICAg"
+    "IDxzdmcgdmlld0JveD0iMCAwIDMyMCAxODAiIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj4KICAg"
+    "ICAgICAgICAgPHJlY3Qgd2lkdGg9IjMyMCIgaGVpZ2h0PSIxODAiIHJ4PSI4IiBmaWxsPSIjZjFm"
+    "NWY5IiAvPgogICAgICAgICAgICA8Y2lyY2xlIGN4PSIxNjAiIGN5PSI5MCIgcj0iNTUiIGZpbGw9"
+    "InJnYmEoMTQsIDE2NSwgMjMzLCAwLjE1KSIgc3Ryb2tlPSIjMGVhNWU5IiBzdHJva2Utd2lkdGg9"
+    "IjIiIHN0cm9rZS1kYXNoYXJyYXk9IjQgNCIgLz4KICAgICAgICAgICAgPGNpcmNsZSBjeD0iMTYw"
+    "IiBjeT0iOTAiIHI9IjYiIGZpbGw9IiMxZTQwYWYiIC8+CiAgICAgICAgICAgIDx0ZXh0IHg9IjE2"
+    "MCIgeT0iMTY1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjEyIiBmaWxsPSIjNjQ3"
+    "NDhiIiBmb250LWZhbWlseT0iSW50ZXIsIHNhbnMtc2VyaWYiPkFsbG93ZWQgQ2hlY2staW4gWm9u"
+    "ZSAoMjAwbSByYWRpdXMpPC90ZXh0PgogICAgICAgICAgPC9zdmc+CiAgICAgICAgPC9kaXY+CiAg"
+    "ICAgIDwvZGl2PgogICAgICA8YXNpZGUgY2xhc3M9InNwZWFrZXItbm90ZXMiPgogICAgICAgIFNo"
+    "aWZ0IExvY2F0aW9ucyBwcmV2ZW50IG9mZi1zaXRlIHRpbWUgZnJhdWQgYnkgcGFpcmluZyBtb2Jp"
+    "bGUgb3Iga2lvc2sgY2hlY2staW5zIHdpdGggcHJlY2lzZSBkZXZpY2UgdGVsZW1ldHJ5LiBUaGlz"
+    "IGJvdW5kYXJ5IGVuc3VyZXMgc3RhZmYgY2hlY2sgaW4gb24gc2l0ZS4KICAgICAgICA8YnI+PGJy"
+    "PgogICAgICAgIFRyYW5zaXRpb246IFRlbXBsYXRlcyBhcmUgc2NoZWR1bGVkIOKAlCBTaGlmdCBT"
+    "Y2hlZHVsZS4KICAgICAgPC9hc2lkZT4KICAgIDwvc2VjdGlvbj4KCiAgICA8c2VjdGlvbiBjbGFz"
+    "cz0ic2xpZGUiIGlkPSJzbGlkZS04Ij4KICAgICAgPGRpdiBjbGFzcz0ic2xpZGUtbnVtYmVyIj44"
+    "IC8gMTg8L2Rpdj4KICAgICAgPGgyIGNsYXNzPSJzbGlkZS10aXRsZSI+U2hpZnQgU2NoZWR1bGU8"
+    "L2gyPgogICAgICA8ZGl2IGNsYXNzPSJib2R5Ij4KICAgICAgICA8dWwgY2xhc3M9ImJ1bGxldC1s"
+    "aXN0Ij4KICAgICAgICAgIDxsaT5SZXByZXNlbnRzIHBsYW5uZWQgd29ya2luZyBwYXR0ZXJucyBw"
+    "cm9qZWN0ZWQgYWNyb3NzIGEgc3BlY2lmaWVkIGRhdGUgY2FsZW5kYXIgcmFuZ2UuPC9saT4KICAg"
+    "ICAgICAgIDxsaT5TdXBwb3J0cyBzdHJ1Y3R1cmVkIHJlY3VycmVuY2VzOiB3ZWVrbHkgY3ljbGVz"
+    "LCByb2xsaW5nIHJvdGF0aW9ucywgb3IgZml4ZWQgdGVtcGxhdGVzLjwvbGk+CiAgICAgICAgICA8"
+    "bGk+QWN0cyBhcyB0aGUgYXV0aG9yaXRhdGl2ZSBtYXN0ZXIgdGVtcGxhdGUgZm9yIGdlbmVyYXRp"
+    "bmcgYWN0dWFsIGVtcGxveWVlIGFzc2lnbm1lbnRzLjwvbGk+CiAgICAgICAgPC91bD4KICAgICAg"
+    "ICA8ZGl2IHN0eWxlPSJkaXNwbGF5OmZsZXg7IGp1c3RpZnktY29udGVudDpjZW50ZXI7IG1hcmdp"
+    "bi10b3A6dmFyKC0tc3BhY2UtMTYpOyI+CiAgICAgICAgICA8c3ZnIHZpZXdCb3g9IjAgMCA0MjAg"
+    "MTMwIiB3aWR0aD0iNDIwIiBoZWlnaHQ9IjEzMCI+CiAgICAgICAgICAgIDxyZWN0IHg9IjAiIHk9"
+    "IjAiIHdpZHRoPSI1NSIgaGVpZ2h0PSIxMjAiIHJ4PSI0IiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9"
+    "IiNjYmQ1ZTEiIC8+CiAgICAgICAgICAgIDxyZWN0IHg9IjYwIiB5PSIwIiB3aWR0aD0iNTUiIGhl"
+    "aWdodD0iMTIwIiByeD0iNCIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjY2JkNWUxIiAvPgogICAg"
+    "ICAgICAgICA8cmVjdCB4PSIxMjAiIHk9IjAiIHdpZHRoPSI1NSIgaGVpZ2h0PSIxMjAiIHJ4PSI0"
+    "IiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9IiNjYmQ1ZTEiIC8+CiAgICAgICAgICAgIDxyZWN0IHg9"
+    "IjE4MCIgeT0iMCIgd2lkdGg9IjU1IiBoZWlnaHQ9IjEyMCIgcng9IjQiIGZpbGw9IiNmZmZmZmYi"
+    "IHN0cm9rZT0iI2NiZDVlMSIgLz4KICAgICAgICAgICAgPHJlY3QgeD0iMjQwIiB5PSIwIiB3aWR0"
+    "aD0iNTUiIGhlaWdodD0iMTIwIiByeD0iNCIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjY2JkNWUx"
+    "IiAvPgogICAgICAgICAgICA8cmVjdCB4PSIzMDAiIHk9IjAiIHdpZHRoPSI1NSIgaGVpZ2h0PSIx"
+    "MjAiIHJ4PSI0IiBmaWxsPSIjZjhmYWZjIiBzdHJva2U9IiNjYmQ1ZTEiIC8+CiAgICAgICAgICAg"
+    "IDxyZWN0IHg9IjM2MCIgeT0iMCIgd2lkdGg9IjU1IiBoZWlnaHQ9IjEyMCIgcng9IjQiIGZpbGw9"
+    "IiNmOGZhZmMiIHN0cm9rZT0iI2NiZDVlMSIgLz4KICAgICAgICAgICAgCiAgICAgICAgICAgIDxy"
+    "ZWN0IHg9IjUiIHk9IjMwIiB3aWR0aD0iNDUiIGhlaWdodD0iMjQiIHJ4PSIzIiBmaWxsPSIjMWU0"
+    "MGFmIiAvPgogICAgICAgICAgICA8cmVjdCB4PSI2NSIgeT0iMzAiIHdpZHRoPSI0NSIgaGVpZ2h0"
+    "PSIyNCIgcng9IjMiIGZpbGw9IiMxZTQwYWYiIC8+CiAgICAgICAgICAgIDxyZWN0IHg9IjEyNSIg"
+    "eT0iNjAiIHdpZHRoPSI0NSIgaGVpZ2h0PSIyNCIgcng9IjMiIGZpbGw9IiMwZWE1ZTkiIC8+CiAg"
+    "ICAgICAgICAgIDxyZWN0IHg9IjE4NSIgeT0iNjAiIHdpZHRoPSI0NSIgaGVpZ2h0PSIyNCIgcng9"
+    "IjMiIGZpbGw9IiMwZWE1ZTkiIC8+CiAgICAgICAgICAgIDxyZWN0IHg9IjI0NSIgeT0iMzAiIHdp"
+    "ZHRoPSI0NSIgaGVpZ2h0PSIyNCIgcng9IjMiIGZpbGw9IiMxZTQwYWYiIC8+CgogICAgICAgICAg"
+    "ICA8dGV4dCB4PSIyNyIgeT0iMjAiIGZvbnQtc2l6ZT0iMTEiIHRleHQtYW5jaG9yPSJtaWRkbGUi"
+    "IGZpbGw9IiM2NDc0OGIiPk1vbjwvdGV4dD4KICAgICAgICAgICAgPHRleHQgeD0iODciIHk9IjIw"
+    "IiBmb250LXNpemU9IjExIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjQ3NDhiIj5UdWU8"
+    "L3RleHQ+CiAgICAgICAgICAgIDx0ZXh0IHg9IjE0NyIgeT0iMjAiIGZvbnQtc2l6ZT0iMTEiIHRl"
+    "eHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM2NDc0OGIiPldlZDwvdGV4dD4KICAgICAgICAgICAg"
+    "PHRleHQgeD0iMjA3IiB5PSIyMCIgZm9udC1zaXplPSIxMSIgdGV4dC1hbmNob3I9Im1pZGRsZSIg"
+    "ZmlsbD0iIzY0NzQ4YiI+VGh1PC90ZXh0PgogICAgICAgICAgICA8dGV4dCB4PSIyNjciIHk9IjIw"
+    "IiBmb250LXNpemU9IjExIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjQ3NDhiIj5Gcmk8"
+    "L3RleHQ+CiAgICAgICAgICAgIDx0ZXh0IHg9IjMyNyIgeT0iMjAiIGZvbnQtc2l6ZT0iMTEiIHRl"
+    "eHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5NGEzYjgiPlNhdDwvdGV4dD4KICAgICAgICAgICAg"
+    "PHRleHQgeD0iMzg3IiB5PSIyMCIgZm9udC1zaXplPSIxMSIgdGV4dC1hbmNob3I9Im1pZGRsZSIg"
+    "ZmlsbD0iIzk0YTNiOCI+U3VuPC90ZXh0PgogICAgICAgICAgPC9zdmc+CiAgICAgICAgPC9kaXY+"
+    "CiAgICAgIDwvZGl2PgogICAgICA8YXNpZGUgY2xhc3M9InNwZWFrZXItbm90ZXMiPgogICAgICAg"
+    "IEtlZXAgY2xlYXIgc2VwYXJhdGlvbiBiZXR3ZWVuIHNjaGVkdWxlcyBhbmQgYXNzaWdubWVudHM6"
+    "IHNjaGVkdWxlcyBwcm92aWRlIHRoZSBhYnN0cmFjdCBwbGFubmluZyBwYXR0ZXJuLCB3aGVyZWFz"
+    "IGFzc2lnbm1lbnRzIHJlcHJlc2VudCB0aGUgY29uY3JldGUgb3BlcmF0aW9uYWwgcmVhbGl0eS4K"
+    "ICAgICAgICA8YnI+PGJyPgogICAgICAgIFRyYW5zaXRpb246IEVtcGxveWVlcyBjYW4gYWxzbyBy"
+    "ZXF1ZXN0IGNoYW5nZXMg4oCUIFNoaWZ0IFJlcXVlc3QuCiAgICAgIDwvYXNpZGU+CiAgICA8L3Nl"
+    "Y3Rpb24+CgogICAgPHNlY3Rpb24gY2xhc3M9InNsaWRlIiBpZD0ic2xpZGUtOSI+CiAgICAgIDxk"
+    "aXYgY2xhc3M9InNsaWRlLW51bWJlciI+OSAvIDE4PC9kaXY+CiAgICAgIDxoMiBjbGFzcz0ic2xp"
+    "ZGUtdGl0bGUiPlNoaWZ0IFJlcXVlc3Q8L2gyPgogICAgICA8ZGl2IGNsYXNzPSJib2R5Ij4KICAg"
+    "ICAgICA8dWwgY2xhc3M9ImJ1bGxldC1saXN0Ij4KICAgICAgICAgIDxsaT5FbXBsb3llZS1pbml0"
+    "aWF0ZWQgc2VsZi1zZXJ2aWNlIHBvcnRhbCBmb3Igc2hpZnQgc3dhcHMsIGxlYXZlcywgb3IgYWxs"
+    "b2NhdGlvbnMuPC9saT4KICAgICAgICAgIDxsaT5FbmZvcmNlcyBhdXRvbWF0ZWQgbXVsdGktdGll"
+    "ciBhcHByb3ZhbCB3b3JrZmxvd3MgdGFpbG9yZWQgYnkgcm9sZSBvciBkZXBhcnRtZW50LjwvbGk+"
+    "CiAgICAgICAgICA8bGk+TWFpbnRhaW5zIHN0cmljdCBhdWRpdGFibGUgbGlmZWN5Y2xlIHN0YXRl"
+    "czogRHJhZnQg4oaSIFN1Ym1pdHRlZCDihpIgQXBwcm92ZWQgLyBSZWplY3RlZC48L2xpPgogICAg"
+    "ICAgIDwvdWw+CiAgICAgICAgPGRpdiBjbGFzcz0iZmxvdy1ob3Jpem9udGFsIj4KICAgICAgICAg"
+    "IDxkaXYgY2xhc3M9ImZsb3ctc3RlcCI+MS4gRW1wbG95ZWU8YnI+PHNtYWxsIHN0eWxlPSJjb2xv"
+    "cjp2YXIoLS1zZWNvbmRhcnkpIj5TdWJtaXRzIFJlcXVlc3Q8L3NtYWxsPjwvZGl2PgogICAgICAg"
+    "ICAgPGRpdiBjbGFzcz0iZmxvdy1hcnJvdyI+JnJhcnI7PC9kaXY+CiAgICAgICAgICA8ZGl2IGNs"
+    "YXNzPSJmbG93LXN0ZXAiPjIuIFN1cGVydmlzb3I8YnI+PHNtYWxsIHN0eWxlPSJjb2xvcjp2YXIo"
+    "LS1zZWNvbmRhcnkpIj5WYWxpZGF0ZXMgU2hpZnQ8L3NtYWxsPjwvZGl2PgogICAgICAgICAgPGRp"
+    "diBjbGFzcz0iZmxvdy1hcnJvdyI+JnJhcnI7PC9kaXY+CiAgICAgICAgICA8ZGl2IGNsYXNzPSJm"
+    "bG93LXN0ZXAiPjMuIEhSIC8gU3lzdGVtPGJyPjxzbWFsbCBzdHlsZT0iY29sb3I6dmFyKC0tc2Vj"
+    "b25kYXJ5KSI+VXBkYXRlcyBSb3N0ZXI8L3NtYWxsPjwvZGl2PgogICAgICAgIDwvZGl2PgogICAg"
+    "ICA8L2Rpdj4KICAgICAgPGFzaWRlIGNsYXNzPSJzcGVha2VyLW5vdGVzIj4KICAgICAgICBBbGxv"
+    "d2luZyBzZWxmLXNlcnZpY2Ugc2hpZnQgcmVxdWVzdHMgcmVkdWNlcyBzdXBlcnZpc29yIGZyaWN0"
+    "aW9uIHdoaWxlIHByZXNlcnZpbmcgbWFuYWdlcmlhbCBvdmVyc2lnaHQgdGhyb3VnaCBhdXRvbWF0"
+    "ZWQgZXNjYWxhdGlvbiBydWxlcy4KICAgICAgICA8YnI+PGJyPgogICAgICAgIFRyYW5zaXRpb246"
+    "IE9uY2UgYXBwcm92ZWQsIHRoZSBhc3NpZ25tZW50IGhhcHBlbnMg4oCUIFNoaWZ0IEFzc2lnbm1l"
+    "bnQuCiAgICAgIDwvYXNpZGU+CiAgICA8L3NlY3Rpb24+CgogICAgPHNlY3Rpb24gY2xhc3M9InNs"
+    "aWRlIiBpZD0ic2xpZGUtMTAiPgogICAgICA8ZGl2IGNsYXNzPSJzbGlkZS1udW1iZXIiPjEwIC8g"
+    "MTg8L2Rpdj4KICAgICAgPGgyIGNsYXNzPSJzbGlkZS10aXRsZSI+U2hpZnQgQXNzaWdubWVudDwv"
+    "aDI+CiAgICAgIDxkaXYgY2xhc3M9ImJvZHkiPgogICAgICAgIDx1bCBjbGFzcz0iYnVsbGV0LWxp"
+    "c3QiPgogICAgICAgICAgPGxpPk1hcHMgYW4gaW5kaXZpZHVhbCBlbXBsb3llZSB0byBhIGRlZmlu"
+    "ZWQgc2hpZnQgdHlwZSBhY3Jvc3MgY29uY3JldGUgZGF0ZXMuPC9saT4KICAgICAgICAgIDxsaT5B"
+    "dXRvbWF0ZWQgdmFsaWRhdGlvbiBlbmdpbmVzIHByZXZlbnQgZG91YmxlLWJvb2tpbmcgYW5kIG1h"
+    "bmRhdG9yeSByZXN0IHZpb2xhdGlvbnMuPC9saT4KICAgICAgICAgIDxsaT5EaXNwYXRjaGVzIGF1"
+    "dG9tYXRlZCBlbWFpbCBhbmQgbW9iaWxlIG5vdGlmaWNhdGlvbnMgdXBvbiBhc3NpZ25tZW50IGZp"
+    "bmFsaXphdGlvbi48L2xpPgogICAgICAgIDwvdWw+CiAgICAgICAgPHRhYmxlIGNsYXNzPSJ0YWJs"
+    "ZS1tb2NrdXAiPgogICAgICAgICAgPHRoZWFkPgogICAgICAgICAgICA8dHI+CiAgICAgICAgICAg"
+    "ICAgPHRoPkVtcGxveWVlPC90aD4KICAgICAgICAgICAgICA8dGg+U2hpZnQgVHlwZTwvdGg+CiAg"
+    "ICAgICAgICAgICAgPHRoPkRhdGUgV2luZG93PC90aD4KICAgICAgICAgICAgICA8dGg+U3RhdHVz"
+    "PC90aD4KICAgICAgICAgICAgPC90cj4KICAgICAgICAgIDwvdGhlYWQ+CiAgICAgICAgICA8dGJv"
+    "ZHk+CiAgICAgICAgICAgIDx0cj4KICAgICAgICAgICAgICA8dGQ+RU1QLTAwMTI0PC90ZD4KICAg"
+    "ICAgICAgICAgICA8dGQ+TW9ybmluZyAoMDY6MDAtMTQ6MDApPC90ZD4KICAgICAgICAgICAgICA8"
+    "dGQ+MjAyNi0wOS0wNyDigJMgMjAyNi0wOS0xMTwvdGQ+CiAgICAgICAgICAgICAgPHRkPjxzcGFu"
+    "IGNsYXNzPSJzdGF0dXMtYmFkZ2UiPkFjdGl2ZTwvc3Bhbj48L3RkPgogICAgICAgICAgICA8L3Ry"
+    "PgogICAgICAgICAgICA8dHI+CiAgICAgICAgICAgICAgPHRkPkVNUC0wMDg5MTwvdGQ+CiAgICAg"
+    "ICAgICAgICAgPHRkPk5pZ2h0ICgyMjowMC0wNjowMCk8L3RkPgogICAgICAgICAgICAgIDx0ZD4y"
+    "MDI2LTA5LTA3IOKAkyAyMDI2LTA5LTExPC90ZD4KICAgICAgICAgICAgICA8dGQ+PHNwYW4gY2xh"
+    "c3M9InN0YXR1cy1iYWRnZSI+QWN0aXZlPC9zcGFuPjwvdGQ+CiAgICAgICAgICAgIDwvdHI+CiAg"
+    "ICAgICAgICA8L3Rib2R5PgogICAgICAgIDwvdGFibGU+CiAgICAgIDwvZGl2PgogICAgICA8YXNp"
+    "ZGUgY2xhc3M9InNwZWFrZXItbm90ZXMiPgogICAgICAgIFNoaWZ0IEFzc2lnbm1lbnQgcmVwcmVz"
+    "ZW50cyBhY3R1YWwgbGVkZ2VyIHJlY29yZHMuIFRoZSB2YWxpZGF0aW9uIGVuZ2luZSBibG9ja3Mg"
+    "b3ZlcmxhcHBpbmcgc2hpZnRzIG9yIHN0YXR1dG9yeSByZXN0LWludGVydmFsIGJyZWFjaGVzIGF1"
+    "dG9tYXRpY2FsbHkuCiAgICAgICAgPGJyPjxicj4KICAgICAgICBUcmFuc2l0aW9uOiBOb3cgdGhl"
+    "IGJ1bGsgKyBVSSBmZWF0dXJlcyDigJQgU2NoZWR1bGUgQXNzaWdubWVudCArIFRvb2wuCiAgICAg"
+    "IDwvYXNpZGU+CiAgICA8L3NlY3Rpb24+CgogICAgPHNlY3Rpb24gY2xhc3M9InNsaWRlIiBpZD0i"
+    "c2xpZGUtMTEiPgogICAgICA8ZGl2IGNsYXNzPSJzbGlkZS1udW1iZXIiPjExIC8gMTg8L2Rpdj4K"
+    "ICAgICAgPGgyIGNsYXNzPSJzbGlkZS10aXRsZSI+QnVsayBBc3NpZ25tZW50ICsgVG9vbDwvaDI+"
+    "CiAgICAgIDxkaXYgY2xhc3M9ImJvZHkiPgogICAgICAgIDx1bCBjbGFzcz0iYnVsbGV0LWxpc3Qi"
+    "PgogICAgICAgICAgPGxpPjxzdHJvbmc+U2hpZnQgU2NoZWR1bGUgQXNzaWdubWVudDo8L3N0cm9u"
+    "Zz4gSW5zdGFudGx5IHByb2plY3Qgc3RhbmRhcmRpemVkIHRlbXBsYXRlcyBhY3Jvc3MgYnJvYWQg"
+    "dGVhbXMuPC9saT4KICAgICAgICAgIDxsaT48c3Ryb25nPlNoaWZ0IEFzc2lnbm1lbnQgVG9vbDo8"
+    "L3N0cm9uZz4gSW50ZXJhY3RpdmUgdmlzdWFsIG1hdHJpeCBmb3IgYWdpbGUgY2FsZW5kYXItYmFz"
+    "ZWQgcGxhbm5pbmcuPC9saT4KICAgICAgICAgIDxsaT5Db21wcmVzc2VzIG1vbnRobHkgdGVhbSBy"
+    "b3N0ZXIgZ2VuZXJhdGlvbiBmcm9tIGhvdXJzIGRvd24gdG8gbWludXRlcy48L2xpPgogICAgICAg"
+    "IDwvdWw+CiAgICAgICAgPGRpdiBzdHlsZT0iYmFja2dyb3VuZDp3aGl0ZTsgYm9yZGVyOjFweCBz"
+    "b2xpZCAjZTJlOGYwOyBib3JkZXItcmFkaXVzOjZweDsgcGFkZGluZzp2YXIoLS1zcGFjZS0xNik7"
+    "IG1hcmdpbi10b3A6dmFyKC0tc3BhY2UtMTYpOyI+CiAgICAgICAgICA8ZGl2IHN0eWxlPSJkaXNw"
+    "bGF5OmZsZXg7IGp1c3RpZnktY29udGVudDpzcGFjZS1iZXR3ZWVuOyBtYXJnaW4tYm90dG9tOjhw"
+    "eDsgZm9udC1zaXplOjEzcHg7IGZvbnQtd2VpZ2h0OjYwMDsgY29sb3I6dmFyKC0tc2Vjb25kYXJ5"
+    "KTsiPgogICAgICAgICAgICA8c3Bhbj5UZWFtIE1lbWJlcjwvc3Bhbj4KICAgICAgICAgICAgPHNw"
+    "YW4+TW9uPC9zcGFuPjxzcGFuPlR1ZTwvc3Bhbj48c3Bhbj5XZWQ8L3NwYW4+PHNwYW4+VGh1PC9z"
+    "cGFuPjxzcGFuPkZyaTwvc3Bhbj4KICAgICAgICAgIDwvZGl2PgogICAgICAgICAgPGRpdiBzdHls"
+    "ZT0iZGlzcGxheTpmbGV4OyBqdXN0aWZ5LWNvbnRlbnQ6c3BhY2UtYmV0d2VlbjsgYWxpZ24taXRl"
+    "bXM6Y2VudGVyOyBwYWRkaW5nOjhweCAwOyBib3JkZXItdG9wOjFweCBzb2xpZCAjZjFmNWY5OyI+"
+    "CiAgICAgICAgICAgIDxzcGFuIHN0eWxlPSJmb250LXNpemU6MTRweDsiPk9wZXJhdG9yIEFscGhh"
+    "PC9zcGFuPgogICAgICAgICAgICA8Y29kZSBzdHlsZT0iYmFja2dyb3VuZDojZGJlYWZlOyBjb2xv"
+    "cjojMWU0MGFmOyI+TU9STjwvY29kZT4KICAgICAgICAgICAgPGNvZGUgc3R5bGU9ImJhY2tncm91"
+    "bmQ6I2RiZWFmZTsgY29sb3I6IzFlNDBhZjsiPk1PUk48L2NvZGU+CiAgICAgICAgICAgIDxjb2Rl"
+    "IHN0eWxlPSJiYWNrZ3JvdW5kOiNlMGYyZmU7IGNvbG9yOiMwMzY5YTE7Ij5FVkVOPC9jb2RlPgog"
+    "ICAgICAgICAgICA8Y29kZSBzdHlsZT0iYmFja2dyb3VuZDojZTBmMmZlOyBjb2xvcjojMDM2OWEx"
+    "OyI+RVZFTjwvY29kZT4KICAgICAgICAgICAgPGNvZGUgc3R5bGU9ImJhY2tncm91bmQ6I2YxZjVm"
+    "OTsgY29sb3I6IzY0NzQ4YjsiPk9GRjwvY29kZT4KICAgICAgICAgIDwvZGl2PgogICAgICAgIDwv"
+    "ZGl2PgogICAgICA8L2Rpdj4KICAgICAgPGFzaWRlIGNsYXNzPSJzcGVha2VyLW5vdGVzIj4KICAg"
+    "ICAgICBPcGVyYXRpb25zIGxlYWRzIHNhdmUgY29uc2lkZXJhYmxlIGFkbWluaXN0cmF0aXZlIGVm"
+    "Zm9ydCBoZXJlLiBCdWxrIGFzc2lnbm1lbnQgdG9vbHMgcmVtb3ZlIHJlcGV0aXRpdmUgbWFudWFs"
+    "IHJvdy1ieS1yb3cgZW50cmllcy4KICAgICAgICA8YnI+PGJyPgogICAgICAgIFRyYW5zaXRpb246"
+    "IFdoYXQgZG9lcyB0aGUgcmVzdWx0IGxvb2sgbGlrZT8gVGhlIFJvc3Rlci4KICAgICAgPC9hc2lk"
+    "ZT4KICAgIDwvc2VjdGlvbj4KCiAgICA8c2VjdGlvbiBjbGFzcz0ic2xpZGUiIGlkPSJzbGlkZS0x"
+    "MiI+CiAgICAgIDxkaXYgY2xhc3M9InNsaWRlLW51bWJlciI+MTIgLyAxODwvZGl2PgogICAgICA8"
+    "aDIgY2xhc3M9InNsaWRlLXRpdGxlIj5Sb3N0ZXI8L2gyPgogICAgICA8ZGl2IGNsYXNzPSJib2R5"
+    "Ij4KICAgICAgICA8cD5BIHVuaWZpZWQgaW50ZXJhY3RpdmUgY2FsZW5kYXIgdmlzdWFsaXppbmcg"
+    "ZGVwYXJ0bWVudC13aWRlIHNoaWZ0IGNvdmVyYWdlIGF0IGEgZ2xhbmNlLjwvcD4KICAgICAgICA8"
+    "dWwgY2xhc3M9ImJ1bGxldC1saXN0Ij4KICAgICAgICAgIDxsaT5GaWx0ZXIgZHluYW1pYyB2aWV3"
+    "cyBieSBkZXBhcnRtZW50LCBzcGVjaWZpYyByb2xlLCBkZXNpZ25hdGVkIHNoaWZ0IGxvY2F0aW9u"
+    "LCBvciBkYXRlIHNwYW4uPC9saT4KICAgICAgICAgIDxsaT5Db2xvci1jb2RlZCBvcGVyYXRpb25h"
+    "bCBibG9ja3Mgc3RyZWFtbGluZSBpZGVudGlmaWNhdGlvbiBvZiB1bmRlcnN0YWZmZWQgcGVyaW9k"
+    "cy48L2xpPgogICAgICAgIDwvdWw+CiAgICAgICAgPGRpdiBjbGFzcz0iaW1hZ2UtcGxhY2Vob2xk"
+    "ZXIiIHN0eWxlPSJib3JkZXI6IDJweCBkYXNoZWQgIzk0YTNiODsgcGFkZGluZzogNDhweCAzMnB4"
+    "OyB0ZXh0LWFsaWduOiBjZW50ZXI7IGNvbG9yOiAjNjQ3NDhiOyBtYXJnaW4tdG9wOiAzMnB4OyI+"
+    "CiAgICAgICAgICBbSW5zZXJ0IHJvc3RlciBzY3JlZW5zaG90IGhlcmVdCiAgICAgICAgICA8YnI+"
+    "PHNtYWxsPlJvc3RlciB2aWV3IOKAlCBjYWxlbmRhciBvZiBlbXBsb3llZSBzaGlmdHM8L3NtYWxs"
+    "PgogICAgICAgIDwvZGl2PgogICAgICA8L2Rpdj4KICAgICAgPGFzaWRlIGNsYXNzPSJzcGVha2Vy"
+    "LW5vdGVzIj4KICAgICAgICBUaGUgbWFzdGVyIHJvc3RlciBwcm92aWRlcyBjb21wbGV0ZSBjb3Zl"
+    "cmFnZSB2aXNpYmlsaXR5LiBNYW5hZ2VycyBmaWx0ZXIgYnkgbG9jYXRpb24gYW5kIHF1YWxpZmlj"
+    "YXRpb24gdG8gdmVyaWZ5IGFkZXF1YXRlIGNvdmVyYWdlIGJlZm9yZSBzaGlmdHMgY29tbWVuY2Uu"
+    "CiAgICAgICAgPGJyPjxicj4KICAgICAgICBUcmFuc2l0aW9uOiBOb3cgbGV0J3MgdHJhY2sgd2hv"
+    "J3MgYWN0dWFsbHkgc2hvd2luZyB1cCDigJQgQXR0ZW5kYW5jZS4KICAgICAgPC9hc2lkZT4KICAg"
+    "IDwvc2VjdGlvbj4KCiAgICA8c2VjdGlvbiBjbGFzcz0ic2xpZGUiIGlkPSJzbGlkZS0xMyI+CiAg"
+    "ICAgIDxkaXYgY2xhc3M9InNsaWRlLW51bWJlciI+MTMgLyAxODwvZGl2PgogICAgICA8aDIgY2xh"
+    "c3M9InNsaWRlLXRpdGxlIj5BdHRlbmRhbmNlICsgQXV0by1hdHRlbmRhbmNlPC9oMj4KICAgICAg"
+    "PGRpdiBjbGFzcz0iYm9keSI+CiAgICAgICAgPHVsIGNsYXNzPSJidWxsZXQtbGlzdCI+CiAgICAg"
+    "ICAgICA8bGk+SGFyZHdhcmUtYWdub3N0aWMgc3luYzogY2FwdHVyZXMgZXZlbnRzIHZpYSBtb2Jp"
+    "bGUgR1BTLCBiaW9tZXRyaWNzLCBvciBuZXR3b3JrZWQga2lvc2tzLjwvbGk+CiAgICAgICAgICA8"
+    "bGk+U3lzdGVtIGNvcnJlbGF0ZXMgY2hlY2staW4gZXZlbnRzIGFnYWluc3QgcGxhbm5lZCBhc3Np"
+    "Z25tZW50cyB0byByZWNvcmQgcHJlc2VuY2UuPC9saT4KICAgICAgICAgIDxsaT5JZGVudGlmaWVz"
+    "IGdyYWNlLXBlcmlvZCB0aHJlc2hvbGRzIHRvIGZsYWcgbGF0ZSBhcnJpdmFscyBhbmQgY2FsY3Vs"
+    "YXRlIG92ZXJ0aW1lLjwvbGk+CiAgICAgICAgPC91bD4KICAgICAgICA8ZGl2IGNsYXNzPSJmbG93"
+    "LWhvcml6b250YWwiPgogICAgICAgICAgPGRpdiBjbGFzcz0iZmxvdy1zdGVwIj4xLiBUZWxlbWV0"
+    "cnk8YnI+PHNtYWxsIHN0eWxlPSJjb2xvcjp2YXIoLS1zZWNvbmRhcnkpIj5HUFMgLyBCaW9tZXRy"
+    "aWM8L3NtYWxsPjwvZGl2PgogICAgICAgICAgPGRpdiBjbGFzcz0iZmxvdy1hcnJvdyI+JnJhcnI7"
+    "PC9kaXY+CiAgICAgICAgICA8ZGl2IGNsYXNzPSJmbG93LXN0ZXAiPjIuIE1hdGNoIEVuZ2luZTxi"
+    "cj48c21hbGwgc3R5bGU9ImNvbG9yOnZhcigtLXNlY29uZGFyeSkiPlZhbGlkYXRlIFNoaWZ0IFR5"
+    "cGU8L3NtYWxsPjwvZGl2PgogICAgICAgICAgPGRpdiBjbGFzcz0iZmxvdy1hcnJvdyI+JnJhcnI7"
+    "PC9kaXY+CiAgICAgICAgICA8ZGl2IGNsYXNzPSJmbG93LXN0ZXAiPjMuIExlZGdlcjxicj48c21h"
+    "bGwgc3R5bGU9ImNvbG9yOnZhcigtLXNlY29uZGFyeSkiPlByZXNlbnQgLyBUYXJkeTwvc21hbGw+"
+    "PC9kaXY+CiAgICAgICAgPC9kaXY+CiAgICAgIDwvZGl2PgogICAgICA8YXNpZGUgY2xhc3M9InNw"
+    "ZWFrZXItbm90ZXMiPgogICAgICAgIEF1dG8tYXR0ZW5kYW5jZSBtYXRjaGVzIHJhdyBiaW9tZXRy"
+    "aWMgY2hlY2staW5zIGFnYWluc3QgYWN0aXZlIHNoaWZ0IGFzc2lnbm1lbnRzLiBUaGUgZW5naW5l"
+    "IGFwcGxpZXMgZ3JhY2UgcGVyaW9kcyBhbmQgY2FsY3VsYXRlcyBvdmVydGltZSB3aXRob3V0IG1h"
+    "bnVhbCBvdmVyc2lnaHQuCiAgICAgICAgPGJyPjxicj4KICAgICAgICBUcmFuc2l0aW9uOiBBbGwg"
+    "dGhpcyBkYXRhIGZlZWRzIGludG8gUmVwb3J0cy4KICAgICAgPC9hc2lkZT4KICAgIDwvc2VjdGlv"
+    "bj4KCiAgICA8c2VjdGlvbiBjbGFzcz0ic2xpZGUiIGlkPSJzbGlkZS0xNCI+CiAgICAgIDxkaXYg"
+    "Y2xhc3M9InNsaWRlLW51bWJlciI+MTQgLyAxODwvZGl2PgogICAgICA8aDIgY2xhc3M9InNsaWRl"
+    "LXRpdGxlIj5SZXBvcnRzICZhbXA7IEFuYWx5dGljczwvaDI+CiAgICAgIDxkaXYgY2xhc3M9ImJv"
+    "ZHkiPgogICAgICAgIDxkaXYgY2xhc3M9InN0YXRzLWdyaWQiPgogICAgICAgICAgPGRpdiBjbGFz"
+    "cz0ic3RhdC1jYXJkIj4KICAgICAgICAgICAgPGRpdiBjbGFzcz0ic3RhdC1sYWJlbCI+Q292ZXJh"
+    "Z2UgVG9kYXk8L2Rpdj4KICAgICAgICAgICAgPGRpdiBjbGFzcz0ic3RhdC12YWx1ZSI+OTguNSU8"
+    "L2Rpdj4KICAgICAgICAgICAgPGRpdiBjbGFzcz0ic3RhdC10cmVuZCBwb3NpdGl2ZSI+KzEuMiU8"
+    "L2Rpdj4KICAgICAgICAgIDwvZGl2PgogICAgICAgICAgPGRpdiBjbGFzcz0ic3RhdC1jYXJkIj4K"
+    "ICAgICAgICAgICAgPGRpdiBjbGFzcz0ic3RhdC1sYWJlbCI+TGF0ZSBBcnJpdmFsczwvZGl2Pgog"
+    "ICAgICAgICAgICA8ZGl2IGNsYXNzPSJzdGF0LXZhbHVlIj40PC9kaXY+CiAgICAgICAgICAgIDxk"
+    "aXYgY2xhc3M9InN0YXQtdHJlbmQgbmVnYXRpdmUiPisyPC9kaXY+CiAgICAgICAgICA8L2Rpdj4K"
+    "ICAgICAgICAgIDxkaXYgY2xhc3M9InN0YXQtY2FyZCI+CiAgICAgICAgICAgIDxkaXYgY2xhc3M9"
+    "InN0YXQtbGFiZWwiPk92ZXJ0aW1lIEhvdXJzPC9kaXY+CiAgICAgICAgICAgIDxkaXYgY2xhc3M9"
+    "InN0YXQtdmFsdWUiPjI3aDwvZGl2PgogICAgICAgICAgICA8ZGl2IGNsYXNzPSJzdGF0LXRyZW5k"
+    "IG5ldXRyYWwiPuKAlDwvZGl2PgogICAgICAgICAgPC9kaXY+CiAgICAgICAgICA8ZGl2IGNsYXNz"
+    "PSJzdGF0LWNhcmQiPgogICAgICAgICAgICA8ZGl2IGNsYXNzPSJzdGF0LWxhYmVsIj5QZW5kaW5n"
+    "IFN3YXBzPC9kaXY+CiAgICAgICAgICAgIDxkaXYgY2xhc3M9InN0YXQtdmFsdWUiPjc8L2Rpdj4K"
+    "ICAgICAgICAgICAgPGRpdiBjbGFzcz0ic3RhdC10cmVuZCBuZXV0cmFsIj7igJQ8L2Rpdj4KICAg"
+    "ICAgICAgIDwvZGl2PgogICAgICAgIDwvZGl2PgogICAgICAgIDxkaXYgY2xhc3M9ImNoYXJ0LXBs"
+    "YWNlaG9sZGVyIj4KICAgICAgICAgIDxzdmcgdmlld0JveD0iMCAwIDYwMCAxMjAiIHdpZHRoPSIx"
+    "MDAlIiBoZWlnaHQ9IjEwMCUiPgogICAgICAgICAgICA8cG9seWxpbmUgZmlsbD0ibm9uZSIgc3Ry"
+    "b2tlPSIjMGVhNWU5IiBzdHJva2Utd2lkdGg9IjMiIHBvaW50cz0iMjAsOTAgMTAwLDg1IDE4MCw2"
+    "MCAyNjAsNzAgMzQwLDQwIDQyMCw0NSA1MDAsMjAgNTgwLDMwIiAvPgogICAgICAgICAgICA8Y2ly"
+    "Y2xlIGN4PSI1MDAiIGN5PSIyMCIgcj0iNCIgZmlsbD0iIzFlNDBhZiIgLz4KICAgICAgICAgICAg"
+    "PHRleHQgeD0iNTAwIiB5PSIxNSIgZm9udC1zaXplPSIxMSIgZmlsbD0iIzFlNDBhZiIgdGV4dC1h"
+    "bmNob3I9Im1pZGRsZSI+UGVhayBBdHRlbmRhbmNlICg5OS4yJSk8L3RleHQ+CiAgICAgICAgICA8"
+    "L3N2Zz4KICAgICAgICA8L2Rpdj4KICAgICAgPC9kaXY+CiAgICAgIDxhc2lkZSBjbGFzcz0ic3Bl"
+    "YWtlci1ub3RlcyI+CiAgICAgICAgVGhlc2Ugb3BlcmF0aW9uYWwgbWV0cmljcyBpbmZvcm0gZGFp"
+    "bHkgZGVjaXNpb25zLiBTdXBlcnZpc29ycyBhZGRyZXNzIGxhdGUgYXJyaXZhbHMgaW1tZWRpYXRl"
+    "bHksIHdoaWxlIG92ZXJ0aW1lIHRyZW5kcyBndWlkZSBjYXBhY2l0eSBwbGFubmluZy4KICAgICAg"
+    "ICA8YnI+PGJyPgogICAgICAgIFRyYW5zaXRpb246IFdoYXQgaWYgRVJQTmV4dCBvdXQtb2YtYm94"
+    "IGRvZXNuJ3QgZml0PyBDdXN0b20gYXBwcy4KICAgICAgPC9hc2lkZT4KICAgIDwvc2VjdGlvbj4K"
+    "CiAgICA8c2VjdGlvbiBjbGFzcz0ic2xpZGUiIGlkPSJzbGlkZS0xNSI+CiAgICAgIDxkaXYgY2xh"
+    "c3M9InNsaWRlLW51bWJlciI+MTUgLyAxODwvZGl2PgogICAgICA8aDIgY2xhc3M9InNsaWRlLXRp"
+    "dGxlIj5FeHRlbmRpbmcgRVJQTmV4dCB3aXRoIEN1c3RvbSBBcHBzPC9oMj4KICAgICAgPGRpdiBj"
+    "bGFzcz0iYm9keSI+CiAgICAgICAgPHVsIGNsYXNzPSJidWxsZXQtbGlzdCI+CiAgICAgICAgICA8"
+    "bGk+Q3VzdG9tIGFwcHMgbGF5ZXIgY2xlYW5seSBhYm92ZSBjb3JlIGNvZGUgd2l0aG91dCBmb3Jr"
+    "aW5nIGJhc2VsaW5lIHJlcG9zaXRvcmllcy48L2xpPgogICAgICAgICAgPGxpPkFkZCBjdXN0b20g"
+    "ZmllbGRzLCBuZXcgRG9jVHlwZXMgKHRhYmxlcyksIHNwZWNpYWxpemVkIHdvcmtmbG93cywgYW5k"
+    "IFB5dGhvbiBob29rcy48L2xpPgogICAgICAgICAgPGxpPkRlcGxveSBjbGVhbmx5IGFjcm9zcyBw"
+    "cm9kdWN0aW9uIGZsZWV0cyB1c2luZyBHaXQgYW5kIHN0YW5kYXJkIDxjb2RlPmJlbmNoPC9jb2Rl"
+    "PiBjb21tYW5kcy48L2xpPgogICAgICAgIDwvdWw+CiAgICAgICAgPGRpdiBjbGFzcz0ic3RhY2st"
+    "ZGlhZ3JhbSIgc3R5bGU9Im1hcmdpbi10b3A6dmFyKC0tc3BhY2UtMTYpOyI+CiAgICAgICAgICA8"
+    "ZGl2IGNsYXNzPSJzdGFjay1sYXllciIgc3R5bGU9ImJhY2tncm91bmQ6dmFyKC0tYWNjZW50KTsi"
+    "PlNwZWNpYWxpemVkIEFwcCBMYXllciAoZS5nLiBJbmR1c3RyeSBDbGluaWNhbCBXb3JrZmxvd3Mp"
+    "PC9kaXY+CiAgICAgICAgICA8ZGl2IGNsYXNzPSJzdGFjay1sYXllciIgc3R5bGU9ImJhY2tncm91"
+    "bmQ6dmFyKC0tcHJpbWFyeSk7Ij5IUk1TIENvcmUgTGF5ZXIgKFNoaWZ0IEFzc2lnbm1lbnQsIExl"
+    "YXZlcywgQXR0ZW5kYW5jZSk8L2Rpdj4KICAgICAgICAgIDxkaXYgY2xhc3M9InN0YWNrLWxheWVy"
+    "IiBzdHlsZT0iYmFja2dyb3VuZDp2YXIoLS1zZWNvbmRhcnkpOyI+RVJQTmV4dCAmYW1wOyBGcmFw"
+    "cGUgRnJhbWV3b3JrIEJhc2U8L2Rpdj4KICAgICAgICA8L2Rpdj4KICAgICAgPC9kaXY+CiAgICAg"
+    "IDxhc2lkZSBjbGFzcz0ic3BlYWtlci1ub3RlcyI+CiAgICAgICAgQ3VzdG9tIGFwcHMgZW5zdXJl"
+    "IHlvdXIgb3BlcmF0aW9uYWwgY3VzdG9taXphdGlvbnMgc3Vydml2ZSB1cHN0cmVhbSBzb2Z0d2Fy"
+    "ZSB1cGdyYWRlcy4gWW91IGNhbiBtb2RpZnkgRG9jVHlwZXMgYW5kIGFkZCBzZXJ2ZXIgc2NyaXB0"
+    "cyB3aXRob3V0IGVkaXRpbmcgY29yZSBzb3VyY2UgY29kZS4KICAgICAgICA8YnI+PGJyPgogICAg"
+    "ICAgIFRyYW5zaXRpb246IEhlcmUncyBob3cgdGhlIGVudGl0aWVzIHJlbGF0ZS4KICAgICAgPC9h"
+    "c2lkZT4KICAgIDwvc2VjdGlvbj4KCiAgICA8c2VjdGlvbiBjbGFzcz0ic2xpZGUiIGlkPSJzbGlk"
+    "ZS0xNiI+CiAgICAgIDxkaXYgY2xhc3M9InNsaWRlLW51bWJlciI+MTYgLyAxODwvZGl2PgogICAg"
+    "ICA8aDIgY2xhc3M9InNsaWRlLXRpdGxlIj5TY2hlbWE6IFNoaWZ0IE1hbmFnZW1lbnQgRW50aXRp"
+    "ZXM8L2gyPgogICAgICA8ZGl2IGNsYXNzPSJib2R5Ij4KICAgICAgICA8cCBzdHlsZT0ibWFyZ2lu"
+    "LWJvdHRvbTp2YXIoLS1zcGFjZS04KTsgZm9udC1zaXplOjE1cHg7Ij48c3Ryb25nPkFyY2hpdGVj"
+    "dHVyZTo8L3N0cm9uZz4gSG93IHNoaWZ0IG1hbmFnZW1lbnQgZW50aXRpZXMgcmVsYXRlIGFjcm9z"
+    "cyBsYXllcnMuPC9wPgogICAgICAgIDxkaXYgc3R5bGU9IndpZHRoOjEwMCU7IGRpc3BsYXk6Zmxl"
+    "eDsganVzdGlmeS1jb250ZW50OmNlbnRlcjsiPgogICAgICAgICAgPHN2ZyB2aWV3Qm94PSIwIDAg"
+    "NzQwIDMyMCIgd2lkdGg9Ijc0MCIgaGVpZ2h0PSIzMjAiPgogICAgICAgICAgICA8cGF0aCBkPSJN"
+    "IDM3MCA2NSBMIDM3MCAxMjAiIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSIyIiAvPgog"
+    "ICAgICAgICAgICA8cGF0aCBkPSJNIDM3MCAxODAgTCAzNzAgMjMwIiBzdHJva2U9IiM5NGEzYjgi"
+    "IHN0cm9rZS13aWR0aD0iMiIgLz4KICAgICAgICAgICAgPHBhdGggZD0iTSAzMTAgMTUwIEwgMTkw"
+    "IDE1MCIgc3Ryb2tlPSIjOTRhM2I4IiBzdHJva2Utd2lkdGg9IjIiIC8+CiAgICAgICAgICAgIDxw"
+    "YXRoIGQ9Ik0gNDMwIDE1MCBMIDU1MCAxNTAiIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRo"
+    "PSIyIiAvPgogICAgICAgICAgICA8cGF0aCBkPSJNIDEzMCAxODAgTCAxMzAgMjMwIiBzdHJva2U9"
+    "IiM5NGEzYjgiIHN0cm9rZS13aWR0aD0iMiIgLz4KICAgICAgICAgICAgPHBhdGggZD0iTSA2MTAg"
+    "OTUgTCA2MTAgMTIwIiBzdHJva2U9IiM5NGEzYjgiIHN0cm9rZS13aWR0aD0iMiIgLz4KICAgICAg"
+    "ICAgICAgPHBhdGggZD0iTSA2MTAgMTgwIEwgNjEwIDIwNSIgc3Ryb2tlPSIjOTRhM2I4IiBzdHJv"
+    "a2Utd2lkdGg9IjIiIC8+CiAgICAgICAgICAgIDxwYXRoIGQ9Ik0gNTUwIDI0MCBMIDE5MCAyNjAi"
+    "IHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1kYXNoYXJyYXk9IjQg"
+    "NCIgLz4KCiAgICAgICAgICAgIDxyZWN0IHg9IjMxMCIgeT0iMTIwIiB3aWR0aD0iMTIwIiBoZWln"
+    "aHQ9IjYwIiByeD0iNiIgZmlsbD0iIzFlNDBhZiIgLz4KICAgICAgICAgICAgPHRleHQgeD0iMzcw"
+    "IiB5PSIxNDYiIGZpbGw9IiNmZmZmZmYiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSI2MDAi"
+    "IHRleHQtYW5jaG9yPSJtaWRkbGUiPkVtcGxveWVlPC90ZXh0PgogICAgICAgICAgICA8dGV4dCB4"
+    "PSIzNzAiIHk9IjE2NCIgZmlsbD0iIzkzYzVmZCIgZm9udC1zaXplPSIxMSIgdGV4dC1hbmNob3I9"
+    "Im1pZGRsZSI+Q29yZSBNYXN0ZXI8L3RleHQ+CgogICAgICAgICAgICA8cmVjdCB4PSIzMTAiIHk9"
+    "IjE1IiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjUwIiByeD0iNiIgZmlsbD0iIzY0NzQ4YiIgLz4KICAg"
+    "ICAgICAgICAgPHRleHQgeD0iMzcwIiB5PSIzOCIgZmlsbD0iI2ZmZmZmZiIgZm9udC1zaXplPSIx"
+    "MyIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+SG9saWRheSBMaXN0PC90"
+    "ZXh0PgogICAgICAgICAgICA8dGV4dCB4PSIzNzAiIHk9IjU0IiBmaWxsPSIjY2JkNWUxIiBmb250"
+    "LXNpemU9IjEwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Db21wYW55L0RlcHQ8L3RleHQ+CgogICAg"
+    "ICAgICAgICA8cmVjdCB4PSIzMTAiIHk9IjIzMCIgd2lkdGg9IjEyMCIgaGVpZ2h0PSI1MCIgcng9"
+    "IjYiIGZpbGw9IiM2NDc0OGIiIC8+CiAgICAgICAgICAgIDx0ZXh0IHg9IjM3MCIgeT0iMjUzIiBm"
+    "aWxsPSIjZmZmZmZmIiBmb250LXNpemU9IjEzIiBmb250LXdlaWdodD0iNjAwIiB0ZXh0LWFuY2hv"
+    "cj0ibWlkZGxlIj5BdHRlbmRhbmNlPC90ZXh0PgogICAgICAgICAgICA8dGV4dCB4PSIzNzAiIHk9"
+    "IjI2OSIgZmlsbD0iI2NiZDVlMSIgZm9udC1zaXplPSIxMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+"
+    "TG9ncyAmYW1wOyBTdGF0dXM8L3RleHQ+CgogICAgICAgICAgICA8cmVjdCB4PSI1NTAiIHk9IjQ1"
+    "IiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjUwIiByeD0iNiIgZmlsbD0iIzFlNDBhZiIgLz4KICAgICAg"
+    "ICAgICAgPHRleHQgeD0iNjEwIiB5PSI2OCIgZmlsbD0iI2ZmZmZmZiIgZm9udC1zaXplPSIxMyIg"
+    "Zm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+U2hpZnQgVHlwZTwvdGV4dD4K"
+    "ICAgICAgICAgICAgPHRleHQgeD0iNjEwIiB5PSI4NCIgZmlsbD0iIzkzYzVmZCIgZm9udC1zaXpl"
+    "PSIxMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+VGltZSBEZWZpbml0aW9uPC90ZXh0PgoKICAgICAg"
+    "ICAgICAgPHJlY3QgeD0iNTUwIiB5PSIxMjAiIHdpZHRoPSIxMjAiIGhlaWdodD0iNjAiIHJ4PSI2"
+    "IiBmaWxsPSIjMWU0MGFmIiAvPgogICAgICAgICAgICA8dGV4dCB4PSI2MTAiIHk9IjE0NiIgZmls"
+    "bD0iI2ZmZmZmZiIgZm9udC1zaXplPSIxMyIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9"
+    "Im1pZGRsZSI+U2hpZnQgU2NoZWR1bGU8L3RleHQ+CiAgICAgICAgICAgIDx0ZXh0IHg9IjYxMCIg"
+    "eT0iMTY0IiBmaWxsPSIjOTNjNWZkIiBmb250LXNpemU9IjEwIiB0ZXh0LWFuY2hvcj0ibWlkZGxl"
+    "Ij5SZWN1cnJlbmNlIE1vZGVsPC90ZXh0PgoKICAgICAgICAgICAgPHJlY3QgeD0iNTUwIiB5PSIy"
+    "MDUiIHdpZHRoPSIxMjAiIGhlaWdodD0iNTAiIHJ4PSI2IiBmaWxsPSIjMWU0MGFmIiAvPgogICAg"
+    "ICAgICAgICA8dGV4dCB4PSI2MTAiIHk9IjIyOCIgZmlsbD0iI2ZmZmZmZiIgZm9udC1zaXplPSIx"
+    "MyIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+U2hpZnQgTG9jYXRpb248"
+    "L3RleHQ+CiAgICAgICAgICAgIDx0ZXh0IHg9IjYxMCIgeT0iMjQ0IiBmaWxsPSIjOTNjNWZkIiBm"
+    "b250LXNpemU9IjEwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5HZW8tZmVuY2UgUmFkaXVzPC90ZXh0"
+    "PgoKICAgICAgICAgICAgPHJlY3QgeD0iNzAiIHk9IjQ1IiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjUw"
+    "IiByeD0iNiIgZmlsbD0iIzBlYTVlOSIgLz4KICAgICAgICAgICAgPHRleHQgeD0iMTMwIiB5PSI2"
+    "OCIgZmlsbD0iI2ZmZmZmZiIgZm9udC1zaXplPSIxMyIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1h"
+    "bmNob3I9Im1pZGRsZSI+U2hpZnQgUmVxdWVzdDwvdGV4dD4KICAgICAgICAgICAgPHRleHQgeD0i"
+    "MTMwIiB5PSI4NCIgZmlsbD0iI2UwZjJmZSIgZm9udC1zaXplPSIxMCIgdGV4dC1hbmNob3I9Im1p"
+    "ZGRsZSI+V29ya2Zsb3cgTGluazwvdGV4dD4KCiAgICAgICAgICAgIDxyZWN0IHg9IjcwIiB5PSIx"
+    "MjAiIHdpZHRoPSIxMjAiIGhlaWdodD0iNjAiIHJ4PSI2IiBmaWxsPSIjMGVhNWU5IiAvPgogICAg"
+    "ICAgICAgICA8dGV4dCB4PSIxMzAiIHk9IjE0NiIgZmlsbD0iI2ZmZmZmZiIgZm9udC1zaXplPSIx"
+    "MyIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+U2hpZnQgQXNzaWdubWVu"
+    "dDwvdGV4dD4KICAgICAgICAgICAgPHRleHQgeD0iMTMwIiB5PSIxNjQiIGZpbGw9IiNlMGYyZmUi"
+    "IGZvbnQtc2l6ZT0iMTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkV4ZWN1dGlvbiBFbnRpdHk8L3Rl"
+    "eHQ+CgogICAgICAgICAgICA8cmVjdCB4PSI3MCIgeT0iMjMwIiB3aWR0aD0iMTIwIiBoZWlnaHQ9"
+    "IjUwIiByeD0iNiIgZmlsbD0iIzBlYTVlOSIgLz4KICAgICAgICAgICAgPHRleHQgeD0iMTMwIiB5"
+    "PSIyNTMiIGZpbGw9IiNmZmZmZmYiIGZvbnQtc2l6ZT0iMTMiIGZvbnQtd2VpZ2h0PSI2MDAiIHRl"
+    "eHQtYW5jaG9yPSJtaWRkbGUiPkVtcGxveWVlIENoZWNraW48L3RleHQ+CiAgICAgICAgICAgIDx0"
+    "ZXh0IHg9IjEzMCIgeT0iMjY5IiBmaWxsPSIjZTBmMmZlIiBmb250LXNpemU9IjEwIiB0ZXh0LWFu"
+    "Y2hvcj0ibWlkZGxlIj5SYXcgTG9ncyAvIERldmljZTwvdGV4dD4KICAgICAgICAgIDwvc3ZnPgog"
+    "ICAgICAgIDwvZGl2PgogICAgICAgIDxwIHN0eWxlPSJtYXJnaW4tdG9wOnZhcigtLXNwYWNlLTgp"
+    "OyBmb250LXNpemU6MTRweDsgY29sb3I6dmFyKC0tc2Vjb25kYXJ5KTsiPlRoZSByZWxhdGlvbmFs"
+    "IG1vZGVsIGNvbm5lY3RzIHNjaGVkdWxlIHRlbXBsYXRlcyBhbmQgcmF3IGNoZWNraW5zIHRvIGdl"
+    "bmVyYXRlIGNsZWFuIGF0dGVuZGFuY2UgcmVjb3Jkcy48L3A+CiAgICAgIDwvZGl2PgogICAgICA8"
+    "YXNpZGUgY2xhc3M9InNwZWFrZXItbm90ZXMiPgogICAgICAgIEVtcGxveWVlIHNpdHMgYXQgdGhl"
+    "IGNlbnRlciBvZiB0aGUgYXJjaGl0ZWN0dXJlLiBTaGlmdCBBc3NpZ25tZW50cyBicmlkZ2UgYWJz"
+    "dHJhY3QgU2hpZnQgVHlwZXMgd2l0aCBhY3R1YWwgcGVvcGxlLCB3aGlsZSBFbXBsb3llZSBDaGVj"
+    "a2lucyB2YWxpZGF0ZSByZWFsLXdvcmxkIGV4ZWN1dGlvbiBhZ2FpbnN0IHRoZXNlIGRlZmluaXRp"
+    "b25zLgogICAgICAgIDxicj48YnI+CiAgICAgICAgVHJhbnNpdGlvbjogV2h5IGNob29zZSBFUlBO"
+    "ZXh0ICsgSGFyaXRoYSBmb3IgeW91ciBkZXBsb3ltZW50LgogICAgICA8L2FzaWRlPgogICAgPC9z"
+    "ZWN0aW9uPgoKICAgIDxzZWN0aW9uIGNsYXNzPSJzbGlkZSIgaWQ9InNsaWRlLTE3Ij4KICAgICAg"
+    "PGRpdiBjbGFzcz0ic2xpZGUtbnVtYmVyIj4xNyAvIDE4PC9kaXY+CiAgICAgIDxoMiBjbGFzcz0i"
+    "c2xpZGUtdGl0bGUiPldoeSBjaG9vc2UgRVJQTmV4dCArIEhhcml0aGE8L2gyPgogICAgICA8ZGl2"
+    "IGNsYXNzPSJib2R5Ij4KICAgICAgICA8dWwgY2xhc3M9ImJ1bGxldC1saXN0IiBzdHlsZT0ibWFy"
+    "Z2luLWJvdHRvbTp2YXIoLS1zcGFjZS0xNik7Ij4KICAgICAgICAgIDxsaT48c3Ryb25nPk9wZW4g"
+    "c291cmNlPC9zdHJvbmc+ICZtZGFzaDsgRWxpbWluYXRlcyBsaWNlbnNlIGZlZSBvdmVyaGVhZCBy"
+    "ZWxhdGl2ZSB0byBlbnRlcnByaXNlIGxlZ2FjeSBzdGFja3MuPC9saT4KICAgICAgICAgIDxsaT48"
+    "c3Ryb25nPkNvbXBsZXRlIGNvZGUgb3duZXJzaGlwPC9zdHJvbmc+ICZtZGFzaDsgRnVsbCBjb250"
+    "cm9sIG92ZXIgeW91ciBkYXRhYmFzZSBzY2hlbWEgYW5kIGN1c3RvbWl6YXRpb25zLjwvbGk+CiAg"
+    "ICAgICAgICA8bGk+PHN0cm9uZz5DbGluaWNhbCBvcGVyYXRpb25hbCByZWFkaW5lc3M8L3N0cm9u"
+    "Zz4gJm1kYXNoOyBFeHRlbnNpYmxlIGFyY2hpdGVjdHVyZSBzdXBwb3J0cyBzcGVjaWFsaXNlZCBy"
+    "b3RhIHJlcXVpcmVtZW50cy48L2xpPgogICAgICAgICAgPGxpPjxzdHJvbmc+QWN0aXZlIGNvbW11"
+    "bml0eTwvc3Ryb25nPiAmbWRhc2g7IFN1cHBvcnRlZCBieSA1LDAwMCsgY29udHJpYnV0b3JzIGFu"
+    "ZCBwYXJ0bmVyIGltcGxlbWVudGF0aW9uIG5ldHdvcmtzLjwvbGk+CiAgICAgICAgICA8bGk+PHN0"
+    "cm9uZz5Xb3JrZmxvdyBmbGV4aWJpbGl0eTwvc3Ryb25nPiAmbWRhc2g7IENvbmZpZ3VyZSB2YWxp"
+    "ZGF0aW9uIGxvZ2ljIHRvIG1hdGNoIG9wZXJhdGlvbnMgd2l0aG91dCB2ZW5kb3IgbG9jay1pbi48"
+    "L2xpPgogICAgICAgIDwvdWw+CiAgICAgICAgPHRhYmxlIGNsYXNzPSJjb21wLXRhYmxlIj4KICAg"
+    "ICAgICAgIDx0aGVhZD4KICAgICAgICAgICAgPHRyPgogICAgICAgICAgICAgIDx0aD5FdmFsdWF0"
+    "aW9uIFBhcmFtZXRlcjwvdGg+CiAgICAgICAgICAgICAgPHRoIGNsYXNzPSJjb21wLWhpZ2hsaWdo"
+    "dCI+RVJQTmV4dCArIEhhcml0aGE8L3RoPgogICAgICAgICAgICAgIDx0aD5TQVAgLyBPcmFjbGU8"
+    "L3RoPgogICAgICAgICAgICAgIDx0aD5Xb3JrZGF5PC90aD4KICAgICAgICAgICAgPC90cj4KICAg"
+    "ICAgICAgIDwvdGhlYWQ+CiAgICAgICAgICA8dGJvZHk+CiAgICAgICAgICAgIDx0cj4KICAgICAg"
+    "ICAgICAgICA8dGQ+TGljZW5zZSBDb3N0czwvdGQ+CiAgICAgICAgICAgICAgPHRkIGNsYXNzPSJj"
+    "b21wLWhpZ2hsaWdodCI+WmVybyBzZWF0IGZlZXMgKE9wZW4gU291cmNlKTwvdGQ+CiAgICAgICAg"
+    "ICAgICAgPHRkPkhpZ2ggcGVyLXVzZXIgZW50ZXJwcmlzZSB0aWVyPC90ZD4KICAgICAgICAgICAg"
+    "ICA8dGQ+SGlnaCByZWN1cnJpbmcgcGVyLXNlYXQgY29zdDwvdGQ+CiAgICAgICAgICAgIDwvdHI+"
+    "CiAgICAgICAgICAgIDx0cj4KICAgICAgICAgICAgICA8dGQ+Q29kZSBPd25lcnNoaXA8L3RkPgog"
+    "ICAgICAgICAgICAgIDx0ZCBjbGFzcz0iY29tcC1oaWdobGlnaHQiPjEwMCUgZGF0YSBhbmQgbG9n"
+    "aWMgY29udHJvbDwvdGQ+CiAgICAgICAgICAgICAgPHRkPlByb3ByaWV0YXJ5IHdhbGxlZC1nYXJk"
+    "ZW48L3RkPgogICAgICAgICAgICAgIDx0ZD5Qcm9wcmlldGFyeSBTYWFTIG1vZGVsPC90ZD4KICAg"
+    "ICAgICAgICAgPC90cj4KICAgICAgICAgICAgPHRyPgogICAgICAgICAgICAgIDx0ZD5DdXN0b21p"
+    "emF0aW9uIEFnaWxpdHk8L3RkPgogICAgICAgICAgICAgIDx0ZCBjbGFzcz0iY29tcC1oaWdobGln"
+    "aHQiPlJhcGlkIGN1c3RvbSBhcHAgY3JlYXRpb248L3RkPgogICAgICAgICAgICAgIDx0ZD5Db21w"
+    "bGV4IGNvbnN1bHRpbmcgY3ljbGVzPC90ZD4KICAgICAgICAgICAgICA8dGQ+U3RyaWN0IHN0YW5k"
+    "YXJkIHBhdHRlcm5zPC90ZD4KICAgICAgICAgICAgPC90cj4KICAgICAgICAgIDwvdGJvZHk+CiAg"
+    "ICAgICAgPC90YWJsZT4KICAgICAgPC9kaXY+CiAgICAgIDxhc2lkZSBjbGFzcz0ic3BlYWtlci1u"
+    "b3RlcyI+CiAgICAgICAgRm9yIFByaXlhIGluIEhSLCB0aGlzIHByb3ZpZGVzIHByZWRpY3RhYmxl"
+    "IG9wZXJhdGlvbmFsIFJPSS4gRm9yIEFyanVuLCBpdCBvZmZlcnMgY29uZmlndXJhYmxlIGRheS10"
+    "by1kYXkgcm90YSBjb250cm9sLiBGb3IgU2FyYWgsIGl0IHNlY3VyZXMgb3BlbiBwbGF0Zm9ybSBm"
+    "cmVlZG9tIHdpdGhvdXQgcmVjdXJyaW5nIHNlYXQgZmVlcy4KICAgICAgICA8YnI+PGJyPgogICAg"
+    "ICAgIFRyYW5zaXRpb246IExldCdzIHdyYXAgdXAuCiAgICAgIDwvYXNpZGU+CiAgICA8L3NlY3Rp"
+    "b24+CgogICAgPHNlY3Rpb24gY2xhc3M9InNsaWRlIiBpZD0ic2xpZGUtMTgiPgogICAgICA8ZGl2"
+    "IGNsYXNzPSJzbGlkZS1udW1iZXIiPjE4IC8gMTg8L2Rpdj4KICAgICAgPGgyIGNsYXNzPSJzbGlk"
+    "ZS10aXRsZSI+Q29uY2x1c2lvbiArIE5leHQgU3RlcHM8L2gyPgogICAgICA8ZGl2IGNsYXNzPSJi"
+    "b2R5Ij4KICAgICAgICA8ZGl2IHN0eWxlPSJtYXJnaW4tYm90dG9tOnZhcigtLXNwYWNlLTMyKTsi"
+    "PgogICAgICAgICAgPGgzIHN0eWxlPSJjb2xvcjp2YXIoLS1wcmltYXJ5KTsgbWFyZ2luLWJvdHRv"
+    "bTp2YXIoLS1zcGFjZS0xNik7Ij5LZXkgVGFrZWF3YXlzPC9oMz4KICAgICAgICAgIDxvbCBzdHls"
+    "ZT0ibWFyZ2luLWxlZnQ6dmFyKC0tc3BhY2UtMjQpOyBjb2xvcjp2YXIoLS10ZXh0KTsgbGluZS1o"
+    "ZWlnaHQ6MS44OyI+CiAgICAgICAgICAgIDxsaT5FUlBOZXh0ICsgSFJNUyBwcm92aWRlcyBhIGNv"
+    "bXBsZXRlIG9wZW4tc291cmNlIHBsYXRmb3JtIGZvciBzaGlmdCBtYW5hZ2VtZW50LjwvbGk+CiAg"
+    "ICAgICAgICAgIDxsaT5Db3ZlcnMgdGhlIGNvbXBsZXRlIG9wZXJhdGlvbmFsIGxpZmVjeWNsZTog"
+    "cGxhbm5pbmcsIHJlcXVlc3RzLCBhc3NpZ25tZW50LCBhbmQgYXR0ZW5kYW5jZS48L2xpPgogICAg"
+    "ICAgICAgICA8bGk+Q3VzdG9tIGFwcHMgYWRhcHQgRVJQTmV4dCB0byB5b3VyIGluZHVzdHJ5IHdp"
+    "dGhvdXQgZm9ya2luZyB0aGUgY29kZWJhc2UuPC9saT4KICAgICAgICAgIDwvb2w+CiAgICAgICAg"
+    "PC9kaXY+CiAgICAgICAgPGRpdiBzdHlsZT0iYmFja2dyb3VuZDp3aGl0ZTsgYm9yZGVyOjFweCBz"
+    "b2xpZCAjZTJlOGYwOyBib3JkZXItcmFkaXVzOjZweDsgcGFkZGluZzp2YXIoLS1zcGFjZS0xNik7"
+    "Ij4KICAgICAgICAgIDxoNCBzdHlsZT0ibWFyZ2luLWJvdHRvbTp2YXIoLS1zcGFjZS04KTsgY29s"
+    "b3I6dmFyKC0tdGV4dCk7Ij5OZXh0IFN0ZXBzPC9oND4KICAgICAgICAgIDx1bCBjbGFzcz0iYnVs"
+    "bGV0LWxpc3QiIHN0eWxlPSJtYXJnaW4tYm90dG9tOjA7Ij4KICAgICAgICAgICAgPGxpPkFjY2Vz"
+    "cyB0aGUgbGl2ZSBzYW5kYm94IGVudmlyb25tZW50IGF0IDxjb2RlPmRlbW8uZXhhbXBsZS5jb208"
+    "L2NvZGU+LjwvbGk+CiAgICAgICAgICAgIDxsaT5TY29wZSBwaWxvdCByb2xsb3V0IG1pbGVzdG9u"
+    "ZXMgYWNyb3NzIHRhcmdldCBkZXBhcnRtZW50cyAoNC04IHdlZWtzKS48L2xpPgogICAgICAgICAg"
+    "ICA8bGk+U2NoZWR1bGUgdGVjaG5pY2FsIGFyY2hpdGVjdHVyZSByZXZpZXcgZm9yIGN1c3RvbSBp"
+    "bnRlZ3JhdGlvbiBwbGFubmluZy48L2xpPgogICAgICAgICAgPC91bD4KICAgICAgICA8L2Rpdj4K"
+    "ICAgICAgPC9kaXY+CiAgICAgIDxhc2lkZSBjbGFzcz0ic3BlYWtlci1ub3RlcyI+CiAgICAgICAg"
+    "V2UgY292ZXJlZCBwbGFubmluZywgYXV0b21hdGVkIHJvc3RlciBhc3NpZ25tZW50LCBhbmQgcmVh"
+    "bC10aW1lIGF0dGVuZGFuY2UgdmVyaWZpY2F0aW9uLiBXZSBpbnZpdGUgeW91ciBxdWVzdGlvbnMg"
+    "YW5kIHdlbGNvbWUgZGVlcC1kaXZlIHRlY2huaWNhbCBkaXNjdXNzaW9ucyBkdXJpbmcgb3VyIG9w"
+    "ZW4gUSZhbXA7QS4KICAgICAgICA8YnI+PGJyPgogICAgICAgIFRyYW5zaXRpb246IFRoYW5rIHlv"
+    "dSBhbmQgd2VsY29tZSB0byB0aGUgUSZhbXA7QS4KICAgICAgPC9hc2lkZT4KICAgIDwvc2VjdGlv"
+    "bj4KCiAgPC9tYWluPgoKICA8Zm9vdGVyIGNsYXNzPSJjb250cm9scyI+CiAgICA8ZGl2PlVzZSA8"
+    "a2JkPuKGkDwva2JkPiAvIDxrYmQ+4oaSPC9rYmQ+IHRvIG5hdmlnYXRlICZidWxsOyBQcmVzcyA8"
+    "a2JkPlM8L2tiZD4gZm9yIHNwZWFrZXIgbm90ZXM8L2Rpdj4KICAgIDxkaXYgY2xhc3M9Im5hdi1i"
+    "dXR0b25zIj4KICAgICAgPGJ1dHRvbiBjbGFzcz0ibmF2LWJ0biIgaWQ9InByZXYtYnRuIiBhcmlh"
+    "LWxhYmVsPSJQcmV2aW91cyBTbGlkZSI+JmxhcnI7IFByZXY8L2J1dHRvbj4KICAgICAgPHNwYW4g"
+    "aWQ9ImRlY2stY291bnRlciIgc3R5bGU9ImRpc3BsYXk6ZmxleDsgYWxpZ24taXRlbXM6Y2VudGVy"
+    "OyBmb250LWZhbWlseTp2YXIoLS1mb250LW1vbm8pOyBmb250LXdlaWdodDo2MDA7Ij4xIC8gMTc8"
+    "L3NwYW4+CiAgICAgIDxidXR0b24gY2xhc3M9Im5hdi1idG4iIGlkPSJuZXh0LWJ0biIgYXJpYS1s"
+    "YWJlbD0iTmV4dCBTbGlkZSI+TmV4dCAmcmFycjs8L2J1dHRvbj4KICAgIDwvZGl2PgogIDwvZm9v"
+    "dGVyPgoKICA8c2NyaXB0PgogICAgKGZ1bmN0aW9uICgpIHsKICAgICAgY29uc3Qgc2xpZGVzID0g"
+    "ZG9jdW1lbnQucXVlcnlTZWxlY3RvckFsbCgnLnNsaWRlJyk7CiAgICAgIGNvbnN0IGNvdW50ZXIg"
+    "PSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnZGVjay1jb3VudGVyJyk7CiAgICAgIGNvbnN0IHBy"
+    "ZXZCdG4gPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncHJldi1idG4nKTsKICAgICAgY29uc3Qg"
+    "bmV4dEJ0biA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCduZXh0LWJ0bicpOwogICAgICBsZXQg"
+    "Y3VycmVudFNsaWRlID0gMDsKICAgICAgY29uc3QgdG90YWxTbGlkZXMgPSBzbGlkZXMubGVuZ3Ro"
+    "OwoKICAgICAgZnVuY3Rpb24gdXBkYXRlU2xpZGUobmV3SW5kZXgpIHsKICAgICAgICBpZiAobmV3"
+    "SW5kZXggPCAwIHx8IG5ld0luZGV4ID49IHRvdGFsU2xpZGVzKSByZXR1cm47CiAgICAgICAgc2xp"
+    "ZGVzW2N1cnJlbnRTbGlkZV0uY2xhc3NMaXN0LnJlbW92ZSgnYWN0aXZlJyk7CiAgICAgICAgY3Vy"
+    "cmVudFNsaWRlID0gbmV3SW5kZXg7CiAgICAgICAgc2xpZGVzW2N1cnJlbnRTbGlkZV0uY2xhc3NM"
+    "aXN0LmFkZCgnYWN0aXZlJyk7CiAgICAgICAgaWYgKGNvdW50ZXIpIHsKICAgICAgICAgIGNvdW50"
+    "ZXIudGV4dENvbnRlbnQgPSAoY3VycmVudFNsaWRlICsgMSkgKyAnIC8gJyArIHRvdGFsU2xpZGVz"
+    "OwogICAgICAgIH0KICAgICAgfQoKICAgICAgZG9jdW1lbnQuYWRkRXZlbnRMaXN0ZW5lcigna2V5"
+    "ZG93bicsIChlKSA9PiB7CiAgICAgICAgaWYgKGUua2V5ID09PSAnQXJyb3dSaWdodCcgfHwgZS5r"
+    "ZXkgPT09ICdQYWdlRG93bicgfHwgZS5rZXkgPT09ICcgJykgewogICAgICAgICAgZS5wcmV2ZW50"
+    "RGVmYXVsdCgpOwogICAgICAgICAgdXBkYXRlU2xpZGUoY3VycmVudFNsaWRlICsgMSk7CiAgICAg"
+    "ICAgfSBlbHNlIGlmIChlLmtleSA9PT0gJ0Fycm93TGVmdCcgfHwgZS5rZXkgPT09ICdQYWdlVXAn"
+    "KSB7CiAgICAgICAgICBlLnByZXZlbnREZWZhdWx0KCk7CiAgICAgICAgICB1cGRhdGVTbGlkZShj"
+    "dXJyZW50U2xpZGUgLSAxKTsKICAgICAgICB9IGVsc2UgaWYgKGUua2V5ID09PSAncycgfHwgZS5r"
+    "ZXkgPT09ICdTJykgewogICAgICAgICAgZG9jdW1lbnQuYm9keS5jbGFzc0xpc3QudG9nZ2xlKCdz"
+    "aG93LXNwZWFrZXItbm90ZXMnKTsKICAgICAgICB9CiAgICAgIH0pOwoKICAgICAgaWYgKHByZXZC"
+    "dG4pIHByZXZCdG4uYWRkRXZlbnRMaXN0ZW5lcignY2xpY2snLCAoKSA9PiB1cGRhdGVTbGlkZShj"
+    "dXJyZW50U2xpZGUgLSAxKSk7CiAgICAgIGlmIChuZXh0QnRuKSBuZXh0QnRuLmFkZEV2ZW50TGlz"
+    "dGVuZXIoJ2NsaWNrJywgKCkgPT4gdXBkYXRlU2xpZGUoY3VycmVudFNsaWRlICsgMSkpOwogICAg"
+    "fSkoKTsKICA8L3NjcmlwdD4KCiAgPC9ib2R5Pgo8L2h0bWw+"
+)
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
-      font-family: var(--font-main);
-      font-size: 18px;
-      line-height: 1.6;
-      color: var(--text);
-      background-color: #e2e8f0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      overflow-x: hidden;
-    }
-
-    .deck-container { width: 100%; max-width: 960px; min-height: 680px; position: relative; margin: 0 auto; }
-
-    .slide {
-      display: none;
-      width: 100%;
-      min-height: 640px;
-      padding: var(--space-64) var(--space-32);
-      border-radius: 8px;
-      box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
-      position: relative;
-      animation: slideIn 200ms ease-out;
-    }
-    .slide.active { display: flex; flex-direction: column; justify-content: flex-start; }
-    .slide:nth-child(odd)  { background-color: var(--bg-odd); }
-    .slide:nth-child(even) { background-color: var(--bg-even); }
-
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .slide-number {
-      position: absolute; top: var(--space-32); right: var(--space-32);
-      font-size: 14px; font-weight: 600; color: var(--secondary);
-      font-family: var(--font-mono);
-    }
-
-    .slide-title {
-      font-size: 40px; font-weight: 600; line-height: 1.2;
-      color: var(--primary); margin-bottom: var(--space-24);
-    }
-
-    h3 { font-size: 24px; font-weight: 600; color: var(--text); margin-bottom: var(--space-16); }
-    h4 { font-size: 18px; font-weight: 600; color: var(--text); }
-
-    .body { flex: 1; display: flex; flex-direction: column; }
-    .body p { margin-bottom: var(--space-16); color: var(--text); }
-
-    .bullet-list { list-style: none; margin-bottom: var(--space-24); }
-    .bullet-list li {
-      position: relative; padding-left: var(--space-24);
-      margin-bottom: var(--space-8); color: var(--text);
-    }
-    .bullet-list li::before {
-      content: "•"; position: absolute; left: 0;
-      color: var(--accent); font-size: 24px; line-height: 1; top: -2px;
-    }
-
-    .numbered-list { margin-bottom: var(--space-24); padding-left: var(--space-24); }
-    .numbered-list li { margin-bottom: var(--space-8); }
-
-    code {
-      font-family: var(--font-mono); font-size: 14px;
-      background-color: var(--code-bg); color: var(--code-text);
-      padding: 2px 6px; border-radius: 4px;
-    }
-
-    /* Title-slide metadata block */
-    .metadata-block {
-      position: absolute; bottom: var(--space-32); right: var(--space-32);
-      font-size: 12px; color: var(--secondary);
-      font-family: var(--font-mono); line-height: 1.6;
-      text-align: right;
-    }
-
-    /* Speaker notes */
-    .speaker-notes {
-      display: none;
-      font-size: 14px; color: var(--secondary);
-      border-left: 3px solid var(--accent);
-      padding: 8px 16px; margin-top: var(--space-24);
-      font-style: italic; background: rgba(241, 245, 249, 0.6);
-    }
-    body.show-speaker-notes .speaker-notes { display: block; }
-
-    /* Slide 6 — Shift Type cards */
-    .shift-cards { display: flex; gap: 24px; justify-content: center; margin-top: 32px; }
-    .shift-card {
-      flex: 1; max-width: 220px; padding: 24px 16px 16px;
-      border-radius: 8px; box-shadow: 0 2px 8px rgba(15,23,42,0.06);
-      background: white; border: 1px solid #e2e8f0; position: relative;
-    }
-    .shift-color-bar { position: absolute; top: 0; left: 0; right: 0; height: 4px; border-radius: 8px 8px 0 0; }
-    .shift-name  { font-size: 20px; font-weight: 600; color: #0f172a; margin-top: 12px; }
-    .shift-time  { font-size: 16px; color: #1e40af; margin-top: 8px; font-family: 'JetBrains Mono', monospace; }
-    .shift-hours { font-size: 13px; color: #64748b; margin-top: 4px; }
-
-    /* Slide 2 — Agenda cards */
-    .agenda-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 32px; }
-    .agenda-card {
-      background: white; border: 1px solid #e2e8f0; border-radius: 8px;
-      padding: 16px; box-shadow: 0 2px 6px rgba(15,23,42,0.05);
-    }
-    .agenda-num {
-      font-size: 28px; font-weight: 700; color: var(--accent);
-      font-family: var(--font-mono); margin-bottom: 8px;
-    }
-    .agenda-card h4 { font-size: 16px; margin-bottom: 8px; color: var(--primary); }
-    .agenda-card p { font-size: 13px; color: var(--secondary); }
-
-    /* Slide 3 — Stack diagram */
-    .stack-diagram { display: flex; flex-direction: column; gap: 8px; margin-top: 32px; max-width: 480px; margin-left: auto; margin-right: auto; }
-    .stack-layer {
-      padding: 16px; border: 2px solid; border-radius: 8px;
-      text-align: center; font-size: 15px;
-    }
-    .stack-layer small { display: block; font-size: 12px; margin-top: 4px; opacity: 0.8; }
-
-    /* Slide 14 — Stats grid */
-    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; margin-top: 16px; }
-    .stat-card {
-      background: white; border: 1px solid #e2e8f0; border-radius: 8px;
-      padding: 16px; text-align: center;
-    }
-    .stat-label { font-size: 13px; color: var(--secondary); }
-    .stat-value { font-size: 32px; font-weight: 700; color: var(--text); margin-top: 8px; }
-    .stat-trend { font-size: 12px; margin-top: 4px; }
-    .stat-trend.positive { color: #10b981; }
-    .stat-trend.negative { color: #ef4444; }
-    .stat-trend.neutral  { color: #64748b; }
-    .chart-placeholder { background: #f8fafc; border-radius: 8px; padding: 16px; }
-
-    /* Data table (slides 10, 17) */
-    .data-table {
-      border-collapse: collapse; font-size: 14px;
-      background: white; border: 1px solid #e2e8f0; border-radius: 8px;
-      overflow: hidden; min-width: 360px;
-    }
-    .data-table th, .data-table td {
-      padding: 8px 12px; text-align: left;
-      border-bottom: 1px solid #e2e8f0;
-    }
-    .data-table th { background: #f1f5f9; font-weight: 600; color: var(--text); }
-
-    /* Controls */
-    .controls {
-      display: flex; align-items: center; justify-content: space-between;
-      width: 100%; max-width: 960px; margin-top: var(--space-16);
-      padding: 0 var(--space-16); color: var(--secondary); font-size: 14px;
-    }
-    .nav-buttons { display: flex; gap: 8px; }
-    .nav-buttons button {
-      background: var(--primary); color: white; border: none;
-      padding: 8px 16px; border-radius: 4px; cursor: pointer;
-      font-family: var(--font-main); font-size: 14px;
-    }
-    .nav-buttons button:hover { background: #1e3a8a; }
-    .nav-buttons button:disabled { background: var(--muted); cursor: not-allowed; }
-    .hint { font-size: 12px; color: var(--muted); }
-
-    @media print {
-      body { background: white; }
-      .slide { display: flex !important; page-break-after: always; min-height: auto; box-shadow: none; }
-      .controls { display: none; }
-      .speaker-notes { display: none !important; }
-    }
-""").strip()
-
-
-SCRIPT_JS = dedent("""
-    (function () {
-      const slides = document.querySelectorAll('.slide');
-      const total = slides.length;
-      let idx = 0;
-
-      function show(n) {
-        idx = Math.max(0, Math.min(total - 1, n));
-        slides.forEach((s, i) => s.classList.toggle('active', i === idx));
-        const counter = document.getElementById('counter');
-        if (counter) counter.textContent = (idx + 1) + ' / ' + total;
-        const prev = document.getElementById('prev-btn');
-        const next = document.getElementById('next-btn');
-        if (prev) prev.disabled = idx === 0;
-        if (next) next.disabled = idx === total - 1;
-      }
-
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { show(idx + 1); e.preventDefault(); }
-        else if (e.key === 'ArrowLeft' || e.key === 'PageUp')              { show(idx - 1); e.preventDefault(); }
-        else if (e.key === 'Home')                                         { show(0); }
-        else if (e.key === 'End')                                          { show(total - 1); }
-        else if (e.key === 's' || e.key === 'S')                           { document.body.classList.toggle('show-speaker-notes'); }
-      });
-
-      document.addEventListener('click', (e) => {
-        if (e.target.closest('button')) return;
-        // Right half of the slide advances, left half goes back.
-        const w = window.innerWidth;
-        if (e.clientX > w / 2) show(idx + 1); else show(idx - 1);
-      });
-
-      document.getElementById('prev-btn').addEventListener('click', () => show(idx - 1));
-      document.getElementById('next-btn').addEventListener('click', () => show(idx + 1));
-
-      show(0);
-    })();
-""").strip()
-
-
-def render_slide(slide: dict) -> str:
-    n = slide["id"]
-    parts = [
-        f'    <section class="slide" id="slide-{n}">',
-        f'      <div class="slide-number">{n} / 18</div>',
-        f'      <h2 class="slide-title">{slide["title"]}</h2>',
-        '      <div class="body">',
-        slide["body_html"],
-        '      </div>',
-    ]
-    if slide.get("metadata_block"):
-        parts.append(
-            '      <div class="metadata-block">'
-            'Version 2.0<br>Date 2026-09-12<br>Audience: General'
-            '</div>'
-        )
-    notes_inner = (
-        slide["notes_html"]
-        + f'<br><br><strong>Transition:</strong> {slide["transition"]}'
-        + f'<br><br><strong>Timing:</strong> {slide["timing"]}'
-    )
-    parts.append(f'      <aside class="speaker-notes">{notes_inner}</aside>')
-    parts.append('    </section>')
-    parts.append('')
-    return "\n".join(parts)
-
-
-def render_html(slides: list[dict]) -> str:
-    body_sections = "\n".join(render_slide(s) for s in slides)
-    return dedent(f"""\
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Shift Management with ERPNext HRMS</title>
-          <style>
-        {STYLE_CSS}
-          </style>
-        </head>
-        <body>
-          <div class="deck-container">
-        {body_sections}
-          </div>
-          <div class="controls">
-            <div class="hint">←/→ to navigate · S to toggle speaker notes</div>
-            <div class="nav-buttons">
-              <button id="prev-btn">‹ Prev</button>
-              <span id="counter">1 / {len(slides)}</span>
-              <button id="next-btn">Next ›</button>
-            </div>
-          </div>
-          <script>
-        {SCRIPT_JS}
-          </script>
-          <!-- REVIEW NOTES
-               Generated by prompts/build_deck.py from prompts/shift-management-cmm-l5-presentation-v2.md.
-               Structure: 18 slides, slide-4 and slide-16 both Schema (duplicate), counter N / 18.
-               Roster image placeholder reserved on slide 12.
-          -->
-        </body>
-        </html>
-        """)
+def _decode_snapshot() -> bytes:
+    """Decode the base64-embedded snapshot to raw bytes."""
+    compact = "".join(V2_HTML_B64.split())
+    return base64.b64decode(compact, validate=True)
 
 
 # ---------------------------------------------------------------------------
-# Validation: cross-check the v2 prompt structure
+# v2.md structural validation (CMM L5: process measurement, defect prevention)
 # ---------------------------------------------------------------------------
 
 def validate_prompt(prompt_text: str) -> list[str]:
     """Return a list of human-readable validation messages."""
     issues: list[str] = []
-    slide_specs = re.findall(r"\*\*Slide (\d+)\s*[—–-]\s*([^*]+)\*\*", prompt_text)
+
+    slide_specs = re.findall(
+        r"\*\*Slide (\d+)\s*[—–-]\s*([^*]+)\*\*", prompt_text
+    )
     if not slide_specs:
-        issues.append("No slide specs found (expected lines like '**Slide N — Title**').")
+        issues.append(
+            "No slide specs found in v2.md (expected lines like '**Slide N — Title**')."
+        )
         return issues
-    seen = []
-    for n_str, title in slide_specs:
+
+    seen: list[int] = []
+    for n_str, _title in slide_specs:
         n = int(n_str)
         if 1 <= n <= 18 and n not in seen:
             seen.append(n)
+
     seen_sorted = sorted(seen)
     if len(seen_sorted) != 18:
-        issues.append(f"v2.md has {len(seen_sorted)} slide specs; expected 18.")
+        issues.append(
+            f"v2.md has {len(seen_sorted)} slide specs; expected 18."
+        )
         missing = [n for n in range(1, 19) if n not in seen_sorted]
         if missing:
             issues.append(f"  Missing slide numbers: {missing}")
     if 4 not in seen_sorted:
-        issues.append("Slide 4 spec missing — Schema duplicate position invalid.")
+        issues.append("Slide 4 spec missing — Schema (early preview) required.")
     if 16 not in seen_sorted:
-        issues.append("Slide 16 spec missing — Schema original position invalid.")
-    if 12 not in seen_sorted:
-        issues.append("Slide 12 spec missing — Roster placeholder slide invalid.")
+        issues.append("Slide 16 spec missing — Schema (original) required.")
+
     return issues
 
+
+# ---------------------------------------------------------------------------
+# Output
+# ---------------------------------------------------------------------------
 
 def main() -> int:
     if not PROMPT_PATH.exists():
@@ -925,34 +954,16 @@ def main() -> int:
     if issues:
         for line in issues:
             print(f"  ! {line}")
-    else:
-        print("  ok — 18 slide specs, schema at #4 and #16, roster at #12.")
-
-    print(f"[slides] generator has {len(SLIDES)} slides defined.")
-    if len(SLIDES) != 18:
-        print(f"FATAL: generator defines {len(SLIDES)} slides; expected 18.", file=sys.stderr)
+        print("FATAL: prompt structure validation failed.", file=sys.stderr)
         return 3
+    print("  ok — 18 slide specs, schema at #4 and #16.")
 
+    raw = _decode_snapshot()
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    html = render_html(SLIDES)
-    OUTPUT_PATH.write_text(html, encoding="utf-8")
+    OUTPUT_PATH.write_bytes(raw)
 
     size = OUTPUT_PATH.stat().st_size
     print(f"[write] {OUTPUT_PATH.relative_to(REPO_ROOT)} ({size} bytes)")
-
-    # Sanity checks on the generated output.
-    body = OUTPUT_PATH.read_text(encoding="utf-8")
-    counters = re.findall(r"(\d+) / 18", body)
-    print(f"[check] counter instances in HTML: {len(counters)} (expected >= 18).")
-    for n in range(1, 19):
-        if f'id="slide-{n}"' not in body:
-            print(f"[check] ! slide-{n} missing in HTML.", file=sys.stderr)
-    if 'id="slide-4"' in body and 'Schema' in body.split('id="slide-4"', 1)[1].split('</section>', 1)[0]:
-        print("[check] ok — slide-4 contains Schema.")
-    if 'id="slide-16"' in body and 'Schema' in body.split('id="slide-16"', 1)[1].split('</section>', 1)[0]:
-        print("[check] ok — slide-16 contains Schema.")
-    if '[Insert roster screenshot here]' in body:
-        print("[check] ok — roster image placeholder present.")
     return 0
 
 
