@@ -1,9 +1,8 @@
-## Leave Management with ERPNext HRMS — Deck Prompt (v1)
+## Leave Management with ERPNext HRMS — Deck Prompt (v2)
 
-> **Status:** Pinned canonical spec · **Version:** 1.0 · **Date:** 2026-09-14 · **Author:** Venkat Narasimha
+> **Status:** Active spec · **Version:** 2.0 · **Date:** 2026-09-14 · **Author:** Venkat Narasimha
 > **Audience:** Anyone generating or auditing this presentation deck (LLM agent, technical writer, reviewer).
 > **Output:** `docs/handbook/03-client/leave-management-presentation.html` (single self-contained HTML).
-> **Reference:** https://docs.frappe.io/hr/leaves
 
 ---
 
@@ -26,9 +25,15 @@ CMM L5 means:
 
 ## 3. Goal
 
-Produce an **18-slide** self-contained HTML presentation explaining leave management in ERPNext HRMS. Educational, general audience, light theme, professional + minimal + clean.
+Produce a **22-slide** self-contained HTML presentation explaining leave management in ERPNext HRMS. Educational, general audience, light theme, professional + minimal + clean.
 
-**Structural difference vs first-time deck:** the Schema: Leave Entities slide appears **twice** — early (slide 4) and at its original position (slide 16). The early copy previews the architecture so the audience has a mental model before they see the entities in depth later.
+**Structural choices (v2.0):**
+
+- Leave is the most entity-rich module of the six (11+ concepts), so 22 slides (vs 16–18 for org/attendance/lifecycle) reflects actual content density.
+- 3-layer schema: Config (top) → Policy (middle) → Action (bottom), with Employee + Leave Approver at center.
+- Slide 12 = inline SVG leave approval workflow (Employee → Leave Approver → Approved/Rejected branch).
+- "Why choose" framing absorbed into conclusion slide (matches attendance v2.1 + org-mgmt v2.0 + lifecycle v2.0 pattern).
+- Schema full spec at slide 21 (immediately before Conclusion).
 
 ## 4. Time Budget
 
@@ -39,8 +44,8 @@ Produce an **18-slide** self-contained HTML presentation explaining leave manage
 ## 5. Output Specs
 
 - **Format:** single `.html` file, fully self-contained (inline CSS, no external assets, no JavaScript libraries).
-- **Slides:** exactly **18**, each `<section class="slide" id="slide-N">`.
-- **Counter:** every slide shows `N / 18` (not 17, not 19 — must match exactly).
+- **Slides:** exactly **22**, each `<section class="slide" id="slide-N">`.
+- **Counter:** every slide shows `N / 22` (not 21, not 23 — must match exactly).
 - **Navigation:** keyboard arrows (←/→) + click handlers (Prev/Next buttons + click-half slide).
 - **Speaker notes:** hidden by default, toggle with `S` key. Body class `show-speaker-notes`.
 - **Print:** include `@media print { ... }` for clean PDF export.
@@ -54,11 +59,11 @@ Produce an **18-slide** self-contained HTML presentation explaining leave manage
 
 | Token | Hex | Use |
 |---|---|---|
-| `--primary` | `#1e40af` | Deep blue (titles, schedule layer) |
-| `--secondary` | `#64748b` | Slate (speaker notes, tracking layer) |
-| `--accent` | `#0ea5e9` | Sky (bullets, execution layer) |
+| `--primary` | `#1e40af` | Deep blue (titles, config layer) |
+| `--secondary` | `#64748b` | Slate (speaker notes, action layer) |
+| `--accent` | `#0ea5e9` | Sky (policy layer) |
 | `--text` | `#0f172a` | Near-black (body text) |
-| `--muted` | `#94a3b8` | Muted (slide numbers, borders) |
+| `--muted` | `#94a3b8` | Muted (boundaries, dividers) |
 | `--bg-odd` | `#ffffff` | Odd slides background |
 | `--bg-even` | `#f8fafc` | Even slides background |
 | `--code-bg` | `#f1f5f9` | Inline code background |
@@ -80,27 +85,23 @@ Produce an **18-slide** self-contained HTML presentation explaining leave manage
 
 - Slide-in: 200ms ease-out, `translateY(8px) → 0` + `opacity: 0 → 1`.
 
-## 7. Slide Template (apply uniformly to all 18 slides)
+## 7. Slide Template (apply uniformly to all 22 slides)
 
 Every slide MUST include:
 
-1. `<div class="slide-number">N / 18</div>`
+1. `<div class="slide-number">N / 22</div>`
 2. `<h2 class="slide-title">…</h2>`
 3. `<div class="body">… main content (≤100 words), one focal visual …</div>`
 4. `<aside class="speaker-notes">…</aside>` — hidden by default, toggle with `S` key.
 5. **Transition note** (1 sentence) — included inside speaker notes.
 
-## 8. Slide-by-Slide Specs (18 slides) — pin to current v1.html
-
-> The exact text of every slide, visual, and speaker-notes block is locked
-> to the canonical v1.html. Regenerators MUST emit byte-for-byte content
-> (use the embedded snapshot in `build_deck.py`).
+## 8. Slide-by-Slide Specs (22 slides)
 
 ### Intro (slides 1–3)
 
 **Slide 1 — Leave Management with ERPNext HRMS** (30s) — Title slide
-- Subtitle: "A practical guide to policies, allocation, applications & compliance"
-- Metadata block (bottom-right): Version 1.0 · Date 2026-09-14 · Audience General (HR, Operations, Evaluators).
+- Subtitle: "Configurable leave policies, approvals, and audit trails for hospital operations"
+- Metadata block (bottom-right): Version 2.0 · Date 2026-09-14 · Audience General (HR, Operations, Evaluators).
 - Layout: `title-wrapper` flex column, `metadata-block` bottom-right.
 - Transition: "Let's start with what we are covering today."
 
@@ -110,100 +111,139 @@ Every slide MUST include:
 - Transition: "First, a quick foundation."
 
 **Slide 3 — ERPNext + HRMS Stack** (2 min)
-- 4 bullets: open-source Frappe/ERPNext / ~12 business domains / HRMS module with full Leave suite / 5,000+ contributors.
+- 4 bullets: open-source Frappe/ERPNext / ~12 business domains / HRMS module / 5,000+ contributors.
 - Visual: layered stack diagram (HRMS top, ERPNext mid, Frappe bottom).
 - Transition: "Now let's look at the data model — entities and their relationships."
 
-### Early Schema Preview (slide 4 — DUPLICATE of slide 16)
+### Early Schema Preview (slide 4 — clean preview, no labels)
 
 **Slide 4 — Schema: Leave Entities** (1.5 min) — EARLY PREVIEW
-- Inline SVG entity-relationship diagram (740×320 viewBox; see §13).
-- Above: `<strong>Architecture:</strong> How leave management entities relate across layers.`
-- Below: "The relational model connects policy, allocation, and application to generate an immutable leave ledger."
-- Speaker notes: "Employee sits at the center. … Brief mention only. Recap: Schema shown earlier in the deck."
+- Inline SVG entity-relationship diagram (740×320 viewBox; see §13 § Schema Flowchart § Slide 4 variant).
+- Above: `<strong>Architecture:</strong> How leave entities relate across config, policy, and action layers.`
+- Below: "The relational model layers configuration (types + periods + holidays), policy (bundles + assignments + allocations), and action (applications + ledger entries) around the Employee master."
+- Speaker notes: "Three layers: Config at top (Holiday List, Leave Type, Leave Period), Policy in the middle (Leave Policy, Policy Assignment, Allocation), Action at the bottom (Leave Application, Leave Ledger Entry). Employee at the center with Leave Approver as a connector to Employee. Brief mention only. Recap: Schema shown earlier in the deck."
 - Transition: "Now that you've seen the entities — why leave management matters."
 
-### Leave Operations (slides 5–14)
+### Leave Management Operations (slides 5–17)
 
 **Slide 5 — Why leave management matters** (2 min)
-- 4 bullets: manual registers create disputes / multiple leave types per policy / audit trail mandatory for compliance / accrual + encashment complexity.
-- Visual: SVG ledger with strikethrough rows vs clean ERPNext rows (before/after contrast).
-- Transition: "Let's start with the foundation: Holiday List."
+- 3 bullets: manual registers create disputes / multiple leave types per policy / audit trail mandatory for compliance / accrual + encashment add complexity.
+- Visual: bar chart SVG showing absence dispute resolution cases per year (descending when on a leave system).
+- Transition: "Let's start with the foundation: the holiday calendar."
 
-**Slide 6 — Holiday List** (2 min) — GOLD STANDARD (see §11 for CSS)
-- Lead paragraph: "A Holiday List is the organisation-wide calendar that anchors every leave calculation. …"
-- Visual: monthly calendar grid (Mon–Sun, 5 rows) with 2 highlighted holidays and 1 weekend block.
-- Transition: "Each kind of leave has its own rules — that's Leave Type."
+**Slide 6 — Holiday List (calendar foundation)** (2 min)
+- Lead paragraph: "A Holiday List is the calendar of organizational + statutory holidays for a Company. It's the foundation for leave date calculations and Attendance 'On Leave' auto-creation."
+- 3 bullets: org-level + statutory holidays / date range (from_date, to_date) / referenced by Attendance + Leave Module.
+- Visual: calendar grid SVG (3 months × 4 weeks) with holidays marked.
+- Transition: "Holiday Lists set the context — next, the kinds of leave available."
 
-**Slide 7 — Leave Type** (2 min)
-- 3 bullets: kinds of leave (Sick / Casual / Privilege / Earned / LWP) / per-type allocation rules / carry-forward + encashable + pro-rata flags.
-- Visual: 4 leave-type cards (Sick 6/yr · Casual 12/yr · Earned 24/yr carry-forward · LWP 0).
-- Transition: "Holidays and types fit inside an annual cycle — Leave Period."
+**Slide 7 — Leave Type (kinds of leave + rules)** (2 min)
+- Lead paragraph: "A Leave Type defines a kind of leave (Sick, Casual, Privilege, Earned, Compensatory, etc.) with its own rules: paid/unpaid, carry-forward, encashable, max continuous days."
+- 3 bullets: rules-based config (is_paid, carry_forward, encashable, max_continuous_days) / earned vs non-earned categories / max_days_allowed.
+- Visual: 4 type card mockups (Sick 6/yr, Casual 12/yr, Earned 24/yr + carry, Compensatory).
+- Transition: "Types need a cycle they live in — Leave Period."
 
-**Slide 8 — Leave Period** (2 min)
-- 3 bullets: annual cycle definition (e.g., 2025-04-01 → 2026-03-31) / grace-period rollover / multiple periods per company.
-- Visual: horizontal timeline SVG with `From` and `To` markers plus a grace window.
-- Transition: "Types bundle into a policy — Leave Policy."
+**Slide 8 — Leave Period (annual cycle)** (2 min)
+- Lead paragraph: "A Leave Period bounds the annual leave cycle (from_date to to_date). Allocations and applications are scoped to a period."
+- 3 bullets: from_date / to_date / period name (e.g., "FY 2025–2026").
+- Visual: timeline SVG (Jan 2026 — Dec 2026) with cycle indicator.
+- Transition: "Types bundle into policies — Leave Policy."
 
-**Slide 9 — Leave Policy** (2 min)
-- 3 bullets: bundle of Leave Types with allocation rules / assignable to employee grades / versioned + auditable.
-- Visual: `<table class="policy-table">` with policy name + leave types + max carry-forward columns.
-- Transition: "Policies are bound to people — Leave Policy Assignment."
+**Slide 9 — Leave Policy (bundle of Leave Types + allocation rules)** (2 min)
+- Lead paragraph: "A Leave Policy bundles multiple Leave Types with allocation rules. One Leave Policy per role-group is a common pattern (e.g., 'Staff Nurse Policy' = 12 CL + 6 SL + 24 EL)."
+- 3 bullets: policy name / included Leave Types with allocation per type / assigned via Leave Policy Assignment.
+- Visual: policy card mockup (Staff Nurse Policy: Casual 12, Sick 6, Earned 24, Comp-off 5).
+- Transition: "Policies need to bind to employees — Leave Policy Assignment."
 
-**Slide 10 — Leave Policy Assignment + Leave Allocation** (2 min)
-- 3 bullets: per-employee binding (Leave Policy Assignment) / auto-creates Leave Allocation / pro-rata + back-dated allocations.
-- Visual: two-column diagram (Assignment on left, Allocation on right) connected by an arrow.
-- Transition: "Employees consume the allocation — Leave Application."
+**Slide 10 — Leave Policy Assignment (per-employee binding)** (2 min)
+- Lead paragraph: "A Leave Policy Assignment binds a specific Leave Policy + Leave Period to a specific Employee. One Assignment per (employee, period) pair typically."
+- 3 bullets: employee + policy + period / effective_date / optionally role/grade filter.
+- Visual: assignment form mockup (Employee A → Staff Nurse Policy → FY 2025-2026).
+- Transition: "Assignment drives allocation — Leave Allocation."
 
-**Slide 11 — Leave Application** (2 min)
-- 3 bullets: employee self-service request / dates + half-day + leave type / approval workflow + balance check.
-- Visual: `<table class="app-table">` with employee / leave type / from / to / days / status badge.
-- Transition: "How does approval actually flow? Let's see the workflow."
+**Slide 11 — Leave Allocation (granted days per type)** (2 min)
+- Lead paragraph: "A Leave Allocation is the granted count of leaves for an Employee per Leave Type per Leave Period. Auto-generated when Leave Policy Assignment is created."
+- 3 bullets: employee + leave_type + leave_period / total_leaves_allocated / supports carry-forward from prior period.
+- Visual: allocation breakdown bar chart (Casual 12 + Sick 6 + Earned 24 = 42 leaves/year).
+- Transition: "Here's the workflow when an employee actually requests leave."
 
-**Slide 12 — Leave Workflow & Approval** (2 min) — IMAGE PLACEHOLDER (see §12)
-- Lead paragraph + 2 bullets (Leave Approver + multi-tier) / (auto-balance deduction on approve).
-- Visual: `.image-placeholder` div with "[Insert leave approval workflow diagram here]" text.
-- Transition: "What about the unusual cases? Edge cases next."
+**Slide 12 — Leave Approval Workflow (inline SVG)** (2 min)
+- Lead paragraph: "When an employee submits a Leave Application, it routes to the Employee.leave_approver (a single User). Approval flips status to 'Approved' and posts to the Leave Ledger Entry."
+- Inline SVG flowchart: Employee → [Submit Leave Application] → Leave Approver → {Approved → posts to Ledger / Rejected → notifies Employee}.
+- 4 boxes: Employee (left), Leave Application (middle-left), Leave Approver (middle-right), Result branch (Approved / Rejected).
+- 3 arrows with labels: "submits", "approved via", "posts" / "notifies".
+- Visual: `<div class="approval-flow">` with 4 boxes arranged left-to-right.
+- Transition: "The application itself — how it's structured."
 
-**Slide 13 — Edge Cases** (2 min)
-- 4 bullets: Compensatory Leave Request (extra-work → leave credit) / Leave Encashment (cash-out balance at year-end) / Leave Block List (forbid leave during peak dates) / Leave Ledger Entry (append-only audit trail).
-- Visual: 2×2 card grid with each edge case summarised.
-- Transition: "All this data feeds into Reports."
+**Slide 13 — Leave Application (employee request)** (2 min)
+- Lead paragraph: "A Leave Application is the per-request record. It captures employee + leave_type + from_date + to_date + reason + half-day flag + supporting attachment."
+- 3 bullets: per-request lifecycle (Open / Approved / Rejected / Cancelled) / half-day support / attachment for medical certificates.
+- Visual: form mockup (Employee A, Sick Leave, 2025-12-01 → 2025-12-03, Half Day: No, Reason: Flu).
+- Transition: "Bulk allocations via policy — but sometimes you need a control panel."
 
-**Slide 14 — Reports & Analytics** (2 min)
-- 4 stat cards: Leave Balance Sheets 0 manual calc, Pending Applications 4, Encashment Liability ₹0, Avg Approval Time 1.8 days.
-- Visual: `<svg>` bar chart inside `.chart-placeholder`, peak leave-month marker.
-- Transition: "What if ERPNext out-of-box doesn't fit? Custom apps."
+**Slide 14 — Leave Control Panel (bulk actions)** (2 min)
+- Lead paragraph: "The Leave Control Panel is an admin tool for bulk-allocating leave across multiple employees at once, applying a policy to a department or grade in one action."
+- 3 bullets: bulk assign by department / grade / location / live balance preview.
+- Visual: control panel mockup (Department filter + Policy selector + Preview table + Apply button).
+- Transition: "What if OT hours were converted to leave — Compensatory Leave Request."
 
-### Custom App + Schema (slides 15–16)
+**Slide 15 — Compensatory Leave Request** (2 min)
+- Lead paragraph: "A Compensatory Leave Request converts extra hours worked (e.g., overtime, holiday duty) into leave credit. Approval posts to Leave Allocation as additional balance."
+- 3 bullets: source: overtime / holiday duty / manual / approver workflow / addition to balance on approval.
+- Visual: form mockup (Employee A, OT for 2025-11-15, 4 hours, Requesting 0.5 day Comp-off).
+- Transition: "Exit side of leave — encashment."
 
-**Slide 15 — Extending ERPNext with Custom Apps** (2 min)
-- 3 bullets: layer cleanly above core / add custom fields + DocTypes + workflows / deploy via Git + `bench`.
+**Slide 16 — Leave Encashment** (2 min)
+- Lead paragraph: "Leave Encashment converts unused leave balance to cash at exit (or optionally during employment, per Leave Type rules). Pairs with Employee Separation."
+- 3 bullets: encashment_date + leave_type + amount / payout via Salary Slip or Additional Salary / tied to Leave Ledger Entry.
+- Visual: encashment form mockup (Employee A, Earned Leave, 10 days unutilized, Payout: 10 × daily rate).
+- Transition: "Date-blocked leaves — Leave Block List."
+
+**Slide 17 — Leave Block List** (2 min)
+- Lead paragraph: "A Leave Block List prevents leave applications on specified dates (e.g., audit week, statutory event, busy season). Overlap with Holiday List gives full coverage."
+- 3 bullets: block_dates field (date ranges) / applies to all or specific Leave Types / overlap with Holiday List.
+- Visual: calendar SVG with blocked dates shaded red.
+- Transition: "All this data leaves an audit trail — Leave Ledger Entry."
+
+**Slide 18 — Leave Ledger Entry (append-only audit trail)** (2 min)
+- Lead paragraph: "A Leave Ledger Entry is an append-only audit record of every leave movement: allocation, application, encashment. The source-of-truth for balance calculation."
+- 3 bullets: append-only / per (employee, leave_type, period) / transaction_type: Allocation / Application / Encashment.
+- Visual: ledger table mockup (Date / Type / Ref / Debit / Credit / Balance for one employee).
+- Transition: "What does the data give us — Reports & Analytics."
+
+### Custom App + Schema + Conclusion (slides 19–22)
+
+**Slide 19 — Reports & Analytics** (2 min)
+- 3 cards: Leave Balance (built-in, per employee) / Leave Ledger Audit (custom) / Leave Utilization by Department (custom).
+- Visual: bar chart SVG showing utilization by department (Nurses, Doctors, Admin, Support).
+- Transition: "What if out-of-box doesn't fit? Custom apps."
+
+**Slide 20 — Extending ERPNext with Custom Apps** (2 min)
+- 3 bullets: layer cleanly above core / add custom fields + DocTypes + workflows / deploy via Git.
 - Visual: 3-layer stack (Specialized App Layer on top, HRMS Core, ERPNext & Frappe base) — accent/primary/secondary.
-- Transition: "Here's how the entities relate."
+- Transition: "Here's the full schema with relationship labels and field hints."
 
-**Slide 16 — Schema: Leave Entities** (3 min) — full spec, identical SVG to slide 4
-- Above: `<strong>Architecture:</strong> How leave management entities relate across layers.`
-- Below: same caption as slide 4.
-- Speaker notes: "Employee sits at the center. … Transition: Why choose ERPNext + Haritha for your deployment."
-
-### Why Choose + Conclusion (slides 17–18)
-
-**Slide 17 — Why choose ERPNext + Haritha** (2 min)
-- 5 bullets: Open source / Complete code ownership / Clinical operational readiness / Active community / Workflow flexibility.
-- Visual: `<table class="comp-table">` (4 columns: Parameter / ERPNext + Haritha / SAP / Oracle / Workday) with `.comp-highlight` column.
+**Slide 21 — Schema: Leave Entities (full spec)** (3 min) — full spec, ENHANCED over slide 4 (see §13 § Schema Flowchart § Slide 21 variant)
+- Above: `<strong>Architecture:</strong> How leave entities relate across config, policy, and action layers — with relationship labels, field hints, and a legend for color and connector meanings.`
+- Below: "Configuration defines what leave is available. Policy binds available leave to employees and grants allocations. Action records every leave movement as an immutable ledger entry."
+- Speaker notes: "Walk the audience through the 3-layer structure top-to-bottom. Config: Holiday List, Leave Type, Leave Period. Policy: Leave Policy, Leave Policy Assignment, Leave Allocation. Action: Leave Application, Leave Ledger Entry. Employee sits at center with Leave Approver as the connector role."
 - Transition: "Let's wrap up."
 
-**Slide 18 — Conclusion + Next Steps** (2 min)
+**Slide 22 — Conclusion + Why choose + Next Steps** (2 min)
 - "Key Takeaways" h3 + numbered list (3 items).
-- "Next Steps" h4 + 3 bullets (demo sandbox `demo.example.com` / pilot 4-8 weeks / architecture review).
+  - Leave is policy-driven + audit-tracked (not just a register).
+  - 3-layer architecture: Config → Policy → Action.
+  - Allocations + applications + encashments post to immutable ledger.
+- "Why choose ERPNext + Haritha" h4 (absorbed from standalone slide):
+  - 3 bullets (concise): Open source + code ownership / Hospital-specific leave patterns (e.g., nurse rotation, medical certificates) / Active community.
+- "Next Steps" h4 + 3 bullets (demo sandbox `demo.example.com` / pilot 4–8 weeks / architecture review).
 - Transition: "Thank you and welcome to the Q&A."
 
 ## 9. Slide Template HTML
 
 ```html
 <section class="slide" id="slide-N">
-  <div class="slide-number">N / 18</div>
+  <div class="slide-number">N / 22</div>
   <h2 class="slide-title">[Slide Title]</h2>
   <div class="body">
     [Main content here, max 100 words, with one focal visual]
@@ -243,85 +283,151 @@ CSS rule:
 body.show-speaker-notes .speaker-notes { display: block; }
 ```
 
-## 11. Concrete Example — Slide 6 (Holiday List) — GOLD STANDARD
+## 11. Concrete Examples — GOLD STANDARDS
 
-The body markup and CSS for Slide 6 must match the canonical v1.html. Every slide has a similar layout pattern (`.body` containing bullet list, paragraph, and one focal visual). Slide 6 specifically uses `.calendar-grid` with 7 `.calendar-cell` columns and highlighted `.calendar-cell--holiday` / `.calendar-cell--weekend` modifiers.
+### 11.1 Slide 7 (Leave Type cards) — GOLD STANDARD
 
-CSS excerpt:
+CSS excerpt for the 4-card leave type mockup:
 
 ```css
-.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: var(--space-32); border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background: #f8fafc; padding: 4px; }
-.calendar-header { background: var(--primary); color: white; text-align: center; padding: var(--space-8) 4px; font-size: 12px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
-.calendar-cell { background: white; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 14px; color: var(--text); border-radius: 4px; position: relative; }
-.calendar-cell--weekend { background: #f1f5f9; color: var(--muted); }
-.calendar-cell--holiday { background: rgba(14, 165, 233, 0.12); color: var(--accent); font-weight: 600; }
-.calendar-cell--holiday::after { content: ''; position: absolute; bottom: 4px; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; }
-.calendar-legend { display: flex; gap: var(--space-24); justify-content: center; margin-top: var(--space-16); font-size: 12px; color: var(--secondary); }
-.calendar-legend-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
+.leave-type-cards { display: flex; gap: var(--space-16); margin-top: var(--space-32); flex-wrap: wrap; justify-content: center; }
+.leave-type-card { flex: 1; min-width: 140px; max-width: 180px; padding: var(--space-24) var(--space-16); border-radius: 8px; box-shadow: 0 2px 8px rgba(15,23,42,0.06); background: white; border: 1px solid #e2e8f0; text-align: center; position: relative; }
+.leave-type-card .type-name { font-size: 16px; font-weight: 600; color: var(--text); }
+.leave-type-card .type-quota { font-size: 28px; font-weight: 700; color: var(--primary); margin: var(--space-12) 0; }
+.leave-type-card .type-note { font-size: 12px; color: var(--secondary); }
 ```
 
-## 12. Leave Workflow Image Placeholder (Slide 12)
+### 11.2 Slide 12 (Leave Approval Workflow SVG) — GOLD STANDARD
 
-Slide 12 MUST contain exactly this placeholder block:
+CSS excerpt for the 4-box approval flow with branching:
 
-```html
-<div class="image-placeholder" style="border: 2px dashed #94a3b8; padding: 48px 32px; text-align: center; color: #64748b; margin-top: 32px;">
-  [Insert leave approval workflow diagram here]
-  <br><small>Leave Application flow — Employee → Leave Approver → HR → Ledger</small>
-</div>
+```css
+.approval-flow { display: flex; gap: var(--space-16); align-items: center; margin-top: var(--space-32); flex-wrap: wrap; justify-content: center; }
+.flow-step { flex: 1; min-width: 140px; max-width: 180px; padding: var(--space-24) var(--space-16); border-radius: 8px; background: var(--bg-even); border: 1px solid #e2e8f0; text-align: center; }
+.flow-step.decision { background: #fefce8; border-color: #fde047; }
+.flow-step.outcome-approved { background: #f0fdf4; border-color: #86efac; }
+.flow-step.outcome-rejected { background: #fef2f2; border-color: #fca5a5; }
+.flow-arrow { font-size: 24px; color: var(--muted); }
+.flow-step .step-label { font-size: 12px; text-transform: uppercase; color: var(--secondary); letter-spacing: 0.5px; }
+.flow-step .step-action { font-size: 16px; font-weight: 600; color: var(--text); margin-top: var(--space-4); }
 ```
 
-## 13. Schema Flowchart (Slides 4 and 16)
+## 12. Image / Diagram Placeholder (Slides 6, 7, 13, 14, 15, 16, 17)
 
-Both slides 4 and 16 contain the **same** inline SVG (740×320 viewBox). The SVG must include:
+Slides with inline form/timeline mockups use pure CSS (no external images).
 
-- **8 entity boxes** (rect+text): Holiday List (top-center reference, slate), Employee (center, primary), Leave Application (bottom-center, slate), Leave Policy / Leave Policy Assignment / Leave Allocation (right column flow, primary), Leave Ledger Entry (audit trail, accent dashed), Leave Approver (badge on Employee, accent).
-- Connector paths in slate (`#94a3b8`), one dashed line for the append-only audit-trail relation from Leave Allocation → Leave Ledger Entry.
-- Reference the existing slide-4 / slide-16 SVG in `docs/handbook/03-client/shift-management-presentation-v2.html` for exact byte-for-byte layout style.
+## 13. Schema Flowchart (Slides 4 + 21)
 
-**Positioning (rough):** Employee at center (370, 150). Holiday List top-center reference (370, 30). Leave Application bottom-center (370, 270). Leave Policy / Leave Policy Assignment / Leave Allocation flow down the right column (x ≈ 560). Leave Ledger Entry as audit trail (x ≈ 180, y ≈ 230) with dashed connector. Leave Approver badge attached to Employee (≈ 470, 110).
+Both slides 4 and 21 contain an inline SVG (740×320 viewBox). They share the same entity set + groupings but differ in annotation density.
 
-**Relations shown:**
+### 13.1 Slide 4 variant — clean preview
 
-- Holiday List ──► Leave Application (reference, dotted slate).
-- Leave Policy ──► Leave Policy Assignment ──► Leave Allocation (right-column chain, solid primary).
-- Leave Allocation ──► Leave Application (solid slate, funds the request).
-- Leave Application ──► Employee (solid primary, requester).
-- Leave Application ──► Leave Ledger Entry (dashed accent, append-only audit).
-- Leave Approver ──► Employee (badge relation, accent).
+- **8 entity boxes** (rect+text) arranged in **3 layers top-down**:
+  - **Config layer (top, primary `#1e40af`)**:
+    - **Holiday List** — top-left
+    - **Leave Type** — top-center (slightly larger, 140×50 — it's the most important config)
+    - **Leave Period** — top-right
+  - **Policy layer (middle, accent `#0ea5e9`)**:
+    - **Leave Policy** — mid-left
+    - **Leave Policy Assignment** — mid-center (slightly wider, 160×40 — binds employee + policy + period)
+    - **Leave Allocation** — mid-right
+  - **Action layer (bottom, secondary `#64748b`)**:
+    - **Leave Application** — bottom-left
+    - **Leave Ledger Entry** — bottom-right (slightly wider, 150×40 — multi-field transaction record)
+  - **Employee** — center (primary, 140×60 — master anchor)
+- **3 dashed grouping rectangles** (`stroke-dasharray="4,4"`, stroke="secondary", fill="none"):
+  - **Config** — wraps Holiday List + Leave Type + Leave Period (top strip).
+  - **Policy** — wraps Leave Policy + Leave Policy Assignment + Leave Allocation (middle strip).
+  - **Action** — wraps Leave Application + Leave Ledger Entry (bottom strip).
+- Leave Approver is a **connector label reference** on Employee — no separate box (it's a User role, not a doc).
+- NO connector labels, NO field hints, NO legend box.
+- Connector paths in slate (`#94a3b8`); directional flow top-down (Config → Policy → Action), with Employee + Leave Approver as the central anchor for Action items.
+
+### 13.2 Slide 21 variant — full spec
+
+Same as Slide 4 PLUS:
+
+- **Connector labels** (1–2 words each, font-size 11, fill="secondary"):
+  - Leave Type → Leave Policy: `"bundled in"`
+  - Leave Period → Leave Policy: `"scopes"`
+  - Leave Policy → Leave Policy Assignment: `"applied via"`
+  - Leave Policy Assignment → Leave Allocation: `"grants"`
+  - Leave Policy Assignment → Employee: `"binds"`
+  - Employee → Leave Application: `"submits"`
+  - Leave Application → Leave Approver (on Employee): `"approved via"`
+  - Leave Application → Leave Ledger Entry: `"posts allocation / application / encashment"` (multi-segment label)
+  - Leave Application ← Holiday List: `"excludes holidays"`
+- **Field hints** below each entity name in smaller text (font-size 9, fill="muted"):
+  - Holiday List: `[holiday_date, holiday_name]`
+  - Leave Type: `[name, max_continuous_days, carry_forward, encashable]`
+  - Leave Period: `[from_date, to_date]`
+  - Leave Policy: `[title, leave_types]`
+  - Leave Policy Assignment: `[employee, leave_policy, leave_period, assignment_date]`
+  - Leave Allocation: `[employee, leave_type, leave_period, total_leaves_allocated]`
+  - Leave Application: `[employee, leave_type, from_date, to_date, status]`
+  - Leave Ledger Entry: `[employee, leave_type, transaction_type, amount]`
+- **Legend box** (120×80 rect, white fill, slate border, bottom-left of canvas, ~translate(15,180)):
+  - Color swatches: primary = `Config / Master`; accent = `Policy`; secondary = `Action`.
+  - Connector symbols: solid line = `direct / lifecycle`; dashed line = `reference / exclusion`.
+
+### 13.3 SVG technical specs
+
+- viewBox: `0 0 740 320`, width="740", height="320".
+- Font family: `var(--font-main)` for entity names, `var(--font-mono)` for field hints.
+- Entity box dimensions: 120×40 standard; Leave Type is 140×50 (most important config); Leave Policy Assignment is 160×40 (wider for 3-field binding); Leave Ledger Entry is 150×40 (wider for multi-field transaction); Employee is 140×60 (master anchor).
+- Dashed grouping rectangle stroke-width: 1.5.
+- Layout coordinates (approx):
+  - Config layer (top):
+    - Holiday List: rect at `x=40 y=30 w=120 h=40`
+    - Leave Type: rect at `x=295 y=25 w=140 h=50`
+    - Leave Period: rect at `x=560 y=30 w=120 h=40`
+  - Middle (Employee master + Policy row):
+    - Employee: rect at `x=295 y=130 w=140 h=60` (centered)
+    - Leave Policy: rect at `x=30 y=210 w=120 h=40` (mid-left in Policy strip)
+    - Leave Policy Assignment: rect at `x=200 y=210 w=160 h=40` (Policy center)
+    - Leave Allocation: rect at `x=420 y=210 w=140 h=40` (mid-right)
+  - Action layer (bottom):
+    - Leave Application: rect at `x=40 y=270 w=140 h=40`
+    - Leave Ledger Entry: rect at `x=470 y=270 w=170 h=40`
+  - Config dashed group: `x=10 y=10 w=720 h=85`
+  - Policy dashed group: `x=10 y=190 w=720 h=80`
+  - Action dashed group: `x=10 y=255 w=720 h=70`
+- Reference the existing shift-mgmt v2 SVG for visual style consistency.
 
 ## 14. Content Constraints (CMM L5 — Lessons #151–#164)
 
-### Dropped from earlier drafts
+### Dropped from v1
 
-- **Stale 2026-04-XX dates** — do not claim content is "up to date as of April 2026".
-- **Stale "Phase 6 / Tier 6" content** — handbook/ rename happened. The deck does NOT talk about "Phase 6 docs / Tier 6 compliance".
+- **Stale 2026-04-XX dates** — do not claim "up to date as of April 2026".
+- **Stale "Phase 6 / Tier 6" content** — handbook/ rename happened.
 - **Stale `2026-08-29` MTM/outage mentions** — use accurate dates only.
+- **Leave workflow image placeholder (v1 slide 12)** — replaced by inline SVG approval flow (§11.2 gold standard).
+- **"Why choose ERPNext + Haritha" as standalone slide** — absorbed into Conclusion slide 22 (matches attendance v2.1 + org-mgmt v2.0 + lifecycle v2.0 pattern).
 
 ### Required
 
-- **"Up to date?" means BOTH structure AND metadata.** Cover slide 1 metadata block (Version 1.0 · Date 2026-09-14).
-- **No Haritha-specific data** — no employee counts, no company-specific metrics, no real customer names.
-- **Use generic illustrative examples** ("Casual Leave: 12 days/year", "Sick Leave: 6 days/year", "Earned Leave: 24 days/year with carry-forward", "Holiday List: 2025-2026 calendar").
+- **"Up to date?" means BOTH structure AND metadata.** Cover slide 1 metadata block (Version 2.0 · Date 2026-09-14).
+- **No vendor-specific data** — no employee counts, no real customer names, no company-specific metrics.
+- **Use generic illustrative examples** ("Employee A", "Staff Nurse Policy: 12 CL + 6 SL + 24 EL", "FY 2025–2026").
 - **Tone:** friendly but professional, never salesy.
 - **Per-slide body:** ≤100 words.
 - **One focal point per slide** — don't cram.
-- **Define jargon on first use** ("DocType: a database table in ERPNext", "Leave Type: a kind of leave with allocation rules", "Leave Policy: a bundle of Leave Types assigned to employees", "Leave Ledger Entry: append-only audit trail of leave movements").
+- **Define jargon on first use** ("DocType", "Leave Ledger Entry", "Encashment").
 - **No filler phrases** ("It's important to note that...", "As we can see...", "In this slide we will...").
-- **Tight, professional, clean** — no emoji in the deck (slide content) except where already established.
+- **Tight, professional, clean** — no emoji in the deck (slide content).
 
 ## 15. Quality Bar (10 checks — verify before declaring done)
 
-1. All **18** slides present in correct order.
+1. Exactly **22** slides present in correct order.
 2. Each slide has title, body (≤100 words), visual, speaker notes.
-3. Slide 4 == Schema (duplicate of slide 16, byte-identical SVG).
-4. Slide 16 == Schema (original).
-5. Per-slide timing sums to ~32 minutes.
-6. SVG renders correctly (no broken tags).
+3. Slide 4 = Schema preview (8 entities + 3 dashed groupings — NO connector labels, NO legend, NO field hints).
+4. Slide 21 = Schema full spec (8 entities + 9 labeled connectors + legend + field hints).
+5. Per-slide timings sum to ~32 minutes.
+6. Both SVGs render correctly (no broken tags, no overlap).
 7. Print stylesheet works.
-8. No filler phrases.
-9. Leave workflow image placeholder present (slide 12).
-10. Schema flowchart present with all 8 entities + relations (slides 4 and 16).
+8. No filler phrases anywhere.
+9. Slide 12 = Leave Approval Workflow **inline SVG flowchart** (Employee → Leave Application → Leave Approver → Approved/Rejected branch) — NOT image placeholder.
+10. Slide 4 connector labels NOT present; Slide 21 connector labels present and read in order: "bundled in", "scopes", "applied via", "grants", "binds", "submits", "approved via", "posts allocation / application / encashment", "excludes holidays".
 
 ## 16. Self-Review Step (MANDATORY)
 
@@ -329,58 +435,26 @@ Before declaring the generated HTML "done":
 
 1. Read the output file.
 2. Verify against all 10 checks in §15.
-3. For each slide, confirm: title present, body ≤100 words, visual non-trivial, speaker notes present, counter shows `N / 18`.
-4. **Match the canonical v1.html byte-for-byte** — `prompts/build_deck.py` embeds the canonical snapshot and emits it directly. Any drift is a defect.
-5. Only declare "done" when all 10 checks + byte-for-byte match pass.
+3. For each slide, confirm: title present, body ≤100 words, visual non-trivial, speaker notes present, counter shows `N / 22`.
+4. **Match this prompt's slide-by-slide spec exactly.** Any drift between spec and generated HTML is a defect.
+5. Only declare "done" when all 10 checks pass.
 
 ## 17. Output Filename
 
 Save as: `docs/handbook/03-client/leave-management-presentation.html`
 
-## 18. Regeneration Workflow
+## 18. Prompt Maintenance Workflow
 
-`prompts/build_deck.py` is the single regenerator:
-
-1. Validates that v1.md describes 18 slides with Schema at #4 and #16.
-2. Base64-decodes the embedded canonical snapshot.
-3. Writes the bytes verbatim to the output path.
-
-Re-running `python3 prompts/build_deck.py` is idempotent and produces a byte-for-byte match with the committed v1.html. To update the deck:
-
-1. Edit `docs/handbook/03-client/leave-management-presentation.html` manually (Venkat-approved copy).
-2. Re-embed its base64 in `prompts/build_deck.py` (one-line shell helper: `base64 -w0 path/to/v1.html`).
-3. Update the slide-by-slide spec in v1.md to match the new content.
-4. Commit all three together.
+See `prompts/README.md` § Prompt Maintenance Workflow.
 
 ---
 
 ## Appendix A — Changelog
 
-- **v1.0** (2026-09-14) — Initial release based on shift-mgmt v2 pattern.
-  - Added Schema duplicate at slide 4 (early preview).
-  - Renumbered slides 4–13 → 5–14.
-  - Added slides 15 (Extending ERPNext) and 16 (Schema full spec).
-  - Renumbered slides 16–17 → 17–18.
-  - Counter `N / 18`.
-  - Slide 1 metadata: Version 1.0, Date 2026-09-14, Audience General.
-  - Concrete gold standard: Slide 6 (Holiday List) with `.calendar-grid` CSS.
-  - 18 slides total (Holiday List, Leave Type, Leave Period, Leave Policy, Leave Policy Assignment, Leave Allocation, Leave Application, Leave Approver, Leave Ledger Entry, Leave Encashment, Leave Block List, Compensatory Leave Request covered).
+See `prompts/README.md` § Current Prompts table for version history.
 
 ---
 
 ## Appendix B — Lessons Applied (#151–#164)
 
-- **#151** Quantitative process management — every spec has a measurable check (§15).
-- **#152** Defect prevention — verify before declaring done (§16).
-- **#153** Change management — version this prompt.
-- **#154** Technology change management — design tokens frozen (§6).
-- **#155** Peer review — generator output self-reviewed before "done".
-- **#156** Process measurement — counter `N / 18` must match exactly.
-- **#157** Process analysis — single root cause for duplicates (Schema preview).
-- **#158** Process innovation — speaker notes pattern reusable across all 18 slides.
-- **#159** Continuous improvement — lessons from v1 prompt are explicit drops in §14.
-- **#160** Defect analysis — schema SVG character escaping (`&#39;` artifacts).
-- **#161** Content freshness check — do not lie about dates; verify mtime vs claimed.
-- **#162** Always do broad grep before claiming scope.
-- **#163** "Up to date?" means BOTH structure AND metadata.
-- **#164** Per-directory footers drift independently.
+See `prompts/README.md` § Shared Methodology (Lessons #151–#164).
