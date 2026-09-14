@@ -1,6 +1,6 @@
 ## Attendance Management with ERPNext HRMS — Deck Prompt (v2)
 
-> **Status:** Active spec · **Version:** 2.0 · **Date:** 2026-09-14 · **Author:** Venkat Narasimha
+> **Status:** Active spec · **Version:** 2.1 · **Date:** 2026-09-14 · **Author:** Venkat Narasimha
 > **Audience:** Anyone generating or auditing this presentation deck (LLM agent, technical writer, reviewer).
 > **Output:** `docs/handbook/03-client/attendance-management-presentation.html` (single self-contained HTML).
 
@@ -27,7 +27,11 @@ CMM L5 means:
 
 Produce a **16-slide** self-contained HTML presentation explaining attendance management in ERPNext HRMS. Educational, general audience, light theme, professional + minimal + clean.
 
-**Structural difference vs shift-mgmt v2 (18 slides):** Attendance consolidates the bulk-input pair (Employee Attendance Tool + Upload Attendance) into narrative context rather than separate entity slides, since both serve the same operational job. Slide count reflects the actual entity count + concept coverage rather than the v2 default.
+**Structural choices (v2.1):**
+
+- Schema full spec at **slide 15** (immediately before the closing slide).
+- Slide 16 absorbs the "Why choose ERPNext + Haritha" framing into the conclusion narrative (matches org-mgmt v2.0 pattern of dropping the vendor-pitch slide).
+- Daily Attendance View on slide 12 expanded to a 6-row table with broader status mix.
 
 ## 4. Time Budget
 
@@ -95,7 +99,7 @@ Every slide MUST include:
 
 **Slide 1 — Attendance Management with ERPNext HRMS** (30s) — Title slide
 - Subtitle: "Daily presence tracking across biometrics, mobile, and manual input"
-- Metadata block (bottom-right): Version 2.0 · Date 2026-09-14 · Audience General (HR, Operations, Evaluators).
+- Metadata block (bottom-right): Version 2.1 · Date 2026-09-14 · Audience General (HR, Operations, Evaluators).
 - Layout: `title-wrapper` flex column, `metadata-block` bottom-right.
 - Transition: "Let's start with what we are covering today."
 
@@ -105,7 +109,7 @@ Every slide MUST include:
 - Transition: "First, a quick foundation."
 
 **Slide 3 — ERPNext + HRMS Stack** (2 min)
-- 4 bullets: open-source Frappe/ERPNExt / ~12 business domains / HRMS module / 5,000+ contributors.
+- 4 bullets: open-source Frappe/ERPNext / ~12 business domains / HRMS module / 5,000+ contributors.
 - Visual: layered stack diagram (HRMS top, ERPNext mid, Frappe bottom).
 - Transition: "Now let's look at the data model — entities and their relationships."
 
@@ -118,7 +122,7 @@ Every slide MUST include:
 - Speaker notes: "Employee sits in the middle. Employee Checkin on the left (raw punches), Auto Attendance in the middle (the conversion process), Attendance on the right (the daily record). Holiday List + Shift Type are reference inputs at the top. Attendance Request is an optional flow at the bottom. Brief mention only. Recap: Schema shown earlier in the deck."
 - Transition: "Now that you've seen the entities — why attendance management matters."
 
-### Attendance Management Operations (slides 5–11)
+### Attendance Management Operations (slides 5–12)
 
 **Slide 5 — Why attendance management matters** (2 min)
 - 3 bullets: manual paper registers lose data / multiple input sources (biometric, mobile, manual) require unified tracking / automation reduces disputes and payroll errors.
@@ -149,53 +153,57 @@ Every slide MUST include:
 - Visual: tool screenshot mockup (date picker + employee list + action buttons).
 - Transition: "For larger datasets, Upload Attendance handles CSV imports."
 
-**Slide 10 — Attendance Request (employee regularisation)** (2 min)
+**Slide 10 — Upload Attendance (bulk import)** (1.5 min)
+- Lead paragraph: "Upload Attendance imports attendance rows from CSV or Excel for sites without biometric infrastructure. Maps spreadsheet columns to Attendance fields with validation on save."
+- 3 bullets: CSV/Excel column mapping / validation rules (date format, employee lookup, status enum) / insert in bulk.
+- Visual: import flow mockup (file picker → column mapping → preview → commit).
+- Transition: "When employees need to dispute or regularise, Attendance Request handles it."
+
+**Slide 11 — Attendance Request (employee regularisation)** (2 min)
 - Lead paragraph: "An Attendance Request lets an employee regularise a missed check-in or dispute a recorded absence. Approval routes to the employee's leave approver."
 - 3 bullets: self-service form / reason text + supporting attachment / approver workflow.
 - Visual: 2-step approval flow (Employee → Leave Approver).
 - Transition: "All these inputs roll up into the daily view your HR team reads."
 
-**Slide 11 — Daily Attendance View (table mockup)** (2 min)
+**Slide 12 — Daily Attendance View (table mockup, 6 rows)** (2 min)
 - Lead paragraph: "The Daily Attendance View is what HR uses to review and act on attendance data. Here's a representative day across a mixed-status team."
-- 5-row table mockup: Employee + Shift + Check-in + Check-out + Status + Notes.
-  - Aisha Khan · Morning 09:00–18:00 · 09:02 · 18:05 · Present · —
-  - Biju Mathew · Morning 09:00–18:00 · 10:30 · 18:00 · Half Day · Traffic delay
-  - Chen Yi · Evening 14:00–22:00 · — · — · On Leave · Approved SL
-  - Diego Ruiz · Night 22:00–06:00 · 22:08 · 06:12 · Present · Grace -10 min
-  - Elena Park · Morning 09:00–18:00 · — · — · Absent · Uninformed
+- **6 columns** × **6 rows** table mockup: Employee + Shift + Check-in + Check-out + Status + Notes.
+  - Aisha Khan · Morning 09:00–18:00 · 09:02 · 18:05 · **Present** · —
+  - Biju Mathew · Morning 09:00–18:00 · 10:30 · 18:00 · **Half Day** · Traffic delay
+  - Chen Yi · Evening 14:00–22:00 · — · — · **On Leave** · Approved SL
+  - Diego Ruiz · Night 22:00–06:00 · 22:08 · 06:12 · **Present** · Grace −10 min
+  - Elena Park · Morning 09:00–18:00 · — · — · **Absent** · Uninformed
+  - Farhan Ali · Morning 09:00–18:00 · 09:00 · 13:00 · **Half Day** · Doctor appt
 - Visual: `<table class="attendance-table">` with status badges (Present/primary, Half Day/accent, On Leave/slate, Absent/muted).
 - Transition: "Beyond daily view — what reports does this data feed?"
 
-**Slide 12 — Reports & Analytics** (2 min)
-- 3 cards: Monthly Attendance Details (built-in) / Late Arrivals summary (custom) / Absenteeism rate (derived).
-- Visual: bar chart SVG showing attendance status distribution for one week.
-- Transition: "What if out-of-box doesn't fit? Custom apps."
-
-### Custom App + Schema (slides 13–14)
+### Custom App + Schema (slides 13–15)
 
 **Slide 13 — Extending ERPNext with Custom Apps** (2 min)
 - 3 bullets: layer cleanly above core / add custom fields + DocTypes + workflows / deploy via Git.
 - Visual: 3-layer stack (Specialized App Layer on top, HRMS Core, ERPNext & Frappe base) — accent/primary/secondary.
 - Transition: "Here's how the entities relate in full."
 
-**Slide 14 — Schema: Attendance Entities** (3 min) — full spec, ENHANCED over slide 4 (see §13 § Schema Flowchart § Slide 16 variant)
+**Slide 14 — Reports & Analytics** (2 min)
+- 3 cards: Monthly Attendance Details (built-in) / Late Arrivals summary (custom) / Absenteeism rate (derived).
+- Visual: bar chart SVG showing attendance status distribution for one week.
+- Transition: "Now the full schema with relationship labels and field hints."
+
+**Slide 15 — Schema: Attendance Entities (full spec)** (3 min) — full spec, ENHANCED over slide 4 (see §13 § Schema Flowchart § Slide 15 variant)
 - Above: `<strong>Architecture:</strong> How attendance entities relate across layers — with relationship labels, field hints, and a legend for color and connector meanings.`
 - Below: "Employee Checkin and Auto Attendance are the input-side. Attendance is the output. Holiday List + Shift Type are reference contexts. Attendance Request is an optional flow for employee-initiated regularisation."
-- Speaker notes: "Walk the audience through each connection. Read the labels: 'raw punch' (Checkin → Auto Attendance), 'converts to' (Auto Attendance → Attendance), 'matches against' (Auto Attendance ← Holiday List + Shift Type), 'creates on approval' (Attendance Request → Attendance), 'approved via' (Employee → Attendance Request). The dashed group rectangles show Daily Tracking vs Reference Context layering."
+- Speaker notes: "Walk the audience through each connection. Read the labels: 'raw punch' (Checkin → Auto Attendance), 'converts to' (Auto Attendance → Attendance), 'matches against' (Auto Attendance ← Holiday List), 'references' (Auto Attendance ← Shift Type), 'creates on approval' (Attendance Request → Attendance), 'approved via' (Employee → Attendance Request). The dashed group rectangles show Daily Tracking vs Reference Context layering."
 - Transition: "Let's wrap up."
 
-### Why Choose + Conclusion (slides 15–16)
+### Conclusion (slide 16)
 
-**Slide 15 — Why choose ERPNext + Haritha** (2 min)
-- 5 bullets: Open source / Complete code ownership / Operational readiness for hospital shift patterns / Active community / Workflow flexibility.
-- Visual: `<table class="comp-table">` (4 columns: Parameter / ERPNext + Haritha / SAP / Oracle / Workday) with `.comp-highlight` column.
-- Transition: "Let's wrap up."
-
-**Slide 16 — Conclusion + Next Steps** (2 min)
+**Slide 16 — Conclusion + Why choose + Next Steps** (2 min)
 - "Key Takeaways" h3 + numbered list (3 items).
   - Daily presence is the foundation for shift + leave + payroll accuracy.
   - Biometric + mobile + manual inputs converge through Auto Attendance.
   - Built-in reports + custom apps extend without core changes.
+- "Why choose ERPNext + Haritha" h4 (mid-deck vendor framing absorbed into closing):
+  - 3 bullets (concise): Open source + code ownership / Workflow flexibility for hospital shift patterns / Active community.
 - "Next Steps" h4 + 3 bullets (demo sandbox `demo.example.com` / pilot 4–8 weeks / architecture review).
 - Transition: "Thank you and welcome to the Q&A."
 
@@ -243,11 +251,11 @@ CSS rule:
 body.show-speaker-notes .speaker-notes { display: block; }
 ```
 
-## 11. Concrete Example — Slide 6 (Attendance) — GOLD STANDARD
+## 11. Concrete Examples — GOLD STANDARDS
 
-The body markup and CSS for Slide 6 must match the canonical pattern. Uses an Attendance row mockup with a status badge.
+### 11.1 Slide 6 (Attendance row) — GOLD STANDARD
 
-CSS excerpt:
+CSS excerpt for the single-row Attendance mockup with status badge:
 
 ```css
 .attendance-row { display: flex; gap: var(--space-16); align-items: center; padding: var(--space-16); border: 1px solid #e2e8f0; border-radius: 8px; background: white; max-width: 720px; margin: var(--space-32) auto 0; }
@@ -273,13 +281,13 @@ CSS excerpt for the 6-column table with status badges per row:
 .attendance-table tbody tr:hover { background: var(--bg-even); }
 ```
 
-## 12. Image / Diagram Placeholder (Slide 9, 11)
+## 12. Image / Diagram Placeholder (Slides 9, 10, 11)
 
-Slide 9 may contain an inline tool screenshot mockup (using pure CSS); Slide 11 contains the attendance table (spec in §11.2). No external images.
+Slides 9, 10, 11 may use inline tool/process mockups (pure CSS). No external images.
 
-## 13. Schema Flowchart (Slides 4 + 16)
+## 13. Schema Flowchart (Slides 4 + 15)
 
-Both slides 4 and 16 contain an inline SVG (740×320 viewBox). They share the same entity set + groupings but differ in annotation density.
+Both slides 4 and 15 contain an inline SVG (740×320 viewBox). They share the same entity set + groupings but differ in annotation density.
 
 ### 13.1 Slide 4 variant — clean preview
 
@@ -296,7 +304,7 @@ Both slides 4 and 16 contain an inline SVG (740×320 viewBox). They share the sa
 - NO connector labels, NO field hints, NO legend box.
 - Connector paths in slate (`#94a3b8`); Attendance Request connector dashed (optional/edge case).
 
-### 13.2 Slide 16 variant — full spec
+### 13.2 Slide 15 variant — full spec
 
 Same as Slide 4 PLUS:
 
@@ -331,24 +339,23 @@ Same as Slide 4 PLUS:
   - Holiday List: rect at `x=40 y=30 w=120 h=40`
   - Shift Type: rect at `x=580 y=30 w=120 h=40`
   - Attendance Request: rect at `x=580 y=240 w=120 h=40`
-  - Employee (ghost reference, small): rect at `x=710 y=290 w=20 h=20` (or omit — shown via connector only)
   - Daily Tracking dashed group: `x=10 y=110 w=720 h=120`
   - Reference Context dashed group: `x=10 y=10 w=720 h=80`
 - Reference the existing shift-mgmt v2 SVG for visual style consistency.
 
 ## 14. Content Constraints (CMM L5 — Lessons #151–#164)
 
-### Dropped from v1
+### Dropped from v2.0 (and v1)
 
 - **Stale 2026-04-XX dates** — do not claim "up to date as of April 2026".
 - **Stale "Phase 6 / Tier 6" content** — handbook/ rename happened.
 - **Stale `2026-08-29` MTM/outage mentions** — use accurate dates only.
-- **Upload Attendance as a standalone slide** — merged into §8 narrative (bulk input pair) since functionally equivalent to Employee Attendance Tool for deck purposes.
-- **Roster image placeholder (v1 slide 12)** — replaced by Daily Attendance View table (§8 slide 11 + §11.2 gold standard).
+- **"Why choose ERPNext + Haritha" as standalone slide** — v2.1 absorbs it into the Conclusion slide's "Why choose" sub-section (matches org-mgmt v2.0 pattern).
+- **Vendor-pitch framing** — kept to a 3-bullet absorb within the closing slide, not a full dedicated slide.
 
 ### Required
 
-- **"Up to date?" means BOTH structure AND metadata.** Cover slide 1 metadata block (Version 2.0 · Date 2026-09-14).
+- **"Up to date?" means BOTH structure AND metadata.** Cover slide 1 metadata block (Version 2.1 · Date 2026-09-14).
 - **No vendor-specific data** — no employee counts, no real customer names, no company-specific metrics.
 - **Use generic illustrative examples** ("Aisha Khan", "Morning 09:00–18:00", "Approved SL").
 - **Tone:** friendly but professional, never salesy.
@@ -363,13 +370,13 @@ Same as Slide 4 PLUS:
 1. Exactly **16** slides present in correct order.
 2. Each slide has title, body (≤100 words), visual, speaker notes.
 3. Slide 4 = Schema preview (6 entities + 2 dashed groupings only — NO connector labels, NO legend, NO field hints).
-4. Slide 16 = Schema full spec (6 entities + 6 labeled connectors + legend + field hints).
+4. Slide 15 = Schema full spec (6 entities + 6 labeled connectors + legend + field hints).
 5. Per-slide timings sum to ~32 minutes.
 6. Both SVGs render correctly (no broken tags, no overlap).
 7. Print stylesheet works.
 8. No filler phrases anywhere.
-9. Slide 12 = Daily Attendance View **table** mockup (6 columns × 5 rows) — NOT image placeholder, NOT roster overlay.
-10. Slide 4 connector labels NOT present; Slide 16 connector labels present and read in order: "raw punch", "converts to", "matches against", "references", "creates on approval", "approved via".
+9. Slide 12 = Daily Attendance View **table** mockup (**6 columns × 6 rows**) — NOT image placeholder, NOT roster overlay.
+10. Slide 4 connector labels NOT present; Slide 15 connector labels present and read in order: "raw punch", "converts to", "matches against", "references", "creates on approval", "approved via".
 
 ## 16. Self-Review Step (MANDATORY)
 
