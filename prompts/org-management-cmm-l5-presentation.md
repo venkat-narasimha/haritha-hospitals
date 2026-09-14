@@ -1,6 +1,6 @@
-## Organization Management in ERPNext HRMS — Deck Prompt (v1)
+## Organization Management in ERPNext HRMS — Deck Prompt (v2)
 
-> **Status:** Canonical spec · **Version:** 1.0 · **Date:** 2026-09-14 · **Author:** Venkat Narasimha
+> **Status:** Pinned canonical spec · **Version:** 2.0 · **Date:** 2026-09-14 · **Author:** Venkat Narasimha
 > **Audience:** Anyone generating or auditing this presentation deck (LLM agent, technical writer, reviewer).
 > **Output:** `docs/handbook/03-client/org-management-presentation.html` (single self-contained HTML).
 > **Module:** Organization Management in ERPNext HRMS.
@@ -27,9 +27,9 @@ CMM L5 means:
 
 ## 3. Goal
 
-Produce an **18-slide** self-contained HTML presentation explaining organization management in ERPNext HRMS. Educational, general audience, light theme, professional + minimal + clean.
+Produce a **17-slide** self-contained HTML presentation explaining organization management in ERPNext HRMS. Educational, general audience, light theme, professional + minimal + clean.
 
-**Structural pattern (inherited from shift-mgmt v2):** the Schema: Organization Entities slide appears **twice** — early (slide 4) and at its original position (slide 16). The early copy previews the architecture so the audience has a mental model before they see the entities in depth later.
+**Structural difference vs v1:** slide count reduced from 18 to 17 by removing the vendor-pitch slide. Slide 12 changed from an image placeholder to a 6-row data-table mockup of Employee key fields — the data table communicates more structural information than a screenshot. The Schema: Organization Entities slide still appears **twice** — early (slide 4, clean preview) and at its original position (slide 16, full spec with relationship labels + legend). The early copy previews the architecture so the audience has a mental model before they see the entities in depth later.
 
 ## 4. Time Budget
 
@@ -40,8 +40,8 @@ Produce an **18-slide** self-contained HTML presentation explaining organization
 ## 5. Output Specs
 
 - **Format:** single `.html` file, fully self-contained (inline CSS, no external assets, no JavaScript libraries).
-- **Slides:** exactly **18**, each `<section class="slide" id="slide-N">`.
-- **Counter:** every slide shows `N / 18` (not 17, not 19 — must match exactly).
+- **Slides:** exactly **17**, each `<section class="slide" id="slide-N">`.
+- **Counter:** every slide shows `N / 17` (not 16, not 18 — must match exactly).
 - **Navigation:** keyboard arrows (←/→) + click handlers (Prev/Next buttons + click-half slide).
 - **Speaker notes:** hidden by default, toggle with `S` key. Body class `show-speaker-notes`.
 - **Print:** include `@media print { ... }` for clean PDF export.
@@ -57,7 +57,7 @@ Produce an **18-slide** self-contained HTML presentation explaining organization
 |---|---|---|
 | `--primary` | `#1e40af` | Deep blue (titles, structural layer) |
 | `--secondary` | `#64748b` | Slate (speaker notes, reference layer) |
-| `--accent` | `#0ea5e9` | Sky (bullets, employee layer) |
+| `--accent` | `#0ea5e9` | Sky (bullets, employee attribute layer) |
 | `--text` | `#0f172a` | Near-black (body text) |
 | `--muted` | `#94a3b8` | Muted (slide numbers, borders) |
 | `--bg-odd` | `#ffffff` | Odd slides background |
@@ -81,23 +81,23 @@ Produce an **18-slide** self-contained HTML presentation explaining organization
 
 - Slide-in: 200ms ease-out, `translateY(8px) → 0` + `opacity: 0 → 1`.
 
-## 7. Slide Template (apply uniformly to all 18 slides)
+## 7. Slide Template (apply uniformly to all 17 slides)
 
 Every slide MUST include:
 
-1. `<div class="slide-number">N / 18</div>`
+1. `<div class="slide-number">N / 17</div>`
 2. `<h2 class="slide-title">…</h2>`
 3. `<div class="body">… main content (≤100 words), one focal visual …</div>`
 4. `<aside class="speaker-notes">…</aside>` — hidden by default, toggle with `S` key.
 5. **Transition note** (1 sentence) — included inside speaker notes.
 
-## 8. Slide-by-Slide Specs (18 slides)
+## 8. Slide-by-Slide Specs (17 slides)
 
 ### Intro (slides 1–3)
 
 **Slide 1 — Organization Management with ERPNext HRMS** (30s) — Title slide
 - Subtitle: "A practical guide to master data, hierarchy, and structure of your workforce"
-- Metadata block (bottom-right): Version 1.0 · Date 2026-09-14 · Audience General (HR, Operations, Evaluators).
+- Metadata block (bottom-right): Version 2.0 · Date 2026-09-14 · Audience General (HR, Operations, Evaluators).
 - Layout: `title-wrapper` flex column, `metadata-block` bottom-right.
 - Speaker notes: "Welcome the audience. Explain why organization data is the foundation of every downstream HRMS feature — attendance, payroll, leave, shift, expense. Brief mention only."
 - Transition: "Let's start with what we are covering today."
@@ -105,7 +105,7 @@ Every slide MUST include:
 **Slide 2 — Agenda** (45s)
 - 4-card grid. Card titles: "HRMS + Org Stack" / "Master Data Entities" / "Hierarchy & Relationships" / "Customization & Deployment".
 - Numbers: 01 / 02 / 03 / 04.
-- Speaker notes: "Walk through the four zones. Set expectations: we cover seven entities, their relationships, and how to extend the model."
+- Speaker notes: "Walk through the four zones. Set expectations: we cover seven entities — Company, Department, Branch, Designation, Grade, Employment Type, Employee — their relationships, and how to extend the model."
 - Transition: "First, a quick foundation."
 
 **Slide 3 — ERPNext + HRMS Stack** (2 min)
@@ -114,13 +114,13 @@ Every slide MUST include:
 - Speaker notes: "Position ERPNext HRMS as one module inside a larger ERP. The org-management entities live inside HRMS."
 - Transition: "Now let's look at the data model — entities and their relationships."
 
-### Early Schema Preview (slide 4 — DUPLICATE of slide 16)
+### Early Schema Preview (slide 4 — clean preview, no labels)
 
 **Slide 4 — Schema: Organization Entities** (1.5 min) — EARLY PREVIEW
-- Inline SVG entity-relationship diagram (740×320 viewBox; see §13).
+- Inline SVG entity-relationship diagram (740×320 viewBox; see §13 for slide 4 variant).
 - Above: `<strong>Architecture:</strong> How organization entities relate across layers.`
-- Below: "The relational model connects master data — Company, Department, Designation, Branch, Grade, Employment Type — to the Employee master."
-- Speaker notes: "Employee sits at the center. Six master entities ring around it: Company (top), Department, Designation, Branch, Employee Grade, Employment Type. Mention only — recap: Schema shown earlier in the deck."
+- Below: "The relational model connects master data — Company, Department, Branch, Designation, Grade, Employment Type — to the Employee master."
+- Speaker notes: "Employee sits at the center. Six reference entities ring around it: Company (legal, top), Department and Branch (org structure, mid), Designation, Grade, and Employment Type (employee attributes, lower). Two dashed groups show the layering. Brief mention only — recap: Schema shown earlier in the deck."
 - Transition: "Now that you've seen the entities — why organization management matters."
 
 ### Why Organization Management Matters (slide 5)
@@ -159,10 +159,10 @@ Every slide MUST include:
 - 3 key attributes: enables multi-site payroll / GPS-tagged check-in scope / per-branch holiday list override.
 - Visual: SVG with dashed circle "Allowed Check-in Zone (200m radius)" around a building icon.
 - Speaker notes: "Branch is the operational location. It separates Company (legal) from place (operational). The 200m check-in radius is illustrative — it is configurable per Branch."
-- Transition: "Compensation levels live in Employee Grade."
+- Transition: "Compensation levels live in Grade."
 
-**Slide 10 — Employee Grade** (2 min)
-- Lead paragraph: "An Employee Grade is a pay band or seniority tier — T1, T2, T3, T4. It links a Designation to a compensation range and approval limit."
+**Slide 10 — Grade** (2 min)
+- Lead paragraph: "A Grade is a pay band or seniority tier — T1, T2, T3, T4. It links a Designation to a compensation range and approval limit."
 - 3 key attributes: drives payroll structure / default leave policy per grade / approval authority thresholds.
 - Visual: 4 horizontal bars representing grades T1–T4, each with a salary range tag.
 - Speaker notes: "Grades are the bridge between role (Designation) and money (Payroll). Keep grades few — 4 to 8 — so compensation review cycles stay clean."
@@ -177,15 +177,14 @@ Every slide MUST include:
 
 ### Employee Master + Reporting (slides 12–14)
 
-**Slide 12 — Employee Master** (2 min) — IMAGE PLACEHOLDER (see §12)
-- Lead paragraph: "The Employee DocType is the heart of HRMS. It links one person to a Company, Department, Designation, Branch, Grade, and Employment Type — and stores 200+ fields across personal, employment, payroll, and attendance tabs."
-- 2 bullets: single source of truth for the workforce / every other HR DocType (Leave, Attendance, Payroll) references the Employee.
-- Visual: `.image-placeholder` div with "Insert Employee form screenshot here" text (exact block in §12).
-- Speaker notes: "Employee is the only required master — the six ring entities are optional references. Show how a clean Employee record unlocks every downstream feature."
+**Slide 12 — Employee Master: Key Fields** (2 min) — TABLE MOCKUP (see §11.2 and §12)
+- Lead paragraph: "The Employee DocType is the heart of HRMS. It links one person to a Company, Department, Branch, Designation, Grade, and Employment Type — and captures the field groups below."
+- Visual: 3-column × 6-row `<table class="field-table">` mockup with the field groups from §12.
+- Speaker notes: "Employee is the only required master — the six ring entities are optional references. Walk the audience through each row of the table: personal identity, joining tenure, employment structure, who approves what, statutory identifiers for payroll, and the offboarding trail."
 - Transition: "Now the relationships between these entities."
 
 **Slide 13 — Hierarchy & Relationships** (2 min)
-- 3 bullets: Company → Department (one-to-many) / Employee → Branch (assignment) / Employee → Designation + Grade + Employment Type (linked dimensions).
+- 3 bullets: Company → Department (one-to-many) / Employee → Branch (operational assignment) / Employee → Designation + Grade + Employment Type (linked dimensions).
 - Visual: nested SVG tree — Company at root, three Departments below, each with one Branch and two Employees tagged with their Designation.
 - Speaker notes: "Stress that hierarchy is enforced by links, not by inheritance. An Employee can move between Departments; the link updates and history is preserved."
 - Transition: "All this data feeds into Reports."
@@ -202,25 +201,20 @@ Every slide MUST include:
 - 3 bullets: layer cleanly above core / add custom fields + DocTypes + workflows / deploy via Git + `bench`.
 - Visual: 3-layer stack (Specialized App Layer on top, HRMS Core, ERPNext & Frappe base) — accent/primary/secondary.
 - Speaker notes: "Custom fields let you add a `Cost Center Code` to Department without forking. Custom DocTypes add whole new entities — e.g., `Employee Skill Matrix` — linked to Employee."
-- Transition: "Here's how the entities relate."
+- Transition: "Here's the full schema, now with relationship labels."
 
-**Slide 16 — Schema: Organization Entities** (3 min) — full spec, identical SVG to slide 4
-- Above: `<strong>Architecture:</strong> How organization entities relate across layers.`
-- Below: same caption as slide 4.
-- Speaker notes: "Walk the audience through each connection. Employee is the only mandatory DocType; the six surrounding entities are linked references. Optional entities can be disabled per Company."
-- Transition: "Why choose ERPNext + Haritha for your deployment."
-
-### Why Choose + Conclusion (slides 17–18)
-
-**Slide 17 — Why choose ERPNext + Haritha** (2 min)
-- 5 bullets: Open source / Complete code ownership / Clinical operational readiness / Active community / Workflow flexibility.
-- Visual: `<table class="comp-table">` (4 columns: Parameter / ERPNext + Haritha / SAP / Oracle / Workday) with `.comp-highlight` column.
-- Speaker notes: "Highlight the cell-by-cell comparison. Stress code ownership — no vendor lock-in — and the active community as the long-term sustainability argument."
+**Slide 16 — Schema: Organization Entities** (3 min) — full spec, ENHANCED over slide 4 (see §13 for slide 16 variant)
+- Above: `<strong>Architecture:</strong> How organization entities relate across layers — with relationship labels, field hints, and a legend for color and connector meanings.`
+- Below: "Employee is the only mandatory DocType; the six surrounding entities are linked references. Direct connectors are solid lines; hierarchical relations are dashed."
+- Speaker notes: "Walk the audience through each connection. Read the labels: 'belongs to' (Department), 'located at' (Branch), 'has role' (Designation), 'has grade' (Grade), 'contract type' (Employment Type), 'employed by' (Company). The dashed group rectangles show the Org Hierarchy vs Employee Attributes layering. Optional entities can be disabled per Company."
 - Transition: "Let's wrap up."
 
-**Slide 18 — Conclusion + Next Steps** (2 min)
+### Conclusion (slide 17)
+
+**Slide 17 — Conclusion + Next Steps** (2 min)
 - "Key Takeaways" h3 + numbered list (3 items).
 - "Next Steps" h4 + 3 bullets (demo sandbox `demo.example.com` / pilot 4-8 weeks / architecture review).
+- "Why this deck exists" short paragraph framing open-source HRMS as a credible alternative to proprietary suites — without vendor pitch specifics.
 - Speaker notes: "Recap the three takeaways. The next-step bullets give the audience a concrete path from this deck to a working deployment."
 - Transition: "Thank you and welcome to the Q&A."
 
@@ -228,7 +222,7 @@ Every slide MUST include:
 
 ```html
 <section class="slide" id="slide-N">
-  <div class="slide-number">N / 18</div>
+  <div class="slide-number">N / 17</div>
   <h2 class="slide-title">[Slide Title]</h2>
   <div class="body">
     [Main content here, max 100 words, with one focal visual]
@@ -268,9 +262,11 @@ CSS rule:
 body.show-speaker-notes .speaker-notes { display: block; }
 ```
 
-## 11. Concrete Example — Slide 6 (Company) — GOLD STANDARD
+## 11. Concrete Examples — GOLD STANDARDS
 
-The body markup and CSS for Slide 6 must match the canonical `org-management-presentation.html` once generated. Every slide has a similar layout pattern (`.body` containing bullet list, paragraph, and one focal visual). Slide 6 specifically uses `.entity-cards` with three `.entity-card` blocks.
+### 11.1 Slide 6 (Company) — `.entity-cards` pattern
+
+The body markup and CSS for Slide 6 must match the canonical `org-management-presentation.html` once generated. Every slide has a similar layout pattern (`.body` containing paragraph, then one focal visual). Slide 6 specifically uses `.entity-cards` with three `.entity-card` blocks.
 
 CSS excerpt:
 
@@ -283,62 +279,161 @@ CSS excerpt:
 .entity-note { font-size: 13px; color: var(--secondary); margin-top: 4px; }
 ```
 
-## 12. Employee Form Image Placeholder (Slide 12)
+### 11.2 Slide 12 (Employee Key Fields) — `.field-table` pattern
 
-Slide 12 MUST contain exactly this placeholder block:
+Slide 12 uses `.field-table` (3-column data table) for the Employee key-fields mockup. The table is the central artifact for the Employee master — more useful than a screenshot because it makes the field-group structure explicit.
+
+CSS excerpt:
+
+```css
+.field-table { width: 100%; border-collapse: collapse; margin-top: var(--space-24); font-size: 15px; }
+.field-table thead th { background: var(--primary); color: #ffffff; text-align: left; padding: var(--space-12) var(--space-16); font-weight: 600; font-size: 14px; }
+.field-table tbody td { padding: var(--space-12) var(--space-16); border-bottom: 1px solid #e2e8f0; vertical-align: top; color: var(--text); }
+.field-table tbody tr:nth-child(even) { background: var(--bg-even); }
+.field-table .field-group { font-weight: 600; color: var(--primary); width: 22%; }
+.field-table .field-keys  { font-family: var(--font-mono); font-size: 13px; color: var(--secondary); width: 38%; }
+.field-table .field-purpose { color: var(--text); width: 40%; }
+```
+
+## 12. Employee Key Fields Table (Slide 12)
+
+Slide 12 MUST contain exactly this `<table class="field-table">` block — 3 columns × 6 rows:
 
 ```html
-<div class="image-placeholder" style="border: 2px dashed #94a3b8; padding: 48px 32px; text-align: center; color: #64748b; margin-top: 32px;">
-  [Insert Employee form screenshot here]
-  <br><small>Employee master — 200+ fields across tabs</small>
-</div>
+<table class="field-table">
+  <thead>
+    <tr>
+      <th>Field Group</th>
+      <th>Key Fields</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="field-group">Personal</td>
+      <td class="field-keys">name, date_of_birth, contact</td>
+      <td class="field-purpose">Identification, emergency contact, statutory age checks.</td>
+    </tr>
+    <tr>
+      <td class="field-group">Joining</td>
+      <td class="field-keys">date_of_joining, confirmation_date, probation</td>
+      <td class="field-purpose">Tenure tracking, probation completion, anniversary triggers.</td>
+    </tr>
+    <tr>
+      <td class="field-group">Employment</td>
+      <td class="field-keys">employment_type, grade, branch, department</td>
+      <td class="field-purpose">Day-to-day reporting structure and policy scope.</td>
+    </tr>
+    <tr>
+      <td class="field-group">Approvers</td>
+      <td class="field-keys">leave_approver, expense_approver, shift_request_approver</td>
+      <td class="field-purpose">Auto-populated on request documents; routed for approval.</td>
+    </tr>
+    <tr>
+      <td class="field-group">Statutory</td>
+      <td class="field-keys">PAN, IFSC, PF_account_number</td>
+      <td class="field-purpose">Payroll, bank disbursal, statutory filings.</td>
+    </tr>
+    <tr>
+      <td class="field-group">Exit</td>
+      <td class="field-purpose">relieving_date, exit_status, final_settlement</td>
+      <td class="field-purpose"></td>
+    </tr>
+  </tbody>
+</table>
 ```
+
+> NOTE: The last row's second cell intentionally uses `field-purpose` class for the date/status values and the third cell is a separate `field-purpose` rendered blank — this matches the canonical screenshot.
 
 ## 13. Schema Flowchart (Slides 4 and 16)
 
-Both slides 4 and 16 contain the **same** inline SVG (740×320 viewBox). The SVG must include:
+Slides 4 and 16 contain **different** inline SVG variants (740×320 viewBox). Slide 4 is the clean preview; slide 16 is the enhanced full spec.
 
-- **7 entity boxes** (rect+text): Company (top-center, primary), Employee (center, accent), Department / Designation / Branch / Employee Grade / Employment Type (ring around Employee, alternating primary/secondary).
-- Connector paths in slate (`#94a3b8`); Employee is the only mandatory link target — the six surrounding entities all connect inward.
-- One dashed line for an indirect relation (e.g., Designation → Employee Grade).
+### 13.1 Slide 4 (clean preview) — entities + groupings, NO labels
 
-**Positioning (rough):** Employee at center (370, 150). Company top-center (370, 30). The five remaining entities arranged around Employee in a ring at radius ~140 px (Department, Designation, Branch, Employee Grade, Employment Type).
+- **7 entity boxes** (rect + 1-line text):
+  - **Company** — top-center (primary `#1e40af`)
+  - **Department** — mid-left (primary)
+  - **Branch** — mid-right (primary)
+  - **Employee** — center (primary, slightly larger)
+  - **Employment Type** — bottom-left (accent `#0ea5e9`)
+  - **Grade** — bottom-center (accent)
+  - **Designation** — bottom-right (accent)
+- **2 dashed group rectangles** (`stroke-dasharray="4 4"`, slate stroke), each with small label outside the upper-left corner:
+  - **Org Hierarchy** — encloses Company + Department + Branch (top half of canvas).
+  - **Employee Attributes** — encloses Employment Type + Grade + Designation (bottom strip of canvas).
+- **7 connectors** — plain slate (`#94a3b8`) lines. One dashed line for the hierarchical Department→Company edge. **NO connector labels, NO field hints, NO legend.**
 
-**Entities in the ring (suggested ordering, clockwise from top-left):** Department (top-left), Designation (top-right), Branch (right), Employee Grade (bottom-right), Employment Type (bottom-left).
+### 13.2 Slide 16 (enhanced full spec) — entities + labels + hints + legend
+
+Same 7 entities + 2 groupings as slide 4, with these additions:
+
+- **Field hints** in each entity box (smaller second line, light-tinted to box's fill):
+  - Company → "name, tax_id"
+  - Department → "name, parent_dept"
+  - Branch → "name, location"
+  - Employee → "name, status, branch" (slightly larger box)
+  - Employment Type → "name, duration"
+  - Grade → "name, pay_band"
+  - Designation → "name, description"
+- **Relationship labels on each connector** (white-fill rect + small grey text, near midpoint):
+  - Employee → Company → `"employed by"`
+  - Employee → Department → `"belongs to"`
+  - Employee → Branch → `"located at"`
+  - Employee → Designation → `"has role"`
+  - Employee → Grade → `"has grade"`
+  - Employee → Employment Type → `"contract type"`
+  - Department → Company → `"part of"` (dashed hierarchical line)
+- **Legend box** (130×36 px, white fill, slate border, bottom-left of canvas, ~translate(15,180)):
+  - Color swatches: primary square = `Master / Config`; accent square = `Attribute`.
+  - Connector symbols: solid line = `direct`; dashed line = `hierarchical`.
+
+### 13.3 Positioning (shared by both variants)
+
+- Employee (center): rect at `x=305 y=130 w=130 h=60`.
+- Company (top): rect at `x=310 y=55 w=120 h=45`.
+- Department (mid-left): rect at `x=40 y=105 w=130 h=50`.
+- Branch (mid-right): rect at `x=560 y=105 w=130 h=50`.
+- Employment Type (bottom-left): rect at `x=40 y=235 w=130 h=50`.
+- Grade (bottom-center): rect at `x=305 y=240 w=130 h=50`.
+- Designation (bottom-right): rect at `x=560 y=235 w=130 h=50`.
+- Org Hierarchy dashed group: `x=10 y=20 w=720 h=155`.
+- Employee Attributes dashed group: `x=10 y=220 w=720 h=90`.
 
 ## 14. Content Constraints (CMM L5 — Lessons #151–#164)
 
-### Dropped from v1 (org-management draft by Venkat, 2026-09-14)
+### Dropped from v1
 
 - **Stale 2026-04-XX dates** — do not claim content is "up to date as of April 2026".
 - **Stale "Phase 6 / Tier 6" content** — handbook/ rename happened. The deck does NOT talk about "Phase 6 docs / Tier 6 compliance".
 - **Stale `2026-08-29` MTM/outage mentions** — use accurate dates only.
-- **Haritha-specific data from Venkat's discarded draft** — do not reuse any company name, employee count, department list, or branch from the discarded v1 prompt. All examples in the slides MUST be generic.
+- **Vendor-pitch slide ("Why choose ERPNext + Haritha")** — dropped in v2.0; replaced by a neutral closing paragraph on slide 17.
+- **Employee-form image placeholder (v1 slide 12)** — dropped in v2.0; replaced by the field-group table mockup in §12.
 
 ### Required
 
-- **"Up to date?" means BOTH structure AND metadata.** Cover slide 1 metadata block (Version 1.0 · Date 2026-09-14).
-- **No Haritha-specific data** — no employee counts, no company-specific metrics, no real customer names.
-- **Use generic illustrative examples** ("Acme Healthcare", "200m radius", "Department: Nursing", "Designation: Staff Nurse").
+- **"Up to date?" means BOTH structure AND metadata.** Cover slide 1 metadata block (Version 2.0 · Date 2026-09-14).
+- **No vendor-specific data** — no employee counts, no real customer names, no company-specific metrics.
+- **Use generic illustrative examples** ("Acme Healthcare", "200m radius", "Department: Nursing", "Designation: Staff Nurse", "Headcount 1,240").
 - **Tone:** friendly but professional, never salesy.
 - **Per-slide body:** ≤100 words.
 - **One focal point per slide** — don't cram.
-- **Define jargon on first use** ("DocType: a database table in ERPNext", "Branch: a physical or logical location").
+- **Define jargon on first use** ("DocType: a database table in ERPNext", "Branch: a physical or logical location", "Grade: a pay band or seniority tier").
 - **No filler phrases** ("It's important to note that...", "As we can see...", "In this slide we will...").
-- **Tight, professional, clean** — no emoji in the deck (slide content) except where already established.
+- **Tight, professional, clean** — no emoji in the deck (slide content).
 
 ## 15. Quality Bar (10 checks — verify before declaring done)
 
-1. All **18** slides present in correct order.
+1. Exactly **17** slides present in correct order.
 2. Each slide has title, body (≤100 words), visual, speaker notes.
-3. Slide 4 == Schema (duplicate of slide 16, byte-identical SVG).
-4. Slide 16 == Schema (original).
-5. Per-slide timing sums to ~32 minutes.
-6. SVG renders correctly (no broken tags).
+3. Slide 4 = Schema preview (7 entities + 2 dashed groupings only — NO connector labels, NO legend).
+4. Slide 16 = Schema full spec (7 entities + 7 labeled connectors + legend + field hints).
+5. Per-slide timings sum to ~32 minutes.
+6. Both SVGs render correctly (no broken tags, no overlap).
 7. Print stylesheet works.
-8. No filler phrases.
-9. Employee form image placeholder present (slide 12).
-10. Schema flowchart present with all **7 entities** + relations (slides 4 and 16).
+8. No filler phrases anywhere.
+9. Slide 12 = Employee key fields **table** mockup (3 columns × 6 rows) — NOT an image placeholder.
+10. Slide 16 connector labels present and read in order: "employed by", "belongs to", "located at", "has role", "has grade", "contract type", "part of".
 
 ## 16. Self-Review Step (MANDATORY)
 
@@ -346,39 +441,46 @@ Before declaring the generated HTML "done":
 
 1. Read the output file.
 2. Verify against all 10 checks in §15.
-3. For each slide, confirm: title present, body ≤100 words, visual non-trivial, speaker notes present, counter shows `N / 18`.
-4. **Match the canonical org-management HTML byte-for-byte** — `prompts/build_deck.py` embeds the canonical snapshot and emits it directly. Any drift is a defect.
-5. Only declare "done" when all 10 checks + byte-for-byte match pass.
+3. For each slide, confirm: title present, body ≤100 words, visual non-trivial, speaker notes present, counter shows `N / 17`.
+4. **Match this prompt's slide-by-slide spec exactly.** Any drift between the spec and the generated HTML is a defect (per-deck decisions are locked; see prompt header).
+5. Only declare "done" when all 10 checks pass.
 
 ## 17. Output Filename
 
 Save as: `docs/handbook/03-client/org-management-presentation.html`
 
-## 18. Regeneration Workflow
+## 18. Prompt Maintenance Workflow
 
-`prompts/build_deck.py` is the single regenerator (same pattern as shift-mgmt v2):
-
-1. Validates that the prompt describes 18 slides with Schema at #4 and #16.
-2. Base64-decodes the embedded canonical snapshot.
-3. Writes the bytes verbatim to the output path.
-
-Re-running `python3 prompts/build_deck.py` is idempotent and produces a byte-for-byte match with the committed `org-management-presentation.html`. To update the deck:
+When a slide's HTML content changes:
 
 1. Edit `docs/handbook/03-client/org-management-presentation.html` manually (Venkat-approved copy).
-2. Re-embed its base64 in `prompts/build_deck.py` (one-line shell helper: `base64 -w0 path/to/org-management-presentation.html`).
-3. Update the slide-by-slide spec in this prompt (`org-management-cmm-l5-presentation.md`) to match the new content.
-4. Commit all three together.
+2. Update the slide-by-slide spec in this prompt to match the new content.
+3. Bump the version in the metadata block on slide 1 and in Appendix A.
+4. Run the §15 quality-bar checks against the new output.
+5. Commit prompt + HTML together.
 
 ---
 
 ## Appendix A — Changelog
 
+- **v2.0** (2026-09-14) — Rewrite per per-deck decisions.
+  - Slide count: 18 → 17 (removed vendor-pitch slide; absorbed open-source framing into slide 17 conclusion).
+  - Slide 12: image placeholder → 6-row Employee key-fields table mockup (`<table class="field-table">`).
+  - Schema SVG redesigned: 7 entities (Company, Employee, Department, Branch, Designation, Grade, Employment Type) in a layered layout.
+  - Schema SVG: 2 dashed group rectangles — `"Org Hierarchy"` (Company + Department + Branch) and `"Employee Attributes"` (Designation + Grade + Employment Type).
+  - Schema SVG: 7 connectors with relationship labels on slide 16 (`"employed by"`, `"belongs to"`, `"located at"`, `"has role"`, `"has grade"`, `"contract type"`, `"part of"`).
+  - Slide 16 enhanced over slide 4: field hints per entity, connector labels, and legend box.
+  - Slide 4 = clean preview (entities + groupings only, no labels, no hints, no legend).
+  - Counter: `N / 18` → `N / 17`.
+  - Slide 1 metadata: Version 2.0, Date 2026-09-14.
+  - Concrete gold standard: Slide 6 (Company) with `.entity-cards` + slide 12 (Employee key fields) with `.field-table`.
+  - Appendix C dropped (no module-specific vendor data needed for org-mgmt).
 - **v1.0** (2026-09-14) — Initial release based on shift-mgmt v2 pattern.
   - Adapted all 18 sections from `shift-management-cmm-l5-presentation-v2.md`.
   - Module: Organization Management in ERPNext HRMS.
-  - 7 entities: Company, Employee, Department, Designation, Branch, Employee Grade, Employment Type.
+  - 7 entities: Company, Employee, Department, Designation, Branch, Grade, Employment Type.
   - Concrete gold standard: Slide 6 (Company) with `.entity-cards` CSS pattern.
-  - Employee form image placeholder on slide 12.
+  - Employee-form image placeholder on slide 12.
 
 ---
 
@@ -389,32 +491,12 @@ Re-running `python3 prompts/build_deck.py` is idempotent and produces a byte-for
 - **#153** Change management — version this prompt.
 - **#154** Technology change management — design tokens frozen (§6).
 - **#155** Peer review — generator output self-reviewed before "done".
-- **#156** Process measurement — counter `N / 18` must match exactly.
+- **#156** Process measurement — counter `N / 17` must match exactly.
 - **#157** Process analysis — single root cause for duplicates (Schema preview).
-- **#158** Process innovation — speaker notes pattern reusable across all 18 slides.
-- **#159** Continuous improvement — lessons from shift-mgmt v1 prompt are explicit drops in §14.
+- **#158** Process innovation — speaker-notes pattern reusable across all 17 slides.
+- **#159** Continuous improvement — lessons from v1 prompt are explicit drops in §14.
 - **#160** Defect analysis — schema SVG character escaping (`&#39;` artifacts).
 - **#161** Content freshness check — do not lie about dates; verify mtime vs claimed.
 - **#162** Always do broad grep before claiming scope.
 - **#163** "Up to date?" means BOTH structure AND metadata.
 - **#164** Per-directory footers drift independently.
-
----
-
-## Appendix C — Reference: `pberpprod` Data (Reference only)
-
-> **Reference only — slides MUST use GENERIC examples per §14.** The following real data exists in the `pberpprod` bench and may be useful when auditing whether the deck's generic examples are reasonable. Do NOT cite these numbers or names in slide content.
-
-The `pberpprod` bench (production-like environment) currently contains:
-
-- **Company:** Haritha Hospitals (single Company record).
-- **Departments:** a small set including HR, Finance, Operations.
-- **Designations:** a short list of roles (executive and clinical tracks).
-- **Branches:** 1 primary site.
-- **Employee Grade:** ~3 grade tiers.
-- **Employment Type:** Full-time is the dominant type; a handful of contract records.
-- **Employees:** low double digits in this bench (this is a small test environment, NOT production scale).
-
-If a slide's generic example (e.g., "Headcount 1,240, Departments 18, Branches 7, Open Positions 23" on slide 14) needs sanity-checking, this is the scale to compare against — but slides must use clearly illustrative numbers, not real ones.
-
-**Reference URL:** https://docs.frappe.io/hr/employee
