@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Lifecycle Management with ERPNext HRMS</title>
+  <style>
+    /* Design Tokens (§6) */
+    :root {
+      --primary: #1e40af;
+      --secondary: #64748b;
+      --accent: #0ea5e9;
+      --text: #0f172a;
+      --muted: #94a3b8;
+      --bg-odd: #ffffff;
+      --bg-even: #f8fafc;
+      --code-bg: #f1f5f9;
+      --code-text: #0f172a;
+      --space-8: 8px;
+      --space-16: 16px;
+      --space-24: 24px;
+      --space-32: 32px;
+      --space-48: 48px;
+      --space-64: 64px;
+      --font-main: Inter, system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-main); font-size: 18px; line-height: 1.6;
+      color: var(--text); background-color: #e2e8f0; min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; overflow-x: hidden;
+    }
+    .deck-container { width: 100%; max-width: 960px; min-height: 680px; position: relative; margin: 0 auto; }
+    .slide {
+      display: none; width: 100%; min-height: 640px;
+      padding: var(--space-64) var(--space-32); border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08); position: relative;
+      animation: slideIn 200ms ease-out;
+    }
+    .slide.active { display: flex; flex-direction: column; justify-content: flex-start; }
+    .slide:nth-child(odd) { background-color: var(--bg-odd); }
+    .slide:nth-child(even) { background-color: var(--bg-even); }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .slide-number {
+      position: absolute; top: var(--space-32); right: var(--space-32);
+      font-size: 14px; font-weight: 600; color: var(--secondary); font-family: var(--font-mono);
+    }
+    .slide-title { font-size: 40px; font-weight: 600; color: var(--primary); margin-bottom: var(--space-32); }
+    .body { font-size: 18px; line-height: 1.6; color: var(--text); }
+    .body p { margin-bottom: var(--space-16); }
+    .body h3 { font-size: 24px; font-weight: 600; color: var(--primary); margin-top: var(--space-24); margin-bottom: var(--space-16); }
+    .body h4 { font-size: 18px; font-weight: 600; color: var(--secondary); margin-top: var(--space-16); margin-bottom: var(--space-8); }
+    .body ul, .body ol { margin-left: var(--space-32); margin-bottom: var(--space-16); }
+    .body li { margin-bottom: var(--space-8); }
+
+    .title-wrapper { text-align: center; justify-content: center; align-items: center; }
+    .title-wrapper h2 { font-size: 48px; margin-bottom: var(--space-24); }
+    .title-wrapper p { font-size: 22px; color: var(--secondary); }
+    .metadata-block {
+      position: absolute; bottom: var(--space-32); right: var(--space-32);
+      font-size: 12px; color: var(--muted); text-align: right; font-family: var(--font-mono);
+    }
+
+    .speaker-notes {
+      display: none; font-size: 14px; color: var(--secondary);
+      border-left: 3px solid var(--accent); padding-left: var(--space-16);
+      margin-top: var(--space-24); font-style: italic;
+      background: rgba(241, 245, 249, 0.6); padding: var(--space-8) var(--space-16);
+    }
+    body.show-speaker-notes .speaker-notes { display: block; }
+
+    .agenda-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-24); margin-top: var(--space-32); }
+    .agenda-card { padding: var(--space-32) var(--space-24); border-radius: 8px; background: var(--bg-even); border: 1px solid #e2e8f0; }
+    .agenda-card .number { font-size: 32px; font-weight: 700; color: var(--accent); }
+    .agenda-card .title { font-size: 18px; font-weight: 600; color: var(--text); margin-top: var(--space-8); }
+
+    .stack-diagram { display: flex; flex-direction: column; gap: var(--space-8); margin-top: var(--space-32); max-width: 360px; margin-left: auto; margin-right: auto; }
+    .stack-layer { padding: var(--space-16) var(--space-24); border-radius: 6px; color: white; text-align: center; font-weight: 600; font-size: 16px; }
+    .stack-layer.hrms { background: var(--primary); }
+    .stack-layer.erpnext { background: var(--accent); }
+    .stack-layer.frappe { background: var(--secondary); }
+
+    /* Timeline (slide 6 gold standard §11.1) */
+    .onboarding-timeline { display: flex; gap: var(--space-16); margin-top: var(--space-32); align-items: stretch; }
+    .timeline-phase { flex: 1; padding: var(--space-24) var(--space-16); border-radius: 8px; text-align: center; background: var(--bg-even); border: 1px solid #e2e8f0; }
+    .timeline-phase .phase-name { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: var(--space-8); }
+    .timeline-phase .phase-density { display: flex; gap: 4px; justify-content: center; margin-top: var(--space-8); }
+    .timeline-phase .density-bar { width: 6px; height: 14px; border-radius: 1px; background: var(--accent); }
+    .timeline-phase .density-bar.empty { background: var(--bg-odd); }
+
+    /* Form mockups (slides 8, 9, 10) */
+    .form-mockup { max-width: 540px; margin: var(--space-24) auto 0; padding: var(--space-24); border: 1px solid #e2e8f0; border-radius: 8px; background: white; }
+    .form-row { display: flex; gap: var(--space-16); padding: var(--space-8) 0; border-bottom: 1px solid #f1f5f9; }
+    .form-row:last-child { border-bottom: none; }
+    .form-row .label { width: 180px; font-size: 13px; color: var(--secondary); font-weight: 600; }
+    .form-row .value { flex: 1; font-size: 15px; color: var(--text); }
+    .form-row .value-old { color: var(--muted); text-decoration: line-through; }
+    .form-row .value-new { color: var(--primary); font-weight: 600; }
+
+    /* Skill matrix (slide 11) */
+    .skill-matrix { width: 100%; border-collapse: collapse; margin-top: var(--space-24); font-size: 14px; }
+    .skill-matrix th, .skill-matrix td { padding: var(--space-8) var(--space-12); border: 1px solid #e2e8f0; text-align: center; }
+    .skill-matrix th { background: var(--bg-even); color: var(--secondary); font-weight: 600; }
+    .skill-matrix td { color: var(--text); }
+    .proficiency-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); }
+    .proficiency-dot.empty { background: var(--bg-odd); border: 1px solid #e2e8f0; }
+
+    /* Checklist (slide 12 gold standard §11.2) */
+    .checklist { display: flex; flex-direction: column; gap: var(--space-8); margin-top: var(--space-24); max-width: 720px; margin-left: auto; margin-right: auto; }
+    .checklist-row { display: flex; align-items: center; gap: var(--space-16); padding: var(--space-12) var(--space-16); border: 1px solid #e2e8f0; border-radius: 6px; background: var(--bg-odd); }
+    .checklist-row.complete { background: #f0fdf4; border-color: #86efac; }
+    .checklist-row.in-progress { background: #fefce8; border-color: #fde047; }
+    .checklist-row.pending { background: var(--bg-odd); border-color: #e2e8f0; }
+    .task-name { flex: 1; font-size: 16px; color: var(--text); }
+    .task-status { font-size: 13px; font-weight: 600; padding: 4px 10px; border-radius: 12px; }
+    .task-status.complete { background: #16a34a; color: white; }
+    .task-status.in-progress { background: #eab308; color: white; }
+    .task-status.pending { background: var(--muted); color: white; }
+
+    /* Separation flow (slide 13) */
+    .separation-flow { display: flex; align-items: center; justify-content: center; gap: var(--space-16); margin-top: var(--space-32); flex-wrap: wrap; }
+    .separation-step { flex: 1; min-width: 110px; max-width: 160px; padding: var(--space-16); border-radius: 8px; background: var(--bg-even); border: 1px solid #e2e8f0; text-align: center; }
+    .separation-step .step-label { font-size: 11px; text-transform: uppercase; color: var(--secondary); letter-spacing: 0.5px; }
+    .separation-step .step-action { font-size: 14px; font-weight: 600; color: var(--text); margin-top: var(--space-4); }
+    .separation-arrow { font-size: 20px; color: var(--accent); }
+
+    @media print {
+      body { background: white; }
+      .slide { display: flex !important; page-break-after: always; box-shadow: none; min-height: 600px; }
+      .speaker-notes { display: block !important; font-style: normal; page-break-inside: avoid; }
+      .deck-container { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck-container">
+
+    <!-- Slide 1 — Title -->
+    <section class="slide active" id="slide-1">
+      <div class="slide-number">1 / 16</div>
+      <div class="body title-wrapper">
+        <h2 class="slide-title" style="text-align:center;">Employee Lifecycle Management with ERPNext HRMS</h2>
+        <p>Structured hire-to-retire workflows for hospital operations</p>
+      </div>
+      <div class="metadata-block">Version 2.0 · Date 2026-09-14 · Audience General (HR, Operations, Evaluators)</div>
+      <aside class="speaker-notes">Welcome the audience. Lifecycle covers hire-to-retire — onboarding through exit. We'll walk the directional flow: entry, growth, exit, with skill tracking as a supporting reference.<br><br>Transition: "Let's start with what employee lifecycle means in ERPNext HRMS."</aside>
+    </section>
+
+    <!-- Slide 2 — Agenda -->
+    <section class="slide" id="slide-2">
+      <div class="slide-number">2 / 16</div>
+      <h2 class="slide-title">Agenda</h2>
+      <div class="body">
+        <div class="agenda-grid">
+          <div class="agenda-card"><div class="number">01</div><div class="title">HRMS + Lifecycle Stack</div></div>
+          <div class="agenda-card"><div class="number">02</div><div class="title">Onboarding &amp; Joining</div></div>
+          <div class="agenda-card"><div class="number">03</div><div class="title">Growth &amp; Transitions</div></div>
+          <div class="agenda-card"><div class="number">04</div><div class="title">Exit &amp; Final Settlement</div></div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Walk through the four zones. Set expectations: lifecycle has 5 documents (Onboarding, Promotion, Transfer, Separation, Skill Map) covering hire-to-retire.<br><br>Transition: "First, a quick foundation."</aside>
+    </section>
+
+    <!-- Slide 3 — ERPNext + HRMS Stack -->
+    <section class="slide" id="slide-3">
+      <div class="slide-number">3 / 16</div>
+      <h2 class="slide-title">ERPNext + HRMS Stack</h2>
+      <div class="body">
+        <ul>
+          <li>Open-source Frappe framework — MIT-licensed, full code ownership.</li>
+          <li>ERPNext covers ~12 business domains (accounting, manufacturing, sales, CRM, …).</li>
+          <li>HRMS module layers on ERPNext; lifecycle is one of its core features.</li>
+          <li>5,000+ contributors active across the framework.</li>
+        </ul>
+        <div class="stack-diagram">
+          <div class="stack-layer hrms">HRMS Module (Lifecycle)</div>
+          <div class="stack-layer erpnext">ERPNext (Accounting, Mfg, …)</div>
+          <div class="stack-layer frappe">Frappe Framework</div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Position ERPNext HRMS as one module inside a larger ERP. The lifecycle documents live inside HRMS.<br><br>Transition: "Now let's look at the core entities that drive lifecycle transitions."</aside>
+    </section>
+
+    <!-- Slide 4 — Schema: Lifecycle Entities (clean preview) -->
+    <section class="slide" id="slide-4">
+      <div class="slide-number">4 / 16</div>
+      <h2 class="slide-title">Schema: Lifecycle Entities</h2>
+      <div class="body">
+        <p><strong>Architecture:</strong> How employee lifecycle entities relate across stages.</p>
+        <svg viewBox="0 0 740 320" width="740" height="320" xmlns="http://www.w3.org/2000/svg">
+          <!-- Entry group (wraps Onboarding) -->
+          <rect x="10" y="190" width="200" height="80" fill="none" stroke="#64748b" stroke-dasharray="4,4" stroke-width="1.5"/>
+          <text x="20" y="205" fill="#64748b" font-size="12" font-family="Inter, sans-serif">Entry</text>
+          <!-- Growth group (Promotion + Transfer) -->
+          <rect x="280" y="10" width="420" height="80" fill="none" stroke="#64748b" stroke-dasharray="4,4" stroke-width="1.5"/>
+          <text x="290" y="25" fill="#64748b" font-size="12" font-family="Inter, sans-serif">Growth</text>
+          <!-- Exit group (Separation) -->
+          <rect x="280" y="225" width="180" height="80" fill="none" stroke="#64748b" stroke-dasharray="4,4" stroke-width="1.5"/>
+          <text x="290" y="240" fill="#64748b" font-size="12" font-family="Inter, sans-serif">Exit</text>
+
+          <!-- Employee Onboarding (mid-left, accent) -->
+          <rect x="40" y="210" width="130" height="45" fill="#0ea5e9" rx="4"/>
+          <text x="105" y="238" fill="#ffffff" font-size="12" font-weight="600" text-anchor="middle" font-family="Inter, sans-serif">Employee Onboarding</text>
+          <!-- Employee Promotion (top-center, accent) -->
+          <rect x="305" y="30" width="130" height="45" fill="#0ea5e9" rx="4"/>
+          <text x="370" y="58" fill="#ffffff" font-size="12" font-weight="600" text-anchor="middle" font-family="Inter, sans-serif">Employee Promotion</text>
+          <!-- Employee Transfer (top-right, accent) -->
+          <rect x="560" y="30" width="130" height="45" fill="#0ea5e9" rx="4"/>
+          <text x="625" y="58" fill="#ffffff" font-size="12" font-weight="600" text-anchor="middle" font-family="Inter, sans-serif">Employee Transfer</text>
+          <!-- Employee Separation (bottom-center, primary) -->
+          <rect x="305" y="240" width="130" height="45" fill="#1e40af" rx="4"/>
+          <text x="370" y="268" fill="#ffffff" font-size="12" font-weight="600" text-anchor="middle" font-family="Inter, sans-serif">Employee Separation</text>
+          <!-- Employee Skill Map (bottom-right, muted, OUTSIDE groups) -->
+          <rect x="560" y="240" width="130" height="45" fill="#94a3b8" rx="4"/>
+          <text x="625" y="268" fill="#ffffff" font-size="12" font-weight="600" text-anchor="middle" font-family="Inter, sans-serif">Employee Skill Map</text>
+          <!-- Employee (center, primary, slightly larger 140×60) -->
+          <rect x="305" y="130" width="140" height="60" fill="#1e40af" rx="4"/>
+          <text x="375" y="166" fill="#ffffff" font-size="14" font-weight="600" text-anchor="middle" font-family="Inter, sans-serif">Employee</text>
+
+          <!-- Convergent arrows: all lifecycle docs → Employee (no labels in clean preview) -->
+          <line x1="170" y1="232" x2="305" y2="170" stroke="#94a3b8" stroke-width="1.5"/>
+          <line x1="370" y1="75" x2="370" y2="130" stroke="#94a3b8" stroke-width="1.5"/>
+          <line x1="560" y1="75" x2="445" y2="170" stroke="#94a3b8" stroke-width="1.5"/>
+          <line x1="370" y1="190" x2="370" y2="240" stroke="#94a3b8" stroke-width="1.5"/>
+          <line x1="560" y1="262" x2="445" y2="170" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3"/>
+        </svg>
+        <p style="font-size:14px; color:var(--secondary); margin-top:var(--space-16);">The relational model connects entry, growth, and exit transactions to the Employee master, with Skill Map as a supporting reference.</p>
+      </div>
+      <aside class="speaker-notes">Employee sits at the center. Lifecycle documents (Onboarding, Promotion, Transfer, Separation) form a flow around Employee. Entry on the left (accent), Growth across the top (accent), Exit at the bottom (primary). Skill Map is a supporting reference (muted). Brief mention only. Recap: Schema shown earlier in the deck.<br><br>Transition: "Now that you've seen the entities — why lifecycle management matters."</aside>
+    </section>
+
+    <!-- Slide 5 — Why lifecycle management matters -->
+    <section class="slide" id="slide-5">
+      <div class="slide-number">5 / 16</div>
+      <h2 class="slide-title">Why lifecycle management matters</h2>
+      <div class="body">
+        <ul>
+          <li>Manual checklists get lost; structured handovers reduce errors.</li>
+          <li>Compliance at join + exit is mandatory (HIPAA training, relieving date, exit clearance).</li>
+          <li>Growth tracking requires documented state changes (promotions, transfers, role changes).</li>
+        </ul>
+        <svg viewBox="0 0 600 120" width="600" height="120" xmlns="http://www.w3.org/2000/svg" style="margin-top:var(--space-32); display:block; margin-left:auto; margin-right:auto;">
+          <circle cx="100" cy="60" r="30" fill="#86efac" opacity="0.7"/>
+          <text x="100" y="65" fill="#06502b" font-size="13" font-weight="600" text-anchor="middle" font-family="Inter, sans-serif">Joining</text>
+          <circle cx="300" cy="60" r="30" fill="#fde047" opacity="0.7"/>
+          <text x="300" y="65" fill="#713f12" font-size="13" font-weight="600" text-anchor="middle" font-family="Inter, sans-serif">Growth</text>
+          <circle cx="500" cy="60" r="30" fill="#fca5a5" opacity="0.7"/>
+          <text x="500" y="65" fill="#7f1d1d" font-size="13" font-weight="600" text-anchor="middle" font-family="Inter, sans-serif">Separation</text>
+          <line x1="135" y1="60" x2="265" y2="60" stroke="#94a3b8" stroke-width="1.5"/>
+          <line x1="335" y1="60" x2="465" y2="60" stroke="#94a3b8" stroke-width="1.5"/>
+          <text x="200" y="40" fill="#64748b" font-size="11" text-anchor="middle" font-family="Inter, sans-serif">entry → growth</text>
+          <text x="400" y="40" fill="#64748b" font-size="11" text-anchor="middle" font-family="Inter, sans-serif">growth → exit</text>
+        </svg>
+      </div>
+      <aside class="speaker-notes">Frame the cost: manual onboarding checklists get lost (gaps in training records); exit paperwork is incomplete (legal exposure); promotions are informal (grievances). Structured lifecycle fixes all three.<br><br>Transition: "Let's start with the entry point: Employee Onboarding."</aside>
+    </section>
+
+    <!-- Slide 6 — Employee Onboarding (entry path) -->
+    <section class="slide" id="slide-6">
+      <div class="slide-number">6 / 16</div>
+      <h2 class="slide-title">Employee Onboarding (entry path)</h2>
+      <div class="body">
+        <p>Employee Onboarding is a structured checklist that brings a new hire on board. It assigns tasks to specific users with due dates; completion triggers automatic Employee creation when paired with onboarding programs.</p>
+        <ul>
+          <li>Task lists per role (doctor / nurse / technician / admin).</li>
+          <li>Due dates + assignees per task.</li>
+          <li>Completion audit trail for compliance.</li>
+        </ul>
+        <div class="onboarding-timeline">
+          <div class="timeline-phase"><div class="phase-name">Pre-joining</div><div class="phase-density"><div class="density-bar"></div><div class="density-bar"></div><div class="density-bar empty"></div></div></div>
+          <div class="timeline-phase"><div class="phase-name">Day 1</div><div class="phase-density"><div class="density-bar"></div><div class="density-bar"></div><div class="density-bar"></div></div></div>
+          <div class="timeline-phase"><div class="phase-name">Day 14</div><div class="phase-density"><div class="density-bar"></div><div class="density-bar"></div><div class="density-bar empty"></div></div></div>
+          <div class="timeline-phase"><div class="phase-name">Day 30</div><div class="phase-density"><div class="density-bar"></div><div class="density-bar empty"></div><div class="density-bar empty"></div></div></div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Onboarding is the entry path. Density bars show task intensity at each phase — most tasks happen early (Day 1 setup, IT access) and taper toward Day 30 review.<br><br>Transition: "Tasks need structure — Onboarding Tasks & Templates."</aside>
+    </section>
+
+    <!-- Slide 7 — Onboarding Tasks & Templates -->
+    <section class="slide" id="slide-7">
+      <div class="slide-number">7 / 16</div>
+      <h2 class="slide-title">Onboarding Tasks &amp; Templates</h2>
+      <div class="body">
+        <p>An Onboarding Template is a reusable bundle of tasks (e.g., "Issue ID badge", "Complete HIPAA training", "Orient to ward 3") that HR can attach to a new Onboarding record.</p>
+        <ul>
+          <li>Per-role templates (doctor, nurse, technician, admin).</li>
+          <li>Task dependencies (e.g., "Issue ID" before "Grant badge access").</li>
+          <li>Progress tracking per task.</li>
+        </ul>
+        <div class="form-mockup">
+          <div class="form-row"><div class="label">Template</div><div class="value">Staff Nurse — Standard Onboarding</div></div>
+          <div class="form-row"><div class="label">Tasks</div><div class="value">7 (Issue ID badge → Submit documents → HIPAA training → Ward 3 orientation → Probation review (Day 30) → Payroll activation → Uniform allocation)</div></div>
+          <div class="form-row"><div class="label">Avg duration</div><div class="value">30 days</div></div>
+          <div class="form-row"><div class="label">Apply to</div><div class="value">Department: Nursing</div></div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Templates are reusable across all employees in a role. Build once, attach to many onboarding records. Hospital-specific (e.g., HIPAA training) for clinical staff; generic (e.g., badge issue) for everyone.<br><br>Transition: "Once onboarded, growth happens — Employee Promotion."</aside>
+    </section>
+
+    <!-- Slide 8 — Employee Promotion -->
+    <section class="slide" id="slide-8">
+      <div class="slide-number">8 / 16</div>
+      <h2 class="slide-title">Employee Promotion (role/grade/date change)</h2>
+      <div class="body">
+        <p>Employee Promotion is a formal record of a role or grade change. It updates the Employee's designation + grade + effective date, often triggering a Salary Structure Assignment update.</p>
+        <ul>
+          <li><code>promotion_date</code> — when the change takes effect.</li>
+          <li><code>new_designation</code> + <code>new_grade</code> — the target state.</li>
+          <li>Approval workflow per HR policy.</li>
+        </ul>
+        <div class="form-mockup">
+          <div class="form-row"><div class="label">Employee</div><div class="value">Employee A</div></div>
+          <div class="form-row"><div class="label">Designation</div><div class="value"><span class="value-old">Staff Nurse</span> → <span class="value-new">Senior Nurse</span></div></div>
+          <div class="form-row"><div class="label">Grade</div><div class="value"><span class="value-old">Grade 2</span> → <span class="value-new">Grade 3</span></div></div>
+          <div class="form-row"><div class="label">Effective date</div><div class="value">2025-09-01</div></div>
+          <div class="form-row"><div class="label">Approver</div><div class="value">HR Manager</div></div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Promotion updates Employee's designation + grade on a specific date. Often pairs with a Salary Structure Assignment update (out-of-scope per Venkat for v1 since no payroll). The audit trail is the value.<br><br>Transition: "Sometimes growth means horizontal move — Employee Transfer."</aside>
+    </section>
+
+    <!-- Slide 9 — Employee Transfer -->
+    <section class="slide" id="slide-9">
+      <div class="slide-number">9 / 16</div>
+      <h2 class="slide-title">Employee Transfer (intra-company move)</h2>
+      <div class="body">
+        <p>Employee Transfer moves an Employee between Departments or Branches within the same Company. It updates the Employee's department + branch + effective date.</p>
+        <ul>
+          <li>Intra-company only — separate from Promotion.</li>
+          <li><code>new_department</code> + <code>new_branch</code> — destination.</li>
+          <li>Approval workflow per HR policy.</li>
+        </ul>
+        <div class="form-mockup">
+          <div class="form-row"><div class="label">Employee</div><div class="value">Employee A</div></div>
+          <div class="form-row"><div class="label">Department</div><div class="value"><span class="value-old">Cardiology</span> → <span class="value-new">Emergency</span></div></div>
+          <div class="form-row"><div class="label">Branch</div><div class="value"><span class="value-old">Branch A</span> → <span class="value-new">Branch B</span></div></div>
+          <div class="form-row"><div class="label">Effective date</div><div class="value">2025-10-15</div></div>
+          <div class="form-row"><div class="label">Reason</div><div class="value">Operational need — ER surge staffing</div></div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Transfer is a horizontal move — same company, same employee, different role context. Common in hospitals for cross-training and staffing flexibility.<br><br>Transition: "Eventually the employee leaves — Employee Separation."</aside>
+    </section>
+
+    <!-- Slide 10 — Employee Separation -->
+    <section class="slide" id="slide-10">
+      <div class="slide-number">10 / 16</div>
+      <h2 class="slide-title">Employee Separation (exit path)</h2>
+      <div class="body">
+        <p>Employee Separation is the exit process. Approval flips Employee.status to "Left" and sets a mandatory Relieving Date. Triggers Leave Encashment calculation and final settlement processing.</p>
+        <ul>
+          <li>Status flip → <code>Left</code>.</li>
+          <li>Relieving Date mandatory.</li>
+          <li>Leave Encashment + final settlement hooks.</li>
+        </ul>
+        <div class="form-mockup">
+          <div class="form-row"><div class="label">Employee</div><div class="value">Employee A</div></div>
+          <div class="form-row"><div class="label">Reason</div><div class="value">Resignation</div></div>
+          <div class="form-row"><div class="label">Notice date</div><div class="value">2025-11-30</div></div>
+          <div class="form-row"><div class="label">Relieving date</div><div class="value">2025-12-31</div></div>
+          <div class="form-row"><div class="label">Status</div><div class="value"><span class="value-old">Active</span> → <span class="value-new">Left</span></div></div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Separation is the irreversible end-state. Once Employee.status flips to Left + Relieving Date is set, downstream docs (Salary Slip, Leave Application) respect this state.<br><br>Transition: "Throughout all this, skills get tracked — Employee Skill Map."</aside>
+    </section>
+
+    <!-- Slide 11 — Employee Skill Map -->
+    <section class="slide" id="slide-11">
+      <div class="slide-number">11 / 16</div>
+      <h2 class="slide-title">Employee Skill Map (skill tracking)</h2>
+      <div class="body">
+        <p>Employee Skill Map lets HR record skills per employee with proficiency levels. Useful for capability planning, training gap analysis, and roster assignment by skill.</p>
+        <ul>
+          <li>Skill name + proficiency (1–5).</li>
+          <li>Multiple skills per employee.</li>
+          <li>Search by skill across the workforce.</li>
+        </ul>
+        <table class="skill-matrix">
+          <thead>
+            <tr><th>Employee</th><th>ICU Care</th><th>Ward Mgmt</th><th>Spanish</th><th>ACLS</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Employee A</td><td><span class="proficiency-dot"></span></td><td><span class="proficiency-dot"></span></td><td><span class="proficiency-dot"></span></td><td><span class="proficiency-dot empty"></span></td></tr>
+            <tr><td>Employee B</td><td><span class="proficiency-dot empty"></span></td><td><span class="proficiency-dot"></span></td><td><span class="proficiency-dot empty"></span></td><td><span class="proficiency-dot"></span></td></tr>
+            <tr><td>Employee C</td><td><span class="proficiency-dot"></span></td><td><span class="proficiency-dot empty"></span></td><td><span class="proficiency-dot"></span></td><td><span class="proficiency-dot"></span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <aside class="speaker-notes">Skill Map is a flexible lookup: which nurses speak Spanish? Who has ACLS certification? Use the matrix for visual scan, the doctype filter for precise queries.<br><br>Transition: "Here's the visual onboarding workflow your HR team reads."</aside>
+    </section>
+
+    <!-- Slide 12 — Onboarding Workflow (SVG checklist) -->
+    <section class="slide" id="slide-12">
+      <div class="slide-number">12 / 16</div>
+      <h2 class="slide-title">Onboarding Workflow</h2>
+      <div class="body">
+        <p>The Onboarding Workflow is a step-by-step task checklist HR uses to track new-hire progress. Tasks are color-coded by status (pending / in-progress / complete).</p>
+        <div class="checklist">
+          <div class="checklist-row complete"><div class="task-name">Task 1 · Issue ID badge</div><div class="task-status complete">Complete</div></div>
+          <div class="checklist-row complete"><div class="task-name">Task 2 · Submit joining documents</div><div class="task-status complete">Complete</div></div>
+          <div class="checklist-row in-progress"><div class="task-name">Task 3 · Complete HIPAA training</div><div class="task-status in-progress">In Progress</div></div>
+          <div class="checklist-row pending"><div class="task-name">Task 4 · Orient to ward 3</div><div class="task-status pending">Pending</div></div>
+          <div class="checklist-row pending"><div class="task-name">Task 5 · Probation review (Day 30)</div><div class="task-status pending">Pending</div></div>
+          <div class="checklist-row pending"><div class="task-name">Task 6 · Confirm payroll activation</div><div class="task-status pending">Pending</div></div>
+        </div>
+      </div>
+      <aside class="speaker-notes">This is the view HR reads daily. Color-coding reads instantly: green done, yellow in-progress, gray pending. The visual format mirrors the §11.2 gold standard for onboarding workflows.<br><br>Transition: "What about the exit side? Separation workflow + final settlement."</aside>
+    </section>
+
+    <!-- Slide 13 — Separation Workflow & Final Settlement -->
+    <section class="slide" id="slide-13">
+      <div class="slide-number">13 / 16</div>
+      <h2 class="slide-title">Separation Workflow &amp; Final Settlement</h2>
+      <div class="body">
+        <p>Separation ties into Leave Encashment (convert unused leave to cash at exit) and final settlement (unused salary advance, gratuity, exit interview).</p>
+        <ul>
+          <li>Leave Encashment triggered at status flip.</li>
+          <li>Final settlement workflow per HR policy.</li>
+          <li>Exit interview tracking.</li>
+        </ul>
+        <div class="separation-flow">
+          <div class="separation-step"><div class="step-label">Step 1</div><div class="step-action">Submit resignation</div></div>
+          <div class="separation-arrow">→</div>
+          <div class="separation-step"><div class="step-label">Step 2</div><div class="step-action">HR Review</div></div>
+          <div class="separation-arrow">→</div>
+          <div class="separation-step"><div class="step-label">Step 3</div><div class="step-action">Clearance</div></div>
+          <div class="separation-arrow">→</div>
+          <div class="separation-step"><div class="step-label">Step 4</div><div class="step-action">Status → Left</div></div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Separation is a 4-step linear workflow: submit, review, clear, flip status. Each step gates the next. Leave Encashment (out-of-scope for v1, payroll deferred) and exit interview are parallel tracks.<br><br>Transition: "What does the data give us — Reports &amp; Analytics."</aside>
+    </section>
+
+    <!-- Slide 14 — Extending ERPNext with Custom Apps -->
+    <section class="slide" id="slide-14">
+      <div class="slide-number">14 / 16</div>
+      <h2 class="slide-title">Extending ERPNext with Custom Apps</h2>
+      <div class="body">
+        <ul>
+          <li>Layer cleanly above core — no forking.</li>
+          <li>Add custom fields, custom DocTypes, custom workflows.</li>
+          <li>Deploy via Git + <code>bench</code>.</li>
+        </ul>
+        <div class="stack-diagram">
+          <div class="stack-layer" style="background:var(--accent);">Specialized App Layer</div>
+          <div class="stack-layer hrms">HRMS Core (Lifecycle)</div>
+          <div class="stack-layer frappe">ERPNext &amp; Frappe</div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Custom apps extend without modifying core. Common customizations for hospitals: probation templates per role, exit clearance checklists, on-boarding auto-trigger from applicant status.<br><br>Transition: "Here's the full schema with relationship labels and field hints."</aside>
+    </section>
+
+    <!-- Slide 15 — Schema: Lifecycle Entities (full spec) -->
+    <section class="slide" id="slide-15">
+      <div class="slide-number">15 / 16</div>
+      <h2 class="slide-title">Schema: Lifecycle Entities (Full Spec)</h2>
+      <div class="body">
+        <p><strong>Architecture:</strong> How lifecycle entities relate across stages — with relationship labels, field hints, and a legend for color and connector meanings.</p>
+        <svg viewBox="0 0 740 320" width="740" height="320" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10" y="190" width="200" height="80" fill="none" stroke="#64748b" stroke-dasharray="4,4" stroke-width="1.5"/>
+          <text x="20" y="205" fill="#64748b" font-size="12" font-family="Inter, sans-serif">Entry</text>
+          <rect x="280" y="10" width="420" height="80" fill="none" stroke="#64748b" stroke-dasharray="4,4" stroke-width="1.5"/>
+          <text x="290" y="25" fill="#64748b" font-size="12" font-family="Inter, sans-serif">Growth</text>
+          <rect x="280" y="225" width="180" height="80" fill="none" stroke="#64748b" stroke-dasharray="4,4" stroke-width="1.5"/>
+          <text x="290" y="240" fill="#64748b" font-size="12" font-family="Inter, sans-serif">Exit</text>
+
+          <rect x="40" y="210" width="130" height="45" fill="#0ea5e9" rx="4"/>
+          <text x="105" y="232" fill="#ffffff" font-size="11" font-weight="600" text-anchor="middle" font-family="Inter, sans-serif">Employee Onboarding</text>
+          <text x="105" y="248" fill="#cbd5e1" font-size="8" text-anchor="middle" font-family="monospace">[employee, joining, status]</text>
+
+          <rect x="305" y="30" width="130" height="45" fill="#0ea5e9" rx="4"/>
+          <text x="370" y="52" fill="#ffffff" font-size="11" font-weight="600" text-anchor="middle" font-family="Inter, sans-serif">Employee Promotion</text>
+          <text x="370" y="68" fill="#cbd5e1" font-size="8" text-anchor="middle" font-family="monospace">[promotion_date, new_grade]</text>
+
+          <rect x="560" y="30" width="130" height="45" fill="#0ea5e9" rx="4"/>
+          <text x="625" y="52" fill="#ffffff" font-size="11" font-weight="600" text-anchor="middle" font-family="Inter, sans-serif">Employee Transfer</text>
+          <text x="625" y="68" fill="#cbd5e1" font-size="8" text-anchor="middle" font-family="monospace">[transfer_date, new_dept]</text>
+
+          <rect x="305" y="240" width="130" height="45" fill="#1e40af" rx="4"/>
+          <text x="370" y="262" fill="#ffffff" font-size="11" font-weight="600" text-anchor="middle" font-family="Inter, sans-serif">Employee Separation</text>
+          <text x="370" y="278" fill="#cbd5e1" font-size="8" text-anchor="middle" font-family="monospace">[separation_date, reason]</text>
+
+          <rect x="560" y="240" width="130" height="45" fill="#94a3b8" rx="4"/>
+          <text x="625" y="262" fill="#ffffff" font-size="11" font-weight="600" text-anchor="middle" font-family="Inter, sans-serif">Employee Skill Map</text>
+          <text x="625" y="278" fill="#cbd5e1" font-size="8" text-anchor="middle" font-family="monospace">[employee, skill, prof.]</text>
+
+          <rect x="305" y="130" width="140" height="60" fill="#1e40af" rx="4"/>
+          <text x="375" y="158" fill="#ffffff" font-size="14" font-weight="600" text-anchor="middle" font-family="Inter, sans-serif">Employee</text>
+          <text x="375" y="176" fill="#cbd5e1" font-size="8" text-anchor="middle" font-family="monospace">[name, status, branch]</text>
+
+          <!-- Connectors with labels per §15 #10 ordering -->
+          <line x1="170" y1="232" x2="305" y2="170" stroke="#94a3b8" stroke-width="1.5"/>
+          <rect x="220" y="195" width="40" height="14" fill="white" opacity="0.95"/>
+          <text x="240" y="206" fill="#64748b" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">starts</text>
+
+          <line x1="370" y1="75" x2="370" y2="130" stroke="#94a3b8" stroke-width="1.5"/>
+          <rect x="380" y="95" width="40" height="14" fill="white" opacity="0.95"/>
+          <text x="400" y="106" fill="#64748b" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">updates</text>
+
+          <line x1="560" y1="75" x2="445" y2="170" stroke="#94a3b8" stroke-width="1.5"/>
+          <rect x="480" y="115" width="40" height="14" fill="white" opacity="0.95"/>
+          <text x="500" y="126" fill="#64748b" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">moves</text>
+
+          <line x1="370" y1="190" x2="370" y2="240" stroke="#94a3b8" stroke-width="1.5"/>
+          <rect x="380" y="208" width="30" height="14" fill="white" opacity="0.95"/>
+          <text x="395" y="219" fill="#64748b" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">ends</text>
+
+          <line x1="560" y1="262" x2="445" y2="170" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3"/>
+          <rect x="478" y="195" width="48" height="14" fill="white" opacity="0.95"/>
+          <text x="502" y="206" fill="#64748b" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">maps to</text>
+
+          <!-- Legend box (bottom-left) -->
+          <rect x="15" y="295" width="360" height="22" fill="white" stroke="#64748b" stroke-width="1" rx="3"/>
+          <rect x="22" y="300" width="10" height="10" fill="#0ea5e9"/>
+          <text x="36" y="309" fill="#64748b" font-size="9" font-family="Inter, sans-serif">Entry / Growth</text>
+          <rect x="116" y="300" width="10" height="10" fill="#1e40af"/>
+          <text x="130" y="309" fill="#64748b" font-size="9" font-family="Inter, sans-serif">Exit / Master</text>
+          <rect x="216" y="300" width="10" height="10" fill="#94a3b8"/>
+          <text x="230" y="309" fill="#64748b" font-size="9" font-family="Inter, sans-serif">Supporting ref.</text>
+          <line x1="306" y1="305" x2="320" y2="305" stroke="#94a3b8" stroke-width="1.5"/>
+          <text x="324" y="309" fill="#64748b" font-size="9" font-family="Inter, sans-serif">lifecycle</text>
+          <line x1="358" y1="303" x2="358" y2="307" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,2"/>
+          <text x="364" y="309" fill="#64748b" font-size="9" font-family="Inter, sans-serif">support</text>
+        </svg>
+        <p style="font-size:14px; color:var(--secondary); margin-top:var(--space-16);">Onboarding enters, Promotion + Transfer grow, Separation exits. Employee Skill Map is a supporting reference. All four lifecycle documents update the central Employee master.</p>
+      </div>
+      <aside class="speaker-notes">Walk the audience through the directional flow. Read the labels: "starts" (Onboarding → Employee), "updates" (Promotion → Employee), "moves" (Transfer → Employee), "ends" (Separation → Employee), "maps to" (Skill Map → Employee). The dashed groups show Entry / Growth / Exit phases. Skill Map is outside any grouping as a supporting reference.<br><br>Transition: "Let's wrap up."</aside>
+    </section>
+
+    <!-- Slide 16 — Conclusion + Why choose + Next Steps -->
+    <section class="slide" id="slide-16">
+      <div class="slide-number">16 / 16</div>
+      <h2 class="slide-title">Conclusion + Next Steps</h2>
+      <div class="body">
+        <h3>Key Takeaways</h3>
+        <ol>
+          <li>Lifecycle covers hire-to-retire: Onboarding, Promotion, Transfer, Separation.</li>
+          <li>Each lifecycle document updates the central Employee master.</li>
+          <li>Skill Map + onboarding templates + custom apps extend without core changes.</li>
+        </ol>
+        <h3>Why choose ERPNext + Haritha</h3>
+        <ul>
+          <li>Open source + complete code ownership.</li>
+          <li>Lifecycle workflow templates reusable across clients.</li>
+          <li>Active community + extensible architecture.</li>
+        </ul>
+        <h3>Next Steps</h3>
+        <ul>
+          <li>Demo sandbox: <code>demo.example.com</code></li>
+          <li>Pilot: 4–8 weeks (one Department, full hire-to-retire)</li>
+          <li>Architecture review with our team</li>
+        </ul>
+      </div>
+      <aside class="speaker-notes">Recap the three takeaways. The "Why choose" absorbs the vendor pitch (matches the org and attendance deck pattern). Next-step bullets give the audience a concrete path from this deck to a working deployment.<br><br>Transition: "Thank you and welcome to the Q&A."</aside>
+    </section>
+
+  </div>
+
+  <script>
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 's' || e.key === 'S') {
+        document.body.classList.toggle('show-speaker-notes');
+      }
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+        e.preventDefault();
+        var current = document.querySelector('.slide.active');
+        if (current) {
+          var next = current.nextElementSibling;
+          if (next && next.classList.contains('slide')) {
+            current.classList.remove('active');
+            next.classList.add('active');
+          }
+        }
+      }
+      if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        var current = document.querySelector('.slide.active');
+        if (current) {
+          var prev = current.previousElementSibling;
+          if (prev && prev.classList.contains('slide')) {
+            current.classList.remove('active');
+            prev.classList.add('active');
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
