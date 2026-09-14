@@ -12,7 +12,7 @@
 | org-management-cmm-l5-presentation.md | Organization Management | org-management-presentation.html | 2.2 |
 | attendance-management-cmm-l5-presentation.md | Attendance Management | attendance-management-presentation.html | 2.1 |
 | leave-management-cmm-l5-presentation.md | Leave Management | leave-management-presentation.html | 1.0 (pending rewrite) |
-| lifecycle-management-cmm-l5-presentation.md | Employee Lifecycle | lifecycle-management-presentation.html | 1.0 (pending rewrite) |
+| lifecycle-management-cmm-l5-presentation.md | Employee Lifecycle | lifecycle-management-presentation.html | 2.0 |
 | frappe-hr-overview-cmm-l5-presentation.md | Frappe HR Overview (synthesis) | frappe-hr-overview-presentation.html | 1.0 (pending rewrite) |
 
 ## Prompt Maintenance Workflow
