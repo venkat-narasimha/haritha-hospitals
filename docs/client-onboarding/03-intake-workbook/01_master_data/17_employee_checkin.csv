@@ -1,0 +1,12 @@
+fieldname,label,type,required,example,validation,client_value,notes
+employee,Employee,Link,Y,EMP-A001,must exist,,
+employee_name,Employee Name,Data,Y,Employee A,non-empty,join key for prod to dev ID remap,
+time,Time,Datetime,Y,2025-09-01 09:00:00,YYYY-MM-DD HH:MM:SS,24h clock,
+log_type,Log Type,Select,Y,IN,IN/OUT,case-sensitive,
+device_id,Device ID,Data,N,BIO-A001,unique if set,biometric device ID,
+source,Source,Data,N,Biometric,Biometric/Mobile/Manual/ERP,origin of punch,
+skip_auto_attendance,Skip Auto Attendance,Check,N,0,0/1,set 1 to exclude from auto-attendance,
+shift,Shift,Link,N,Shift Type A,must exist if set,for shift-bound checkins,
+latitude,Latitude,Float,N,17.3850,-90 to 90,geolocation from device,
+longitude,Longitude,Float,N,78.4867,-180 to 180,geolocation from device,
+attendance,Attendance,Link,N,HR-ATT-26-09-00001,must exist if set,back-link after auto-attendance,
