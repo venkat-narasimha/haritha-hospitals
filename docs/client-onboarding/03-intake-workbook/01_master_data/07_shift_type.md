@@ -12,7 +12,7 @@
 | `name` | Shift Name | Data | Y | "Morning-8h" | unique | autoname from this field |
 | `start_time` | Start Time | Time | Y | "06:00:00" | HH:MM:SS | 24h format |
 | `end_time` | End Time | Time | Y | "14:00:00" | HH:MM:SS | end<start ⇒ night shift spans midnight |
-| `holiday_list` | Holiday List | Link → Holiday List | N | "Telangana 2026" | must exist | Inherits from Employee/Company if blank |
+| `holiday_list` | Holiday List | Link → Holiday List | N | "State A Holiday Calendar 2026" | must exist | Inherits from Employee/Company if blank |
 | `color` | Color | Select | N | "Blue" | Blue/Cyan/Fuchsia/Green/Lime/Orange/Pink/Red/Violet/Yellow | For roster UI |
 | `enable_auto_attendance` | Enable Auto Attendance | Check | N | 1 | 0/1 | Drives scheduler |
 | `determine_check_in_and_check_out` | Determine Check-in/out | Select | N | "Alternating entries" | "Alternating entries" vs "Strictly based on Log Type" | Biometric handling |

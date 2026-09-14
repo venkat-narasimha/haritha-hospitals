@@ -1,6 +1,6 @@
 fieldname,label,type,required,example,validation,client_value,notes
 department_name,Department Name,Data,Y,Cardiology,unique within company,,
-company,Company,Link,Y,Haritha Hospitals Pvt Ltd,must exist,,
+company,Company,Link,Y,ABC Healthcare Pvt Ltd,must exist,,
 parent_department,Parent Department,Link,N,Clinical Services,must exist if set,,
 is_group,Is Group,Check,N,0,0/1,,
 leave_block_list,Leave Block List,Link,N,,must exist if set,,

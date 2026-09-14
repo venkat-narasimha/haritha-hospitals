@@ -10,7 +10,7 @@
 | fieldname | label | type | required | example | validation | notes |
 |---|---|---|---|---|---|---|
 | `branch` | Branch | Data | Y | "Main Hospital" | unique | The visible name |
-| `company` | Company | Link → Company | N | "Haritha Hospitals Pvt Ltd" | must exist | Branch can belong to one company |
+| `company` | Company | Link → Company | N | "ABC Healthcare Pvt Ltd" | must exist | Branch can belong to one company |
 
 ## Healthcare-specific fields (custom — recommended)
 
@@ -19,8 +19,8 @@
 | `branch_code` | Branch Code | Data | N | "MAIN" | Short code for reports (≤6 chars) |
 | `branch_type` | Branch Type | Select | N | "Hospital" | Hospital / Clinic / Lab / Pharmacy / Office |
 | `address_line_1` | Address Line 1 | Data | N | "123 MG Road" | For geofencing + statutory |
-| `city` | City | Data | N | "Hyderabad" | – |
-| `state` | State | Link → State | N | "Telangana" | Drives Holiday List selection |
+| `city` | City | Data | N | "City A" | – |
+| `state` | State | Link → State | N | "State A" | Drives Holiday List selection |
 | `pincode` | Pincode | Data | N | "500001" | 6-digit Indian pincode |
 | `latitude` | Latitude | Float | N | 17.3850 | – |
 | `longitude` | Longitude | Float | N | 78.4867 | – |
@@ -39,7 +39,7 @@
 
 ## Typical branches for a hospital chain
 
-- Main Hospital (Hyderabad)
+- Main Hospital (City A)
 - North Wing / Annexe (if separate building)
 - OPD Block
 - Diagnostic Centre (separate location)

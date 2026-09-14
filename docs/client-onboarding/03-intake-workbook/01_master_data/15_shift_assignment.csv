@@ -3,7 +3,7 @@ name,SA Document Name,Data,Y,HR-SHA-26-09-00001,unique,REQUIRED — autoname='pr
 employee,Employee,Link,Y,EMP-0001,must exist,,
 employee_name,Employee Name,Data,Y,Aarav Kumar Sharma,non-empty,REQUIRED for prod→dev ID remap (GOTCHA #7),
 shift_type,Shift Type,Link,Y,Morning-8h,must exist,,
-company,Company,Link,Y,Haritha Hospitals Pvt Ltd,auto-fetched from employee,,
+company,Company,Link,Y,ABC Healthcare Pvt Ltd,auto-fetched from employee,,
 start_date,Start Date,Date,Y,2026-09-01,YYYY-MM-DD,,
 end_date,End Date,Date,N,2026-09-30,YYYY-MM-DD,blank = ongoing,
 status,Status,Select,N,Active,Active/Inactive,,

@@ -12,7 +12,7 @@
 | `from_date` | From Date | Date | Y | "2026-01-01" | YYYY-MM-DD | Period start |
 | `to_date` | To Date | Date | Y | "2026-12-31" | YYYY-MM-DD, >from_date | Period end |
 | `is_active` | Is Active | Check | Y | 1 | 0/1 | Only one active per company |
-| `company` | Company | Link → Company | N | "Haritha Hospitals Pvt Ltd" | must exist | – |
+| `company` | Company | Link → Company | N | "ABC Healthcare Pvt Ltd" | must exist | – |
 | `fiscal_year` | Fiscal Year | Link → Fiscal Year | N | "FY 2026" | must exist | For reporting |
 
 ## Healthcare-specific fields

@@ -9,11 +9,11 @@
 
 | fieldname | label | type | required | example | validation | notes |
 |---|---|---|---|---|---|---|
-| `holiday_list_name` | Holiday List Name | Data | Y | "Telangana 2026" | unique | Visible name |
+| `holiday_list_name` | Holiday List Name | Data | Y | "State A Holiday Calendar 2026" | unique | Visible name |
 | `from_date` | From Date | Date | Y | "2026-01-01" | YYYY-MM-DD | Start of period |
 | `to_date` | To Date | Date | Y | "2026-12-31" | YYYY-MM-DD, ≥from_date | End of period |
 | `country` | Country | Link → Country | N | "India" | auto-fills state list | For auto-helper |
-| `subdivision` | Subdivision | Link | N | "Telangana" | Indian state | For auto-helper |
+| `subdivision` | Subdivision | Link | N | "State A" | Indian state | For auto-helper |
 | `weekly_off` | Weekly Off | Select | N | "Sunday" | Sun–Sat | One-click fill (uses `holidays` PyPI) |
 | `holidays` | Holidays (child table) | Table | Y | (see below) | each row: date + description | REQUIRED child table |
 
@@ -44,7 +44,7 @@
 - Mixing weekly off into the list (use `weekly_off` setting instead).
 - Importing 2025 holidays for a 2026 deployment — confirm period alignment with go-live.
 
-## Standard holidays for Indian hospitals (Telangana 2026 example)
+## Standard holidays for Indian hospitals (State A Holiday Calendar 2026 example)
 
 1. Republic Day (Jan 26)
 2. Maha Shivaratri (Feb)
@@ -56,7 +56,7 @@
 8. Ramzan Eid (varies — lunar)
 9. Independence Day (Aug 15)
 10. Ganesh Chaturthi (Aug/Sep)
-11. Bathukamma (Oct, Telangana-specific)
+11. Regional cultural festival (Oct, state-specific)
 12. Diwali (Oct/Nov)
 13. Christmas (Dec 25)
 + weekly off: Sunday

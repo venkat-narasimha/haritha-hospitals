@@ -41,7 +41,7 @@
 
 - [ ] **PF Settings** — PF Number format, UAN enabled, VPF option
 - [ ] **ESI Settings** — ESI Number format, applicability threshold (gross ≤₹21,000/month)
-- [ ] **Professional Tax** — State-wise (e.g., Telangana: ₹200 if gross >₹15,000/month)
+- [ ] **Professional Tax** — State-wise (e.g., State A: ₹200 if gross >₹15,000/month)
 - [ ] **TDS / Income Tax** — Old regime / New regime / Both (let employee choose)
 - [ ] **Gratuity** — Provision rate (e.g., 4.81% of basic)
 - [ ] **Bonus / Ex-gratia** — Per Payment of Bonus Act

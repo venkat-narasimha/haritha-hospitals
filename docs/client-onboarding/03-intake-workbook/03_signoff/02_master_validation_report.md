@@ -1,6 +1,6 @@
 # Master Validation Report — Template
 
-**Project:** Haritha Hospitals ERPNext + HRMS
+**Project:** ABC Healthcare ERPNext + HRMS
 **Date:** YYYY-MM-DD
 **Phase:** 3 — Validation & Dry-Run Migration
 **Sandbox site:** (URL)

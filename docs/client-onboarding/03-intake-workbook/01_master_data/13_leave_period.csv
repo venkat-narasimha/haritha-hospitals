@@ -2,5 +2,5 @@ fieldname,label,type,required,example,validation,client_value,notes
 from_date,From Date,Date,Y,2026-01-01,YYYY-MM-DD,,
 to_date,To Date,Date,Y,2026-12-31,YYYY-MM-DD,>from_date,,
 is_active,Is Active,Check,Y,1,0/1,only one active per company,,
-company,Company,Link,N,Haritha Hospitals Pvt Ltd,must exist,,
+company,Company,Link,N,ABC Healthcare Pvt Ltd,must exist,,
 fiscal_year,Fiscal Year,Link,N,FY 2026,must exist,,

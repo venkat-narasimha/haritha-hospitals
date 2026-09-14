@@ -14,7 +14,7 @@
 | `to_date` | To Date | Date | Y | "2026-09-30" | YYYY-MM-DD, ≥from_date | End of schedule |
 | `frequency` | Frequency | Select | Y | "Every Week" | Every Week / Every 2 Weeks / Every 3 Weeks / Every 4 Weeks | Recurrence |
 | `repeat_on_days` | Repeat On Days (child table) | Table → Assignment Rule Day | Y | (see below) | child: day | REQUIRED child table |
-| `company` | Company | Link → Company | N | "Haritha Hospitals Pvt Ltd" | must exist | Defaults from shift_type |
+| `company` | Company | Link → Company | N | "ABC Healthcare Pvt Ltd" | must exist | Defaults from shift_type |
 | `department` | Department | Link → Department | N | "ICU" | must exist | Optional scope |
 | `enable_auto_shift_schedule` | Enable Auto Shift Schedule | Check | N | 1 | 0/1 | Auto-generate Shift Assignments |
 | `shift_assignments` | Shift Assignments (child table) | Table | N | (see below) | child: employee + dates | Pre-filled assignments |

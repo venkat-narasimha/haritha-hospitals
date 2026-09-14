@@ -1,9 +1,9 @@
 fieldname,label,type,required,example,validation,client_value,notes
-holiday_list_name,Holiday List Name,Data,Y,Telangana 2026,unique,,
+holiday_list_name,Holiday List Name,Data,Y,State A Holiday Calendar 2026,unique,,
 from_date,From Date,Date,Y,2026-01-01,YYYY-MM-DD,,
 to_date,To Date,Date,Y,2026-12-31,YYYY-MM-DD,>=from_date,,
 country,Country,Link,N,India,auto-fills state list,,
-subdivision,Subdivision,Link,N,Telangana,Indian state,,
+subdivision,Subdivision,Link,N,State A,Indian state,,
 weekly_off,Weekly Off,Select,N,Sunday,Sun-Sat,,
 holiday_date (child),Date,Date,Y,2026-01-26,within parent from/to,,
 description (child),Description,Data,Y,Republic Day,,,

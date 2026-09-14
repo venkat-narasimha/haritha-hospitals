@@ -26,7 +26,7 @@
 
 | fieldname | label | type | required | example | validation | notes |
 |---|---|---|---|---|---|---|
-| `company` | Company | Link → Company | Y | "Haritha Hospitals Pvt Ltd" | must exist | – |
+| `company` | Company | Link → Company | Y | "ABC Healthcare Pvt Ltd" | must exist | – |
 | `department` | Department | Link → Department | N | "Cardiology" | must exist | – |
 | `designation` | Designation | Link → Designation | N | "Senior Consultant" | must exist | – |
 | `branch` | Branch | Link → Branch | N | "Main Hospital" | must exist | – |
@@ -42,7 +42,7 @@
 |---|---|---|---|---|---|---|
 | `default_shift` | Default Shift | Link → Shift Type | N | "Morning-8h" | must exist | Fallback when no Shift Assignment |
 | `attendance_device_id` | Attendance Device ID (Biometric) | Data | N | "BIO-12345" | unique if set | Links to Employee Checkin |
-| `holiday_list` | Holiday List | Link → Holiday List | N | "Telangana 2026" | must exist | Defaults from Company |
+| `holiday_list` | Holiday List | Link → Holiday List | N | "State A Holiday Calendar 2026" | must exist | Defaults from Company |
 
 ### Contact
 
@@ -62,7 +62,7 @@
 | `blood_group` | Blood Group | Select | N | "B+" | A+/A-/B+/B-/AB+/AB-/O+/O- | Required for hospital staff (statutory) |
 | `marital_status` | Marital Status | Select | N | "Married" | Single/Married/Divorced/Widowed | – |
 | `passport_number` | Passport Number | Data | N | "P1234567" | – | – |
-| `place_of_issue` | Place of Issue | Data | N | "Hyderabad" | – | – |
+| `place_of_issue` | Place of Issue | Data | N | "City A" | – | – |
 | `allergies` | Allergies | Small Text | N | "Penicillin" | – | – |
 | `medical_concerns` | Medical Concerns | Small Text | N | "" | – | – |
 
@@ -79,8 +79,8 @@
 
 | fieldname | label | type | required | example | notes |
 |---|---|---|---|---|---|
-| `medical_council_reg_no` | Medical Council Reg. No. | Data | Y* | "TSMC-12345" | *Required for all doctors (NMC/state council) |
-| `reg_council` | Registration Council | Link | N | "Telangana Medical Council" | NMC / State council |
+| `medical_council_reg_no` | Medical Council Reg. No. | Data | Y* | "REG-A-0001" | *Required for all doctors (NMC/state council) |
+| `reg_council` | Registration Council | Link | N | "State Medical Council" | NMC / State council |
 | `reg_validity_date` | Registration Validity | Date | N | "2027-12-31" | License expiry |
 | `specialization` | Specialization | Data | N | "Cardiology" | Free text or Link if master exists |
 | `police_verification_date` | Police Verification Date | Date | N | "2024-06-15" | Mandatory for some hospitals |

@@ -50,12 +50,12 @@ Status legend:
 ### 05 — Branch — ✅ no change needed
 **DocType:** `Branch` | **GOTCHAs touched:** none
 - Standard upsert path. CSV + MD cover `branch`, `company`, custom `branch_code`, `branch_type`, `nabh_accredited`, `bed_count`. Correct Link to `Company`.
-- Sample data already generic (Main Hospital, Telangana, Hyderabad, etc.).
+- Sample data already generic (Main Hospital, State A, City A, etc.).
 
 ### 06 — Holiday List — ✅ no change needed
 **DocType:** `Holiday List` (+ child `Holiday`) | **GOTCHAs touched:** none
 - Standard upsert path. CSV correctly distinguishes parent fields (`holiday_list_name`, `from_date`, `to_date`, `weekly_off`) from child-table rows (`holiday_date`, `description`). MD notes the weekly-off helper integration.
-- Sample data already generic (Telangana 2026, Sunday weekly off, Republic Day, etc.).
+- Sample data already generic (State A Holiday Calendar 2026, Sunday weekly off, Republic Day, etc.).
 
 ### 07 — Shift Type — ⚠️ fixed
 **DocType:** `Shift Type` | **GOTCHAs touched:** #4, #6
@@ -66,7 +66,7 @@ Status legend:
 ### 08 — Shift Location — ⚠️ fixed
 **DocType:** `Shift Location` | **GOTCHAs touched:** #4, #9
 - CSV: header is complete against the controller's field list. `latitude`, `longitude`, `checkin_radius`, `zone_type`, `floor` all correctly typed.
-- MD: was missing migration notes. **Fixed:** added "Migration notes" section covering (a) autoname=`field:location_name` explicit name requirement (GOTCHA #4, `PROMPT_AUTONAME_DOCTYPES`), (b) the `_ensure_shift_location("Hyderabad")` pre-create in `run()` (GOTCHA #9) and what to do if the client uses a different canonical name, (c) upsert behaviour for coordinate changes, (d) out-of-scope fields not auto-populated by the script.
+- MD: was missing migration notes. **Fixed:** added "Migration notes" section covering (a) autoname=`field:location_name` explicit name requirement (GOTCHA #4, `PROMPT_AUTONAME_DOCTYPES`), (b) the `_ensure_shift_location("City A")` pre-create in `run()` (GOTCHA #9) and what to do if the client uses a different canonical name, (c) upsert behaviour for coordinate changes, (d) out-of-scope fields not auto-populated by the script.
 - Sample data already generic (Main Hospital - ICU, etc.).
 
 ### 09 — Shift Schedule — ⚠️ fixed
@@ -79,7 +79,7 @@ Status legend:
 **DocType:** `Employee` | **GOTCHAs touched:** #6, #7
 - CSV: comprehensive coverage of standard + custom + contact + emergency fields. Field types correctly declared (Date, Link, Select, Data, Small Text, Table).
 - MD: was missing migration notes. **Fixed:** added "Migration notes" section covering (a) Gender + Shift Type must migrate first because `default_shift` and `gender` are Link fields (GOTCHA #6), (b) Employee ID remap by `employee_name` (GOTCHA #7) and the join-key requirement, (c) upsert by `name` not `employee_number`, (d) custom fields pass through `_clean_payload()`, (e) date validation, (f) `status` default behaviour.
-- Sample data already generic (Aarav Kumar Sharma, HRH-EMP-0001, BIO-12345, TSMC-12345, etc.).
+- Sample data already generic (Aarav Kumar Sharma, HRH-EMP-0001, BIO-12345, REG-A-0001, etc.).
 
 ### 11 — Leave Type — ✅ no change needed
 **DocType:** `Leave Type` | **GOTCHAs touched:** none
@@ -104,7 +104,7 @@ Status legend:
 ### 15 — Shift Assignment — ⚠️ fixed
 **DocType:** `Shift Assignment` (submittable) | **GOTCHAs touched:** #7, #9
 - CSV: was missing `name`, `employee_name`, `shift_request`, `shift_schedule_assignment` columns. **Fixed:** added all four columns with explicit documentation. `name` is required (autoname='prompt' contract), `employee_name` is required (prod→dev ID remap join key per GOTCHA #7), `shift_request` is optional Link preserved by script, `shift_schedule_assignment` is documented as NULLIFIED by script (GOTCHA #9) — leave blank.
-- MD: was missing migration notes. **Fixed:** added "Migration notes" section covering (a) employee ID remap by `employee_name` (GOTCHA #7), (b) `shift_schedule_assignment` NULLIF (GOTCHA #9), (c) `shift_request` Link preservation depends on `Shift Request` migrating first, (d) `Shift Location` pre-create requirement (GOTCHA #9) and the `Hyderabad` canonical-name issue, (e) `docstatus` preserved from source, (f) upsert by `name` semantics for re-runs.
+- MD: was missing migration notes. **Fixed:** added "Migration notes" section covering (a) employee ID remap by `employee_name` (GOTCHA #7), (b) `shift_schedule_assignment` NULLIF (GOTCHA #9), (c) `shift_request` Link preservation depends on `Shift Request` migrating first, (d) `Shift Location` pre-create requirement (GOTCHA #9) and the `City A` canonical-name issue, (e) `docstatus` preserved from source, (f) upsert by `name` semantics for re-runs.
 - Sample data already generic (HR-SHA-26-09-00001, Aarav Kumar Sharma, Morning-8h, etc.).
 
 ---
@@ -160,9 +160,9 @@ All 7 client-visible gotchas (#4–#10) are now surfaced in at least one templat
 2. **Account / Cost Center / Item Group / UOM / Item / Gender / Company.** These DocTypes are migrated by the script but do NOT have intake-workbook templates (Gender is auto-seeded by Frappe; the rest are system / accounting masters covered elsewhere). If the client needs to import custom UOMs or non-stock Item Groups, that's a Wave 2 ask.
 3. **Holiday List `applicable_to`.** Marked as a custom field in template 06 — verify the client has added it to their DocType before bulk import, or the column will be silently discarded.
 4. **`name` field on Shift Schedule, Shift Assignment, Shift Request.** The script handles autoname='prompt' transparently, but the templates only added `name` to template 15 (Shift Assignment). Wave 2 should add explicit `name` columns to 09 Shift Schedule and to the Shift Request template if/when one is created.
-5. **`haritha_hospital.scripts.generate_shift_assignments`.** Referenced in template 15's MD but does NOT exist yet (not in `scripts/`). Either Wave 2 generates it or the MD reference is removed.
+5. **`[your_app].scripts.generate_shift_assignments`.** Referenced in template 15's MD but does NOT exist yet (not in `scripts/`). Either Wave 2 generates it or the MD reference is removed.
 6. **`scripts/fetch_master_data.py`.** Companion script referenced in the migration script's `USAGE` section but not present in `scripts/`. If the client needs to re-run the migration from a new prod dump, this script must be written first.
-7. **`_ensure_shift_location("Hyderabad")` hard-code.** Documented in templates 08 and 15 as a caveat. Wave 2 could parameterize this via env var or move it to a config block in `migrate_master_data.py`.
+7. **`_ensure_shift_location("City A")` hard-code.** Documented in templates 08 and 15 as a caveat. Wave 2 could parameterize this via env var or move it to a config block in `migrate_master_data.py`.
 
 ---
 

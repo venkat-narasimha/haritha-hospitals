@@ -4,7 +4,7 @@
 **Owner (partner side):** Implementation Partner Tech Lead
 **Phase:** 2 — Environment Provisioning + Master-Data Intake
 
-This workbook collects all master data needed to import Haritha Hospitals into ERPNext + HRMS. It is organised into three sub-folders:
+This workbook collects all master data needed to import ABC Healthcare into ERPNext + HRMS. It is organised into three sub-folders:
 
 - `01_master_data/` — 15 DocType sheets (paired MD + CSV)
 - `02_settings_checklists/` — HR / Payroll / Auto-Attendance settings (Phase 5)

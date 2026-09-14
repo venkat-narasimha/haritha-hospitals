@@ -260,7 +260,7 @@ Employee C,Sick Leave,2025-09-25,2025-09-25,1,2025-09-25,Doctor appointment,user
 | Employment Type      | `field:name`                   | value of `name`                           | `Full-time`              |
 | Employee Grade       | `field:grade_name`             | value of `grade_name`                     | `T2`                     |
 | Branch               | `field:branch`                 | value of `branch`                         | `Site A`                 |
-| Holiday List         | `field:holiday_list_name`      | value of `holiday_list_name`              | `Telangana 2026`         |
+| Holiday List         | `field:holiday_list_name`      | value of `holiday_list_name`              | `State A Holiday Calendar 2026`         |
 | Shift Type           | `prompt` (manual)              | client-supplied in `name` column          | `Morning`                |
 | Shift Location       | `field:location_name`          | value of `location_name`                  | `Site A — Main Block`    |
 | Shift Schedule       | `prompt` (manual)              | client-supplied in `name` column          | `Sched-A`                |

@@ -10,7 +10,7 @@
 | fieldname | label | type | required | example | validation | notes |
 |---|---|---|---|---|---|---|
 | `department_name` | Department Name | Data | Y | "Cardiology" | unique within company | The visible name |
-| `company` | Company | Link → Company | Y | "Haritha Hospitals Pvt Ltd" | must exist | Multi-company possible |
+| `company` | Company | Link → Company | Y | "ABC Healthcare Pvt Ltd" | must exist | Multi-company possible |
 | `parent_department` | Parent Department | Link → Department | N | "Clinical Services" | must exist if set | Use `is_group=1` for parents |
 | `is_group` | Is Group | Check | N | 0 | 0/1 | Tree-structure flag |
 | `leave_block_list` | Leave Block List | Link → Leave Block List | N | "" | must exist if set | Block leave during critical periods |
