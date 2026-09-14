@@ -117,7 +117,7 @@ Every slide MUST include:
 ### Early Schema Preview (slide 4 — clean preview, no labels)
 
 **Slide 4 — Schema: Organization Entities** (1.5 min) — EARLY PREVIEW
-- Inline SVG entity-relationship diagram (740×320 viewBox; see §13 for slide 4 variant).
+- Inline SVG entity-relationship diagram (740×320 viewBox; see §13 § Schema Flowchart § Slide 4 variant).
 - Above: `<strong>Architecture:</strong> How organization entities relate across layers.`
 - Below: "The relational model connects master data — Company, Department, Branch, Designation, Grade, Employment Type — to the Employee master."
 - Speaker notes: "Employee sits at the center. Six reference entities ring around it: Company (legal, top), Department and Branch (org structure, mid), Designation, Grade, and Employment Type (employee attributes, lower). Two dashed groups show the layering. Brief mention only — recap: Schema shown earlier in the deck."
@@ -203,7 +203,7 @@ Every slide MUST include:
 - Speaker notes: "Custom fields let you add a `Cost Center Code` to Department without forking. Custom DocTypes add whole new entities — e.g., `Employee Skill Matrix` — linked to Employee."
 - Transition: "Here's the full schema, now with relationship labels."
 
-**Slide 16 — Schema: Organization Entities** (3 min) — full spec, ENHANCED over slide 4 (see §13 for slide 16 variant)
+**Slide 16 — Schema: Organization Entities** (3 min) — full spec, ENHANCED over slide 4 (see §13 § Schema Flowchart § Slide 16 variant)
 - Above: `<strong>Architecture:</strong> How organization entities relate across layers — with relationship labels, field hints, and a legend for color and connector meanings.`
 - Below: "Employee is the only mandatory DocType; the six surrounding entities are linked references. Direct connectors are solid lines; hierarchical relations are dashed."
 - Speaker notes: "Walk the audience through each connection. Read the labels: 'belongs to' (Department), 'located at' (Branch), 'has role' (Designation), 'has grade' (Grade), 'contract type' (Employment Type), 'employed by' (Company). The dashed group rectangles show the Org Hierarchy vs Employee Attributes layering. Optional entities can be disabled per Company."
@@ -345,60 +345,49 @@ Slide 12 MUST contain exactly this `<table class="field-table">` block — 3 col
 
 > NOTE: The last row's second cell intentionally uses `field-purpose` class for the date/status values and the third cell is a separate `field-purpose` rendered blank — this matches the canonical screenshot.
 
-## 13. Schema Flowchart (Slides 4 and 16)
+## 13. Schema Flowchart (Slides 4 + 16)
 
-Slides 4 and 16 contain **different** inline SVG variants (740×320 viewBox). Slide 4 is the clean preview; slide 16 is the enhanced full spec.
+Both slides 4 and 16 contain an inline SVG (740×320 viewBox). They share the same entity set + groupings but differ in annotation density.
 
-### 13.1 Slide 4 (clean preview) — entities + groupings, NO labels
+### 13.1 Slide 4 variant — clean preview
 
-- **7 entity boxes** (rect + 1-line text):
-  - **Company** — top-center (primary `#1e40af`)
-  - **Department** — mid-left (primary)
-  - **Branch** — mid-right (primary)
-  - **Employee** — center (primary, slightly larger)
-  - **Employment Type** — bottom-left (accent `#0ea5e9`)
-  - **Grade** — bottom-center (accent)
-  - **Designation** — bottom-right (accent)
-- **2 dashed group rectangles** (`stroke-dasharray="4 4"`, slate stroke), each with small label outside the upper-left corner:
-  - **Org Hierarchy** — encloses Company + Department + Branch (top half of canvas).
-  - **Employee Attributes** — encloses Employment Type + Grade + Designation (bottom strip of canvas).
-- **7 connectors** — plain slate (`#94a3b8`) lines. One dashed line for the hierarchical Department→Company edge. **NO connector labels, NO field hints, NO legend.**
+- 7 entity boxes (rect+text): Company (top-center, primary), Employee (center, primary), Department (mid-left with parent/child indicator, primary), Branch (mid-right, primary), Designation (right of Employee, accent), Employee Grade (bottom-right of Employee, accent), Employment Type (bottom-left of Employee, accent).
+- 2 dashed grouping rectangles (`stroke-dasharray="4,4"`, stroke="secondary", fill="none"):
+  - **Org Hierarchy** wrapping Company + Department + Branch.
+  - **Employee Attributes** wrapping Designation + Grade + Employment Type.
+- NO connector labels (clean preview — relationships implicit).
+- NO legend box.
+- Connector paths in slate (`#64748b`); one dashed line for indirect/hierarchical relation (Department → Company).
 
-### 13.2 Slide 16 (enhanced full spec) — entities + labels + hints + legend
+### 13.2 Slide 16 variant — full spec
 
-Same 7 entities + 2 groupings as slide 4, with these additions:
+Same as Slide 4 PLUS:
 
-- **Field hints** in each entity box (smaller second line, light-tinted to box's fill):
-  - Company → "name, tax_id"
-  - Department → "name, parent_dept"
-  - Branch → "name, location"
-  - Employee → "name, status, branch" (slightly larger box)
-  - Employment Type → "name, duration"
-  - Grade → "name, pay_band"
-  - Designation → "name, description"
-- **Relationship labels on each connector** (white-fill rect + small grey text, near midpoint):
-  - Employee → Company → `"employed by"`
-  - Employee → Department → `"belongs to"`
-  - Employee → Branch → `"located at"`
-  - Employee → Designation → `"has role"`
-  - Employee → Grade → `"has grade"`
-  - Employee → Employment Type → `"contract type"`
-  - Department → Company → `"part of"` (dashed hierarchical line)
-- **Legend box** (130×36 px, white fill, slate border, bottom-left of canvas, ~translate(15,180)):
-  - Color swatches: primary square = `Master / Config`; accent square = `Attribute`.
-  - Connector symbols: solid line = `direct`; dashed line = `hierarchical`.
+- **Connector labels** (1–2 words each, font-size 11, fill="secondary"):
+  - Employee → Company: "belongs to"
+  - Employee → Department: "assigned to"
+  - Employee → Branch: "located at"
+  - Employee → Designation: "has role"
+  - Employee → Grade: "has seniority"
+  - Employee → Employment Type: "contract type"
+  - Department → Company: "part of" (dashed hierarchical)
+- **Field hints** below each entity name in smaller text (font-size 9, fill="muted"):
+  - Company: `[abbr, default_currency]`
+  - Employee: `[name, status, branch]`
+  - Department: `[name, parent_department, payroll_cost_center]`
+  - Branch: `[name, address, statutory_state]`
+  - Designation: `[name, appraisal_template]`
+  - Employee Grade: `[name, level]`
+  - Employment Type: `[name, contract_basis]`
+- **Legend box** (120×80 rect) in bottom-left corner showing: color squares for "Master" (primary), "Attribute" (accent), "Reference" (secondary); connector symbols (solid line = direct, dashed = indirect/hierarchical).
 
-### 13.3 Positioning (shared by both variants)
+### 13.3 SVG technical specs
 
-- Employee (center): rect at `x=305 y=130 w=130 h=60`.
-- Company (top): rect at `x=310 y=55 w=120 h=45`.
-- Department (mid-left): rect at `x=40 y=105 w=130 h=50`.
-- Branch (mid-right): rect at `x=560 y=105 w=130 h=50`.
-- Employment Type (bottom-left): rect at `x=40 y=235 w=130 h=50`.
-- Grade (bottom-center): rect at `x=305 y=240 w=130 h=50`.
-- Designation (bottom-right): rect at `x=560 y=235 w=130 h=50`.
-- Org Hierarchy dashed group: `x=10 y=20 w=720 h=155`.
-- Employee Attributes dashed group: `x=10 y=220 w=720 h=90`.
+- viewBox: `0 0 740 320`, width="740", height="320".
+- Font family: `var(--font-main)` for entity names, `var(--font-mono)` for field hints.
+- Entity box dimensions: 120×40 (rect+text).
+- Dashed grouping rectangle stroke-width: 1.5.
+- Reference the existing shift-mgmt v2 SVG for visual style consistency.
 
 ## 14. Content Constraints (CMM L5 — Lessons #151–#164)
 
