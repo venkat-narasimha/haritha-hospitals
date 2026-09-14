@@ -451,52 +451,16 @@ Save as: `docs/handbook/03-client/org-management-presentation.html`
 
 ## 18. Prompt Maintenance Workflow
 
-When a slide's HTML content changes:
-
-1. Edit `docs/handbook/03-client/org-management-presentation.html` manually (Venkat-approved copy).
-2. Update the slide-by-slide spec in this prompt to match the new content.
-3. Bump the version in the metadata block on slide 1 and in Appendix A.
-4. Run the §15 quality-bar checks against the new output.
-5. Commit prompt + HTML together.
+See `prompts/README.md` § Prompt Maintenance Workflow.
 
 ---
 
 ## Appendix A — Changelog
 
-- **v2.0** (2026-09-14) — Rewrite per per-deck decisions.
-  - Slide count: 18 → 17 (removed vendor-pitch slide; absorbed open-source framing into slide 17 conclusion).
-  - Slide 12: image placeholder → 6-row Employee key-fields table mockup (`<table class="field-table">`).
-  - Schema SVG redesigned: 7 entities (Company, Employee, Department, Branch, Designation, Grade, Employment Type) in a layered layout.
-  - Schema SVG: 2 dashed group rectangles — `"Org Hierarchy"` (Company + Department + Branch) and `"Employee Attributes"` (Designation + Grade + Employment Type).
-  - Schema SVG: 7 connectors with relationship labels on slide 16 (`"employed by"`, `"belongs to"`, `"located at"`, `"has role"`, `"has grade"`, `"contract type"`, `"part of"`).
-  - Slide 16 enhanced over slide 4: field hints per entity, connector labels, and legend box.
-  - Slide 4 = clean preview (entities + groupings only, no labels, no hints, no legend).
-  - Counter: `N / 18` → `N / 17`.
-  - Slide 1 metadata: Version 2.0, Date 2026-09-14.
-  - Concrete gold standard: Slide 6 (Company) with `.entity-cards` + slide 12 (Employee key fields) with `.field-table`.
-  - Appendix C dropped (no module-specific vendor data needed for org-mgmt).
-- **v1.0** (2026-09-14) — Initial release based on shift-mgmt v2 pattern.
-  - Adapted all 18 sections from `shift-management-cmm-l5-presentation-v2.md`.
-  - Module: Organization Management in ERPNext HRMS.
-  - 7 entities: Company, Employee, Department, Designation, Branch, Grade, Employment Type.
-  - Concrete gold standard: Slide 6 (Company) with `.entity-cards` CSS pattern.
-  - Employee-form image placeholder on slide 12.
+See `prompts/README.md` § Current Prompts table for version history.
 
 ---
 
 ## Appendix B — Lessons Applied (#151–#164)
 
-- **#151** Quantitative process management — every spec has a measurable check (§15).
-- **#152** Defect prevention — verify before declaring done (§16).
-- **#153** Change management — version this prompt.
-- **#154** Technology change management — design tokens frozen (§6).
-- **#155** Peer review — generator output self-reviewed before "done".
-- **#156** Process measurement — counter `N / 17` must match exactly.
-- **#157** Process analysis — single root cause for duplicates (Schema preview).
-- **#158** Process innovation — speaker-notes pattern reusable across all 17 slides.
-- **#159** Continuous improvement — lessons from v1 prompt are explicit drops in §14.
-- **#160** Defect analysis — schema SVG character escaping (`&#39;` artifacts).
-- **#161** Content freshness check — do not lie about dates; verify mtime vs claimed.
-- **#162** Always do broad grep before claiming scope.
-- **#163** "Up to date?" means BOTH structure AND metadata.
-- **#164** Per-directory footers drift independently.
+See `prompts/README.md` § Shared Methodology (Lessons #151–#164).
