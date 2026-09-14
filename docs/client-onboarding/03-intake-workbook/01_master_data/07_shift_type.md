@@ -58,3 +58,10 @@
 | On-Call | 20:00 | 08:00 | 0 | 0 | Standby; OT-only |
 | General-Duty | 09:00 | 18:00 | 1 | 15 | Admin/support staff 9-to-6 |
 | Visiting-Consultant | 10:00 | 13:00 | 0 | 0 | Manual attendance |
+
+## Migration notes (see `scripts/migrate_master_data.py`)
+
+- **Autoname contract — GOTCHA #4.** `Shift Type` declares `autoname='prompt'` — Frappe will not auto-generate the document `name` on insert. The migration script explicitly pins `payload["name"] = <source_name>` on every insert so the autoname hook is satisfied. Client-side: every Shift Type row MUST have a non-empty `name` in the CSV; if blank, Frappe will raise `ValidationError: Naming Series 'prompt' is invalid`.
+- **Referenced by Employee before Shift Assignment.** `Shift Type` is migrated BEFORE `Holiday List`, `Employee`, and `Shift Assignment`. Every Employee's `default_shift` Link field must resolve against an existing Shift Type by the time Employee inserts run (GOTCHA #6).
+- **Upsert semantics.** Re-running the migration UPDATES existing Shift Type rows (does not duplicate). Color / grace-period changes will overwrite the live shift definition, which can change roster behaviour immediately for downstream Shift Schedules.
+- **`enable_auto_attendance` + `process_attendance_after`.** Both are needed for the scheduler to run. If `enable_auto_attendance=1` and `process_attendance_after` is blank, the scheduler fails silently — no error in the migration log, but no attendance processing.

@@ -125,3 +125,12 @@ Import Department, Designation, Employment Type, Employee Grade, Branch, Shift T
 - Allied health (pharmacists, lab/rad techs, OT techs) — require blood_group, emergency contact
 - Support (reception, housekeeping, security, dietary) — basic requirements
 - Admin (HR, finance, IT, admin managers) — basic requirements
+
+## Migration notes (see `scripts/migrate_master_data.py`)
+
+- **Gender + Shift Type must exist first — GOTCHA #6.** Both `gender` and `default_shift` are Link fields with `mandatory_depends_on` set in HRMS. The migration script enforces `Gender` and `Shift Type` are inserted BEFORE `Employee` in `MIGRATION_ORDER`. If either DocType is missing when Employee rows run, every insert fails with `LinkValidationError`. Client-side: import the Gender master (auto-seeded by Frappe as `Male/Female/Other`) and the Shift Type CSV before this one.
+- **Employee ID remap by name — GOTCHA #7.** Production and dev Employee IDs do NOT align (`HR-EMP-00211` vs `HR-EMP-00002`). The migration script builds `DEV_EMP_BY_NAME = {e.employee_name: e.name}` once at the top of `run()` and uses it to remap the `employee` Link field on every Shift Request and Shift Assignment record. Client-side: every Employee row in the CSV must have a non-empty `employee_name`; that's the join key downstream.
+- **Upsert by name, not employee_number.** The script upserts by document `name`. If `employee_number` changes between runs, the existing record is matched by the old `name` and the new `employee_number` overwrites the old one — verify HR Settings → Employee Number naming is OFF or the import will collide.
+- **Custom fields pass through.** `medical_council_reg_no`, `blood_group`, `emergency_contact_name`, `emergency_phone_number`, `next_of_kin`, etc. are passed through from source JSON via `_clean_payload()`. They are NOT required by the migration script, but they ARE enforced by Client Script on the live form for clinical staff. Empty values here will surface as form-level warnings during UAT.
+- **Date validation.** `date_of_birth ≤ date_of_joining` is enforced by Frappe; the migration script does not pre-check. Imports with swapped dates will fail per-row with a clear `ValidationError`.
+- **`status` defaults to `Active`.** The migration does NOT force `status` — if the CSV leaves `status` blank, the script still inserts with `status="Active"` (Frappe default). Use `status` for explicit off-boarding of legacy records on a fresh go-live.

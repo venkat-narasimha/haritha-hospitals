@@ -53,3 +53,10 @@
 | Main Hospital - Lab | (from survey) | (from survey) | 100 | Lab |
 | Main Hospital - Pharmacy | (from survey) | (from survey) | 50 | Pharmacy |
 | Main Hospital - Admin Block | (from survey) | (from survey) | 200 | Admin |
+
+## Migration notes (see `scripts/migrate_master_data.py`)
+
+- **Autoname contract — GOTCHA #4.** `Shift Location` uses `autoname = "field:location_name"` and is listed in the script's `PROMPT_AUTONAME_DOCTYPES`. The migration script explicitly pins `payload["name"] = location_name` on insert so Frappe uses the canonical name rather than auto-generating one. Client-side: every row must have a non-empty `location_name`; that value becomes the document `name` used by all downstream Shift Assignment Link fields.
+- **Pre-create of canonical name — GOTCHA #9.** The migration script calls `_ensure_shift_location("Hyderabad")` BEFORE processing any `Shift Assignment` records. This is hard-coded because production only uses one Shift Location name. If your client uses a different canonical name (e.g., `"Main Campus"`), either (a) include `Main Campus` here in the intake CSV so the script will create it on first Shift Assignment insert, or (b) edit `_ensure_shift_location()` in `scripts/migrate_master_data.py` to use the canonical name from this sheet.
+- **Re-runs are upserts.** Re-running the migration UPDATES existing Shift Location rows by `name`. Lat/long changes will overwrite the live geofence immediately — coordinate changes during go-live should be done as a deliberate re-import, not as a side-effect of an unrelated edit.
+- **Out-of-scope Link fields.** The script does NOT populate `shift_assignment_creation_method`, `check_in_offset`, `check_out_offset`, or `geolocation` automatically — they pass through from the source JSON via `_clean_payload()` if present, otherwise they stay blank.

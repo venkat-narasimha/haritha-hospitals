@@ -47,3 +47,10 @@
 - Diagnostics: Pharmacy, Lab (Pathology/Microbiology/Biochemistry), Radiology (X-Ray/CT/MRI)
 - Support: Admin, HR, Finance, IT, Housekeeping, Security, Maintenance, Dietary, Medical Records
 - Tree roots: Clinical Services (group), Diagnostics (group), Support Services (group)
+
+## Migration notes (see `scripts/migrate_master_data.py`)
+
+- **Skip root rows.** Rows with `parent_department = "All Departments"` are SKIPPED by the migration script — that root is auto-created by Frappe on app install and the script cannot re-insert it (GOTCHA #5). Leave the root out of your CSV.
+- **Department Approver pre-seed (GOTCHA #10).** Before inserting any `Shift Request`, the migration script calls `_ensure_department_approvers()` which adds a `Department Approver` child row with `approver="Administrator"` and `parentfield="shift_request_approver"` for every department referenced by the source SR JSON. If your client does NOT want `Administrator` as the default approver, populate the `shift_request_approvers` table here in this intake sheet so real approvers win on re-import.
+- **Upsert semantics.** The migration script upserts by `name`. Re-running it UPDATES existing department rows (does not duplicate). Custom fields (`department_code`, `building`, `hod`) are overwritten on each re-run, so back up edits you want to preserve.
+- **Order matters.** `Department` is migrated BEFORE `Designation`, `Employee Grade`, `Branch`, `Shift Type`, `Shift Location`, `Holiday List`, `Employee`, `Item` — any of those that reference a department will fail with `LinkValidationError` if department is not yet present.

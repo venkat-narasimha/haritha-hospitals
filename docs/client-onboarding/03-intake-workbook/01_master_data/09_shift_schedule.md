@@ -61,3 +61,11 @@
 | OPD-Doctor-Morning | OPD-Morning | Every Week | Mon,Tue,Wed,Thu,Fri,Sat | OPD |
 | OPD-Doctor-Evening | OPD-Evening | Every Week | Mon,Wed,Fri | OPD |
 | Admin-General-Duty | General-Duty | Every Week | Mon,Tue,Wed,Thu,Fri,Sat | Admin |
+
+## Migration notes (see `scripts/migrate_master_data.py`)
+
+- **Autoname contract — GOTCHA #8 part A.** `Shift Schedule` declares `autoname='prompt'` and is listed in `PROMPT_AUTONAME_DOCTYPES`. The migration script pins `payload["name"] = <source_name>` on insert so Frappe does not try to generate a name. Client-side: every row in your CSV must have a `name` (the document ID like `ICU-Nurse-Day-Rotation`); otherwise insert fails with `Please set the document name`.
+- **`repeat_on_days` child table — GOTCHA #8 part B.** The standard `fields=["*"]` API export DROPS child-table rows (Frappe list-view optimisation). The migration script handles this by appending child rows programmatically via `doc.append("repeat_on_days", {"day": ..., "idx": ...})` instead of relying on them being present in the constructor dict. Client-side: at least one row in `repeat_on_days` is REQUIRED; the script will reject the parent if the child list is empty.
+- **Re-runs wipe + re-append.** On UPDATE, the script calls `doc.set("repeat_on_days", [])` first, then re-appends. This prevents accumulation of duplicate child rows on multiple runs but DOES wipe any manual edits made directly in the database between runs.
+- **Out-of-scope child rows.** `shift_assignments` (the pre-filled assignment child table) is passed through from the source JSON via `_clean_payload()` if present, but the script does NOT generate fresh Shift Assignment rows from this child — that's done by the `Shift Schedule` auto-generation feature, which is separate from the migration. To migrate historical assignments, fill `15_shift_assignment.csv` separately.
+- **`enable_auto_shift_schedule`.** Only acts on the LIVE Shift Schedule after migration; the migration itself does not run the auto-generator. To backfill a roster, generate assignments manually after migration completes.
