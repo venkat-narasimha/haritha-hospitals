@@ -38,6 +38,7 @@ There is **no `transaction_date` field** in the stock schema (Section 4 lists 14
 
 ## Migration notes (from research §7)
 
+- **Gotcha #1 — `get_doc()` doctype key:** Any future custom import script must inject `{"doctype": "Leave Ledger Entry", ...}` before constructing the document.
 - **Gotcha #14 — leave module unpopulated at go-live.** 0 Leave Ledger Entries at single-site deployments at go-live. The Leave Ledger is created automatically as the client starts submitting Leave Allocations and Leave Applications. This template exists for forward-compatibility and for any backfill from a legacy HRIS.
 - **Gotcha #7 — Employee ID remap by `employee_name`.** Same constraint as the other three transaction templates. The upload script remaps the `employee` field using `employee_name` as the join key. Client CSV MUST supply both `employee` (original) and `employee_name` (the join key), even though both are stock-optional.
 - **Ledger is append-only.** Frappe enforces this via the `LeaveLedgerEntry.on_cancel()` hook — cancelling a Submitted entry does NOT delete it; it inserts a compensating row with the inverse `leaves` delta. Never re-import a Cancelled entry with the same `name` — use a new entry instead.

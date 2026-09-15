@@ -46,6 +46,7 @@ The stock fieldname is **`description`** but the UI label is **`Reason`** (per S
 
 ## Migration notes (from research §7)
 
+- **Gotcha #1 — `get_doc()` doctype key:** Any future custom import script must inject `{"doctype": "Leave Application", ...}` before constructing the document.
 - **Gotcha #14 — leave module unpopulated at go-live.** Single-site deployments typically have 0 Leave Applications at go-live. Template exists for forward-compatibility AND for any backfill from a legacy HRIS.
 - **Gotcha #7 — Employee ID remap by `employee_name`.** Same constraint as Attendance and Employee Checkin. The upload script remaps the `employee` field using `employee_name` as the join key. Client CSV MUST supply both `employee` (original) and `employee_name` (the join key), even though `employee_name` is stock-optional.
 - **`leave_approver` must be a User.email, not an Employee.name** (GOTCHA-analogous to #10 for Shift Request). The stock `leave_approver` field is `Link→User`. If the field references an Employee name (e.g., `EMP-A001`), the submit-time `validate_approver()` hook fails with `LinkValidationError`. Pre-create the User records (template `10_employee.csv` triggers `create_user_permission` if set) before importing Leave Applications.

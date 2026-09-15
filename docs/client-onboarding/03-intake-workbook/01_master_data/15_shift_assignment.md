@@ -13,19 +13,19 @@ A Shift Assignment is a per-employee, per-shift, per-date-range scheduling recor
 
 | fieldname | label | type | required | example | validation | notes |
 |---|---|---|---|---|---|---|
-| name | Shift Assignment Name | Data | Y | SA-001 | unique | REQUIRED because autoname=prompt - see gotcha #8; client-defined SA code |
-| employee | Employee | Link | Y | HR-EMP-001 | must exist | required stock field; remap by employee_name (gotcha #7) |
-| employee_name | Employee Name | Data | Y | Employee A Sample | non-empty | REQUIRED for Data Import to fill autogen display field |
-| shift_type | Shift Type | Link | Y | T1 | must exist | required stock field |
-| company | Company | Link | Y | Company A | must exist | required stock field |
-| shift_request | Shift Request | Link | N |  | must exist if set | optional link to originating Shift Request |
+| name | Shift Assignment Name | Data | Y | SA-001 | unique | Frappe will OVERWRITE this with the Series-generated name (HR-SHA-YY-MM-#####) unless Series counter is pre-bumped. See Gotcha #8 in research §7. |
+| employee | Employee | Link→Employee | Y | HR-EMP-001 | must exist | required stock field; remap by employee_name (gotcha #7) |
+| employee_name | Employee Name | Data | Y* | Employee A Sample | non-empty | Y* — required for Data Import to fill autogen display field (functional-required per Gotcha #7) |
+| shift_type | Shift Type | Link→Shift Type | Y | T1 | must exist | required stock field |
+| company | Company | Link→Company | Y | Company A | must exist | required stock field |
+| shift_request | Shift Request | Link→Shift Request | N |  | must exist if set | optional link to originating Shift Request |
 | start_date | Start Date | Date | Y | 2026-09-01 | YYYY-MM-DD | required stock field |
 | end_date | End Date | Date | N | 2026-09-15 | YYYY-MM-DD; >= start_date | optional; blank = open-ended assignment |
 | status | Status | Select | N | Active | Active / Inactive | stock optional; defaults to Active |
-| shift_location | Shift Location | Link | N | Site A | must exist if set | optional; pre-create Site A (gotcha #9, gotcha #15) |
+| shift_location | Shift Location | Link→Shift Location | N | Site A | must exist if set | optional; pre-create Site A (gotcha #9, gotcha #15) |
 | department | Department | Link | N | Department A | must exist if set | optional; derived from Employee |
 | amended_from | Amended From | Link | N |  | must exist if set | for amendment workflow only |
-| overtime_type | Overtime Type | Link | N |  | must exist if set | optional; only if shift allows overtime |
+| overtime_type | Overtime Type | Link→Overtime Type | N |  | must exist if set | optional; only if shift allows overtime |
 
 > **Field `shift_schedule_assignment` is intentionally OMITTED.** This field links to a DocType (`Shift Schedule Assignment`) that is out of P5 scope. The migration script NULLIFIES it on every SA before upsert. See research §8 Q5.
 

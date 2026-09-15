@@ -14,9 +14,9 @@ A Leave Allocation grants a specific number of leaves of a specific Leave Type t
 | fieldname | label | type | required | example | validation | notes |
 |---|---|---|---|---|---|---|
 | naming_series | Series | Select | Y | HR-LAL-.YYYY.- | HR-LAL-.YYYY.- | required stock field; submittable DocType |
-| employee | Employee | Link | Y | HR-EMP-001 | must exist | required stock field |
+| employee | Employee | Link→Employee | Y | HR-EMP-001 | must exist | required stock field |
 | employee_name | Employee Name | Data | N | Employee A Sample | autogen if blank | autogen from Employee record |
-| leave_type | Leave Type | Link | Y | Casual Leave | must exist | required stock field |
+| leave_type | Leave Type | Link→Leave Type | Y | Casual Leave | must exist | required stock field |
 | from_date | From Date | Date | Y | 2026-09-01 | YYYY-MM-DD | allocation start (inclusive) |
 | to_date | To Date | Date | Y | 2027-08-31 | YYYY-MM-DD; >= from_date | allocation end (inclusive) |
 | new_leaves_allocated | New Leaves Allocated | Float | N | 12 | >= 0 | leaves granted this allocation |
@@ -25,11 +25,11 @@ A Leave Allocation grants a specific number of leaves of a specific Leave Type t
 | total_leaves_allocated | Total Leaves Allocated | Float | Y | 12 | >= 0 | required stock field (sum of new + carried) |
 | total_leaves_encashed | Total Leaves Encashed | Float | N | 0 | >= 0 | encashed portion (read-only on submit) |
 | carry_forwarded_leaves_count | Carry Forwarded Leaves | Float | N | 0 | >= 0 | read-only; derived from carry_forward |
-| leave_period | Leave Period | Link | N | Period A | must exist if set | optional link to Leave Period |
-| leave_policy | Leave Policy | Link | N | Standard Policy | must exist if set | optional link to Leave Policy |
+| leave_period | Leave Period | Link→Leave Period | N | Period A | must exist if set | optional link to Leave Period |
+| leave_policy | Leave Policy | Link→Leave Policy | N | Standard Policy | must exist if set | optional link to Leave Policy |
 | expired | Expired | Check | N | 0 | 0/1 | 1 once allocation window has closed |
-| description | Description | Text | N |  | <= 140 chars | free-text note |
-| company | Company | Link | Y | Company A | must exist | required stock field |
+| description | Description | Small Text | N |  | <= 140 chars | free-text note |
+| company | Company | Link→Company | Y | Company A | must exist | required stock field |
 
 ## Migration notes (from research §7)
 

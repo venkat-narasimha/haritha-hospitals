@@ -25,7 +25,7 @@ Leave Type is a master defining each category of leave (Casual, Sick, Earned, et
 | is_compensatory | Is Compensatory | Check | N | 0 | 0/1 | 1 marks this as comp-off |
 | expire_carry_forwarded_leaves_after_days | Expire Carry Forwarded Leaves (Days) | Int | N | 0 | >= 0 | 0 = never expire |
 | allow_encashment | Allow Encashment | Check | N | 0 | 0/1 | 1 allows encashment on exit |
-| earning_component | Earning Component | Link | N |  | must exist if set | link to Salary Component for payroll |
+| earning_component | Earning Component | Link→Salary Component | N |  | must exist if set | link to Salary Component for payroll |
 | is_earned_leave | Is Earned Leave | Check | N | 0 | 0/1 | 1 marks this as accrual-based |
 | earned_leave_frequency | Earned Leave Frequency | Select | N |  | Monthly / Quarterly / Half-Yearly / Yearly | only meaningful if is_earned_leave=1 |
 | rounding | Rounding | Select | N |  | 0.25 / 0.5 / 1.0 | leave-day rounding granularity |

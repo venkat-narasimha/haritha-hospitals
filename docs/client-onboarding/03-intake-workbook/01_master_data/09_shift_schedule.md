@@ -15,7 +15,7 @@ A Shift Schedule defines a recurring shift pattern (e.g. "OPD Afternoon — ever
 |---|---|---|---|---|---|---|
 | name | Schedule Name | Data | Y | Schedule A | unique | REQUIRED because autoname=prompt - see gotcha #8; client-defined schedule code |
 | frequency | Frequency | Select | Y | Every Week | Every Week / Every 2 Weeks / Every 3 Weeks / Every 4 Weeks | required stock field |
-| shift_type | Shift Type | Link | Y | T1 | must exist | required stock field; link to Shift Type |
+| shift_type | Shift Type | Link→Shift Type | Y | T1 | must exist | required stock field; link to Shift Type |
 | amended_from | Amended From | Link | N |  | must exist if set | for amendment workflow only |
 
 ## Child table: repeat_on_days (separate Data Import)

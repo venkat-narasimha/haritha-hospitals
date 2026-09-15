@@ -1,4 +1,4 @@
 fieldname,label,type,required,example,validation,client_value,notes
 designation_name,Designation,Data,Y,Designation A,unique,,autoname=field:designation_name
 description,Description,Text,N,Sample role description,<= 500 chars,,free text
-appraisal_template,Appraisal Template,Link,N,,must exist if set,,custom field; optional template link
+appraisal_template,Appraisal Template,Link→Appraisal Template,N,,must exist if set,,custom field; optional template link

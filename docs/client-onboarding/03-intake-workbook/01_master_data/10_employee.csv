@@ -9,29 +9,29 @@ status,Status,Select,Y,Active,Active / Inactive / Suspended / Left,,required sto
 gender,Gender,Link,Y,Not Specified,must exist,,required stock field; import Gender master first (gotcha #6)
 date_of_birth,Date of Birth,Date,Y,1990-01-01,YYYY-MM-DD,,required stock field
 date_of_joining,Date of Joining,Date,Y,2026-09-01,YYYY-MM-DD,,required stock field
-department,Department,Link,N,Department A,must exist if set,,stock optional
-designation,Designation,Link,N,Designation A,must exist if set,,stock optional
-reports_to,Reports to,Link,N,HR-EMP-002,must exist if set,,self-link to another Employee
-branch,Branch,Link,N,Branch A,must exist if set,,stock optional; unused at single-site (gotcha #12)
-holiday_list,Holiday List,Link,N,Holiday List A,must exist if set,,stock optional but functionally required
+department,Department,Link→Department,N,Department A,must exist if set,,stock optional
+designation,Designation,Link→Designation,N,Designation A,must exist if set,,stock optional
+reports_to,Reports to,Link→Employee,N,HR-EMP-002,must exist if set,,self-link to another Employee
+branch,Branch,Link→Branch,N,Branch A,must exist if set,,stock optional; unused at single-site (gotcha #12)
+holiday_list,Holiday List,Link→Holiday List,N,Holiday List A,must exist if set,,stock optional but functionally required
 salary_mode,Salary Mode,Select,N,,Bank / Cash / Cheque,,stock optional
 bank_name,Bank Name,Data,N,,<= 100 chars,,stock optional
 bank_ac_no,Bank A/C No.,Data,N,,<= 30 chars,,stock optional
 cell_number,Mobile,Data,N,+91-9999999999,phone format,,stock optional
 personal_email,Personal Email,Data,N,employee.a@example.com,email format,,stock optional
 company_email,Company Email,Data,N,,email format,,stock optional
-employment_type,Employment Type,Link,N,Full-time,must exist if set,,custom field; link to Employment Type master
-grade,Grade,Link,N,Grade A,must exist if set,,custom field; unused at single-site (gotcha #13)
-default_shift,Default Shift,Link,Y*,T1,must exist,,custom field; required if auto-attendance enabled (gotcha #6)
-health_insurance_provider,Health Insurance Provider,Link,N,,must exist if set,,custom field
+employment_type,Employment Type,Link→Employment Type,N,Full-time,must exist if set,,custom field; link to Employment Type master
+grade,Grade,Link→Employee Grade,N,Grade A,must exist if set,,custom field; unused at single-site (gotcha #13)
+default_shift,Default Shift,Link→Shift Type,Y*,T1,must exist,,custom field; required if auto-attendance enabled (gotcha #6)
+health_insurance_provider,Health Insurance Provider,Link→Employee Health Insurance,N,,must exist if set,,custom field
 health_insurance_no,Health Insurance No,Data,N,,<= 50 chars,,custom field
-leave_approver,Leave Approver,Link,N,Administrator,must exist if set,,custom field; link to User
-expense_approver,Expense Approver,Link,N,Administrator,must exist if set,,custom field; link to User
-shift_request_approver,Shift Request Approver,Link,N,Administrator,must exist if set,,custom field; link to User
+leave_approver,Leave Approver,Link→User,N,Administrator,must exist if set,,custom field; link to User
+expense_approver,Expense Approver,Link→User,N,Administrator,must exist if set,,custom field; link to User
+shift_request_approver,Shift Request Approver,Link→User,N,Administrator,must exist if set,,custom field; link to User
 pan_number,PAN Number,Data,N,ABCDE1234F,regex if India,,custom field; India tax identifier
 ifsc_code,IFSC Code,Data,N,,11 chars,,custom field; India bank branch code
 micr_code,MICR Code,Data,N,,9 chars,,custom field; India bank MICR
 provident_fund_account,Provident Fund Account,Data,N,,<= 30 chars,,custom field; PF account number
-salary_currency,Salary Currency,Link,N,,must exist if set,,stock optional
+salary_currency,Salary Currency,Link→Currency,N,,must exist if set,,stock optional
 attendance_device_id,Attendance Device ID (Biometric/RF tag ID),Data,N,EMP-001,unique if set,,stock optional; links Checkin to employee
 ctc,Cost to Company (CTC),Currency,N,0,>= 0,,stock optional

@@ -39,6 +39,7 @@ Raw per-employee punch log that feeds the HRMS Attendance scheduler. Each Checki
 
 ## Migration notes (from research §7)
 
+- **Gotcha #1 — `get_doc()` doctype key:** Any future custom import script must inject `{"doctype": "Employee Checkin", ...}` before constructing the document.
 - **Gotcha #7 — Employee ID remap by `employee_name`.** Same constraint as Attendance. The upload script remaps the `employee` field using `employee_name` as the join key. Client CSV MUST supply both `employee` (original) and `employee_name` (the join key), even though `employee_name` is stock-optional.
 - **`log_type` is case-sensitive (`IN`/`OUT`, NOT `in`/`out`).** Wrong case is a silent failure — the Attendance scheduler ignores the punch with no warning. Validate the entire CSV before import.
 - **`time` is naive local time** (no timezone offset). Verify the biometric device timezone matches the Frappe site's `timezone` setting in System Settings. A mismatch causes all punches to be paired against the wrong shift window.

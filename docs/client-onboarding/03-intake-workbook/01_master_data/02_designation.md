@@ -13,7 +13,9 @@ Designations are job titles (e.g. Nurse, Technician, Manager). Every Employee re
 |---|---|---|---|---|---|---|
 | designation_name | Designation | Data | Y | Designation A | unique | autoname=field:designation_name |
 | description | Description | Text | N | Sample role description | <= 500 chars | free text |
-| appraisal_template | Appraisal Template | Link | N |  | must exist if set | custom field; optional template link |
+| appraisal_template | Appraisal Template | Link→Appraisal Template | N |  | must exist if set | custom field; optional template link |
+
+> Note: 2 additional custom fields (`required_skills_section` layout break, `skills` Table→Designation Skill child) are documented in the Healthcare-specific fields subsection below.
 
 ## Migration notes (from research §7)
 

@@ -21,6 +21,7 @@ A Shift Location is a geofenced site where Checkins are accepted. Each Location 
 
 ## Migration notes (from research §7)
 
+- **Gotcha #1 — `get_doc()` doctype key:** Any future custom import script must inject `{"doctype": "Shift Location", ...}` before constructing the document.
 - **Gotcha #8 — `autoname=field:location_name`:** the autoname field is `location_name`. CSV must populate it.
 - **Gotcha #15 — single-site deployments have 1 location:** All Shift Assignments link to a single Shift Location. The template supports multiple rows for multi-site clients but expects 1 row for typical hospital deployments.
 - **Migration script pre-creates `_ensure_shift_location('Site A')`:** before Shift Assignment migration. Ensure your Site A row matches this name exactly if you want migration auto-fill to succeed.

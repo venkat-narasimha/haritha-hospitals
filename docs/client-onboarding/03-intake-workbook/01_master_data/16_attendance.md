@@ -44,6 +44,7 @@ The `status` field's options are extended via a Property Setter on this DocType 
 
 ## Migration notes (from research §7)
 
+- **Gotcha #1 — `get_doc()` doctype key:** Any future custom import script must inject `{"doctype": "Attendance", ...}` before constructing the document.
 - **Gotcha #14 — leave module unpopulated at go-live.** Single-site deployments typically have 0 Leave Applications and 0 Leave Allocations. Attendance records with `status=On Leave` will fail validation if a matching `Leave Application` does not exist. Import Leave Applications first, then Attendance.
 - **Gotcha #7 — Employee ID remap by `employee_name`.** Production and dev Employee IDs do NOT align post-migration. The upload script remaps the `employee` field on every Attendance record using `employee_name` as the join key. Client CSV MUST supply both `employee` (original, will be remapped) and `employee_name` (the join key), even though `employee_name` is stock-optional.
 - **`status=Present` requires `in_time`/`out_time` for shift-bound employees.** When the employee has a Shift Type with `enable_auto_attendance=1`, leaving `in_time` blank triggers a `ValidationError` on submit. Either populate `in_time`/`out_time` OR set `status=On Leave` / `Absent` for the day.

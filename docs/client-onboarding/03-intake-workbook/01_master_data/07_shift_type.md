@@ -16,7 +16,7 @@ A Shift Type defines a shift schedule (start, end, grace periods, attendance thr
 | name | Name | Data | Y | Morning-8h | unique | REQUIRED because autoname=prompt - see gotcha #4; client-defined shift code |
 | start_time | Start Time | Time | Y | 08:00:00 | HH:MM:SS | required stock field |
 | end_time | End Time | Time | Y | 17:00:00 | HH:MM:SS; can be < start_time (cross-midnight) | required stock field |
-| holiday_list | Holiday List | Link | N | Holiday List A | must exist if set | optional link to holiday calendar |
+| holiday_list | Holiday List | Link→Holiday List | N | Holiday List A | must exist if set | optional link to holiday calendar |
 | determine_check_in_and_check_out | Determine Check-in and Check-out | Select | N | Alternating entries as IN and OUT during the same shift | see options list | stock Select |
 | working_hours_calculation_based_on | Working Hours Calculation Based On | Select | N | First Check-in and Last Check-out | see options list | stock Select |
 | working_hours_threshold_for_half_day | Working Hours Threshold for Half Day | Float | N | 5 | >= 0 | hours; below this counts as Half Day |
@@ -30,10 +30,10 @@ A Shift Type defines a shift schedule (start, end, grace periods, attendance thr
 | mark_auto_attendance_on_holidays | Mark Auto Attendance on Holidays | Check | N | 0 | 0/1 | 1 to mark attendance on holidays too |
 | enable_late_entry_marking | Enable Late Entry Marking | Check | N | 0 | 0/1 | 1 to flag late IN |
 | enable_early_exit_marking | Enable Early Exit Marking | Check | N | 0 | 0/1 | 1 to flag early OUT |
-| color | Roster Color | Select | N | Blue | Blue / Cyan / Fuchsia / Green / Lime / Orange / Pink / Red / Violet | extended by property setter (see Section 2) |
+| color | Roster Color | Select | N | Blue | Blue / Cyan / Fuchsia / Green / Lime / Orange / Pink / Red / Violet / Yellow | extended by property setter (see Section 2) |
 | auto_update_last_sync | Automatically update Last Sync of Checkin | Check | N | 0 | 0/1 | 1 to track last sync timestamp |
 | allow_overtime | Allow Overtime | Check | N | 0 | 0/1 | 1 to allow overtime calc on this shift |
-| overtime_type | Overtime Type | Link | N |  | must exist if set | link to Overtime Type |
+| overtime_type | Overtime Type | Link→Overtime Type | N |  | must exist if set | link to Overtime Type |
 
 ## Migration notes (from research §7)
 

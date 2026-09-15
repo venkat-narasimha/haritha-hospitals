@@ -15,10 +15,10 @@ Employee Grade is an optional salary-banding master. It links to a Salary Struct
 
 | fieldname | label | type | required | example | validation | notes |
 |---|---|---|---|---|---|---|
-| grade_name | Grade Name | Data | Y | Grade A | unique | autoname=field:grade_name; NOTE: DocType is available but not populated at single-site deployments (see gotcha #13) |
-| default_salary_structure | Default Salary Structure | Link | N |  | must exist if set | stock field |
+| name | Grade Name | Data | Y | Grade A | unique | autoname=prompt; NOTE: DocType is available but not populated at single-site deployments (see gotcha #13) |
+| default_salary_structure | Default Salary Structure | Link→Salary Structure | N |  | must exist if set | stock field |
 | default_base_pay | Default Base Pay | Currency | N | 0 | >= 0 | stock field; per-grade baseline pay |
-| currency | Currency | Link | N |  | must exist if set | stock field; e.g. INR |
+| currency | Currency | Link→Currency | N |  | must exist if set | stock field; e.g. INR |
 
 ## Migration notes (from research §7)
 

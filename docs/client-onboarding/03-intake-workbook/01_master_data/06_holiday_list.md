@@ -17,7 +17,7 @@ A Holiday List is a per-company calendar of public holidays + the weekly off day
 | from_date | From Date | Date | Y | 2026-09-01 | YYYY-MM-DD | list start (inclusive) |
 | to_date | To Date | Date | Y | 2027-08-31 | YYYY-MM-DD; >= from_date | list end (inclusive) |
 | weekly_off | Weekly Off | Select | N | Sunday | Sunday / Monday / Tuesday / Wednesday / Thursday / Friday / Saturday | day name (not index) - see gotcha #17 |
-| color | Color | Data | N | Blue | any HTML color | UI tint for calendar view |
+| color | Color | Color | N | #7042B5 | hex (#RRGGBB) or named CSS color | UI tint for calendar view |
 | country | Country | Autocomplete | N |  | free text | optional country label |
 | subdivision | Subdivision | Autocomplete | N |  | free text | optional state/region label |
 | is_half_day | Is Half Day | Check | N | 0 | 0/1 | enable if half-day holidays exist |

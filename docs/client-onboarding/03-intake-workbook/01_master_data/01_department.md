@@ -12,12 +12,12 @@ Departments represent the org chart. Every employee belongs to one Department, a
 | fieldname | label | type | required | example | validation | notes |
 |---|---|---|---|---|---|---|
 | department_name | Department | Data | Y | Department A | unique per company | autoname=field:department_name; bare name OK (Frappe appends " - <abbr>" on save - see gotcha #11) |
-| parent_department | Parent Department | Link | N | Department A | must exist if set | use for nested hierarchy; leave blank for top-level |
-| company | Company | Link | Y | Company A | must exist | Company is configured in ERPNext before workbook |
+| parent_department | Parent Department | Link→Department | N | Department A | must exist if set | use for nested hierarchy; leave blank for top-level |
+| company | Company | Link→Company | Y | Company A | must exist | Company is configured in ERPNext before workbook |
 | is_group | Is Group | Check | N | 0 | 0/1 | set 1 only for group/parent rows (do not import employees under group) |
 | disabled | Disabled | Check | N | 0 | 0/1 | soft-disable flag |
-| payroll_cost_center | Payroll Cost Center | Link | N |  | must exist if set | custom field; link to Cost Center for payroll postings |
-| leave_block_list | Leave Block List | Link | N |  | must exist if set | custom field; optional block-list reference |
+| payroll_cost_center | Payroll Cost Center | Link→Cost Center | N |  | must exist if set | custom field; link to Cost Center for payroll postings |
+| leave_block_list | Leave Block List | Link→Leave Block List | N |  | must exist if set | custom field; optional block-list reference |
 
 ## Migration notes (from research §7)
 
