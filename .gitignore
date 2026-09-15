@@ -15,3 +15,10 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# P5 audit/wip artifacts (build process, not deliverable)
+prompts/P5-*
+reports/p5/
+
+# Archive backup files (per handoff: ignore)
+*.html.backup*
