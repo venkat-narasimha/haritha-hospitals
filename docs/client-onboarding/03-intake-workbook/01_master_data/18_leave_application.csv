@@ -1,20 +1,23 @@
 fieldname,label,type,required,example,validation,client_value,notes
-employee,Employee,Link,Y,EMP-A001,must exist,,
-employee_name,Employee Name,Data,Y,Employee A,non-empty,join key for prod to dev ID remap,
-leave_type,Leave Type,Link,Y,Leave Type A,must exist,,
-from_date,From Date,Date,Y,2025-09-01,YYYY-MM-DD,,
-to_date,To Date,Date,Y,2025-09-03,YYYY-MM-DD,>=from_date,
-half_day,Half Day,Check,Y,0,0/1,,
-half_day_date,Half Day Date,Date,N,2025-09-01,YYYY-MM-DD,required if half_day=1,
-posting_date,Posting Date,Date,Y,2025-09-01,YYYY-MM-DD,date application was filed,
-company,Company,Link,Y,Company A,must exist,auto-fetched from employee,
-department,Department,Link,N,Department A,must exist,auto-fetched from employee,
-leave_approver,Leave Approver,Link,Y,approver.a@example.com,must exist,link to User.email,
-leave_approver_name,Leave Approver Name,Data,N,Approver A,non-empty,auto-fetched from leave_approver,
-reason,Reason,Small Text,N,Family event,,description / context,
-status,Status,Select,N,Approved,Open/Approved/Rejected/Cancelled,defaults to Open,
-follow_via_email,Follow Via Email,Check,N,0,0/1,notify approver by email,
-is_lwp,Is Leave Without Pay,Check,N,0,0/1,auto-set if over balance,
-medical_certificate_required,Medical Certificate Required,Check,N,0,0/1,custom for Sick Leave > 2 days,
-cover_required,Cover Required (clinical),Check,N,1,0/1,custom clinical-staff handover flag,
-docstatus,Document Status,Int,Y,1,0=Draft/1=Submitted/2=Cancelled,submit to apply leave,
+naming_series,Series,Select,Y,HR-LAP-.YYYY.-,one of HR-LAP-.YYYY.-,,required stock field; autoname series prefix (per Section 4)
+employee,Employee,Link→Employee,Y,EMP-A001,must exist in tabEmployee,,required stock field (per Section 4)
+employee_name,Employee Name,Data,N,Employee A,non-empty,,STOCK-optional; RECOMMENDED as join key for prod→dev ID remap (GOTCHA #7)
+leave_type,Leave Type,Link→Leave Type,Y,Leave Type A,must exist in tabLeave Type,,required stock field (per Section 4)
+department,Department,Link→Department,N,Department A,must exist if set,,stock-optional; auto-fetched from Employee record
+leave_balance,Leave Balance Before Application,Float,N,12.0,can be negative,,stock-optional; Y* if Leave Type.allow_negative_balance=0 (pre-check)
+from_date,From Date,Date,Y,2025-09-01,YYYY-MM-DD,,required stock field
+to_date,To Date,Date,Y,2025-09-03,YYYY-MM-DD; >= from_date,,required stock field
+half_day,Half Day,Check,N,0,0/1,,stock-optional; Y* effectively — controls whether half_day_date is required
+half_day_date,Half Day Date,Date,N,2025-09-01,YYYY-MM-DD,,stock-optional; Y* — required if half_day=1
+total_leave_days,Total Leave Days,Float,N,3.0,>=0,,stock-optional; auto-computed from from_date/to_date/half_day on submit
+description,Reason,Small Text,N,Family event,,,stock-optional; label is Reason per Section 4; free-text context
+leave_approver,Leave Approver,Link→User,N,approver.a@example.com,must exist in tabUser,,stock-optional BUT must be a User.email; required for validate_approver on submit (GOTCHA-analogous)
+leave_approver_name,Leave Approver Name,Data,N,Approver A,non-empty,,stock-optional; auto-fetched from leave_approver (User.full_name)
+status,Status,Select,Y,Approved,Open/Approved/Rejected/Cancelled,,required stock field; options per Section 4
+posting_date,Posting Date,Date,Y,2025-09-01,YYYY-MM-DD,,required stock field; date application was filed
+company,Company,Link→Company,Y,Company A,must exist in tabCompany,,required stock field
+follow_via_email,Follow Via Email,Check,N,0,0/1,,stock-optional; 1 to email the approver
+salary_slip,Salary Slip,Link→Salary Slip,N,SS-26-09-00001,must exist if set,,stock-optional; back-link when leave spans payroll period
+letter_head,Letter Head,Link→Letter Head,N,Letter Head A,must exist if set,,stock-optional; print letterhead for printed leave form
+color,Color,Color,N,#7042B5,hex string,,stock-optional; UI color tag (used in calendar views)
+amended_from,Amended From,Link→Leave Application,N,LAP-26-09-00001,must exist if set,,stock-optional; for amendment workflow only

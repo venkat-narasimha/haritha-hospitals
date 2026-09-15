@@ -1,16 +1,23 @@
 fieldname,label,type,required,example,validation,client_value,notes
-employee,Employee,Link,Y,EMP-A001,must exist,,
-employee_name,Employee Name,Data,Y,Employee A,non-empty,join key for prod to dev ID remap,
-attendance_date,Attendance Date,Date,Y,2025-09-01,YYYY-MM-DD,one record per employee per day,
-status,Status,Select,Y,Present,Present/Absent/Half Day/On Leave/Work From Home,,
-company,Company,Link,Y,Company A,must exist,,
-department,Department,Link,N,Department A,must exist,auto-fetched from employee,
-shift,Shift,Link,N,Shift Type A,must exist if set,defaults from employee.default_shift,
-leave_type,Leave Type,Link,N,Leave Type A,must exist if status=On Leave,required when status=On Leave,
-leave_application,Leave Application,Link,N,LAP-26-09-00001,must exist if set,traceability link,
-in_time,In Time,Datetime,N,2025-09-01 09:00:00,YYYY-MM-DD HH:MM:SS,24h clock,
-out_time,Out Time,Datetime,N,2025-09-01 18:00:00,YYYY-MM-DD HH:MM:SS,24h clock,
-working_hours,Working Hours,Float,N,9.0,>=0,auto-computed from in_time/out_time,
-late_entry,Late Entry,Check,N,0,0/1,derived from shift grace period,
-early_exit,Early Exit,Check,N,0,0/1,derived from shift grace period,
-docstatus,Document Status,Int,Y,1,0=Draft/1=Submitted/2=Cancelled,submit to drive payroll,
+naming_series,Series,Select,Y,HR-ATT-.YYYY.-,one of HR-ATT-.YYYY.-,,required stock field; autoname series prefix (per Section 4)
+employee,Employee,Link→Employee,Y,EMP-A001,must exist in tabEmployee,,required stock field (per Section 4)
+employee_name,Employee Name,Data,N,Employee A,non-empty,,STOCK-optional; RECOMMENDED as join key for prod→dev ID remap (GOTCHA #7)
+attendance_date,Attendance Date,Date,Y,2025-09-01,YYYY-MM-DD,,required stock field; one record per (employee, attendance_date)
+status,Status,Select,Y,Present,Present/Absent/On Leave/Half Day/Work From Home,,required stock field; options EXTENDED via Property Setter (per Section 2: leading blank option included)
+company,Company,Link→Company,Y,Company A,must exist in tabCompany,,required stock field
+department,Department,Link→Department,N,Department A,must exist if set,,stock-optional; auto-fetched from Employee record
+shift,Shift,Link→Shift Type,N,Shift Type A,must exist if set,,stock-optional; defaults from Employee.default_shift (per Section 4)
+leave_type,Leave Type,Link→Leave Type,N,Leave Type A,must exist if status=On Leave,,Y* — required when status=On Leave
+leave_application,Leave Application,Link→Leave Application,N,LAP-26-09-00001,must exist if set,,stock-optional; back-link to the originating Leave Application (traceability)
+attendance_request,Attendance Request,Link→Attendance Request,N,AR-26-09-00001,must exist if set,,stock-optional; back-link when employee self-corrects via Attendance Request workflow
+amended_from,Amended From,Link→Attendance,N,HR-ATT-26-09-00001,must exist if set,,stock-optional; for amendment workflow only
+in_time,In Time,Datetime,N,2025-09-01 09:00:00,YYYY-MM-DD HH:MM:SS,,stock-optional; Y* effectively for status=Present with shift-bound employee
+out_time,Out Time,Datetime,N,2025-09-01 18:00:00,YYYY-MM-DD HH:MM:SS,,stock-optional; Y* effectively for status=Present with shift-bound employee
+working_hours,Working Hours,Float,N,9.0,>=0,,stock-optional; auto-computed from in_time/out_time on submit
+late_entry,Late Entry,Check,N,0,0/1,,stock-optional; derived from shift grace period (Shift Type.enable_late_entry_marking)
+early_exit,Early Exit,Check,N,0,0/1,,stock-optional; derived from shift grace period (Shift Type.enable_early_exit_marking)
+half_day_status,Status for Other Half,Select,N,Present,/Present/Absent,,stock-optional; only used when status=Half Day (e.g. first half Absent, second half Present)
+modify_half_day_status,Modify Half Day Status,Check,N,0,0/1,,stock-optional; UI flag to confirm the user intends to override the other-half status
+standard_working_hours,Standard Working Hours,Float,N,8.0,>=0,,stock-optional; defaults to Shift Type.working_hours_calculation_based_on basis
+overtime_type,Overtime Type,Link→Overtime Type,N,Overtime Type A,must exist if set,,stock-optional; required only if Shift Type.allow_overtime=1 and overtime > 0
+actual_overtime_duration,Actual Overtime Duration,Float,N,0.0,>=0,,stock-optional; computed when overtime_type populated (hours)

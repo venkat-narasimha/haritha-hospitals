@@ -1,16 +1,15 @@
 fieldname,label,type,required,example,validation,client_value,notes
-employee,Employee,Link,Y,EMP-A001,must exist,,
-employee_name,Employee Name,Data,Y,Employee A,non-empty,join key for prod to dev ID remap,
-leave_type,Leave Type,Link,Y,Leave Type A,must exist,,
-transaction_type,Transaction Type,Select,Y,Allocation,Allocation/Application/Encashment/Expiration/Forfeiture/Manual,,
-transaction_date,Transaction Date,Date,Y,2025-09-01,YYYY-MM-DD,,
-company,Company,Link,Y,Company A,must exist,auto-fetched,
-leaves,Leaves Balance,Float,Y,12.0,positive or negative,current ledger balance after transaction,
-leaves_added,Leaves Added,Float,Y,2.0,positive or negative,delta applied by this transaction,
-leaves_expired,Leaves Expired,Float,N,0.0,>=0,only for Expiration type,
-amount,Amount,Float,N,0.0,numeric,monetary value for Encashment,
-is_carry_forward,Is Carry Forward,Check,N,0,0/1,only for Allocation type,
-leave_application,Leave Application,Link,N,LAP-26-09-00001,must exist if set,for Application type,
-leave_allocation,Leave Allocation,Link,N,LAL-26-09-00001,must exist if set,for Allocation type,
-attendance,Attendance,Link,N,HR-ATT-26-09-00001,must exist if set,for backdated adjustment,
-docstatus,Document Status,Int,Y,1,0=Draft/1=Submitted/2=Cancelled,submit to finalize,
+employee,Employee,Link→Employee,N,EMP-A001,must exist if set,,STOCK-optional; recommended to supply for traceability even though HRMS auto-creates ledger rows without it
+employee_name,Employee Name,Data,N,Employee A,non-empty,,STOCK-optional; RECOMMENDED as join key for prod→dev ID remap (GOTCHA #7)
+leave_type,Leave Type,Link→Leave Type,N,Leave Type A,must exist if set,,STOCK-optional; auto-fetched from the source Allocation/Application row
+transaction_type,Transaction Type,Link→DocType,N,Leave Application,DocType name,,STOCK-optional; Link→DocType (unusual — values are DocType names like Leave Allocation/Leave Application/Leave Encashment)
+transaction_name,Transaction Name,Dynamic Link,N,LAP-26-09-00001,must exist in referenced DocType,,STOCK-optional; resolves against transaction_type — a real Leave Application/Allocation name
+leaves,Leaves,Float,N,1.0,positive or negative,,STOCK-optional; positive = credit (Allocation), negative = debit (Application/Encashment); balance = sum of leaves
+from_date,From Date,Date,N,2026-01-01,YYYY-MM-DD,,STOCK-optional; coverage start of the underlying leave/grant
+to_date,To Date,Date,N,2026-12-31,YYYY-MM-DD; >= from_date,,STOCK-optional; coverage end of the underlying leave/grant
+is_carry_forward,Is Carry Forward,Check,N,0,0/1,,STOCK-optional; 1 for carry-forward rows from previous period
+is_expired,Is Expired,Check,N,0,0/1,,STOCK-optional; 1 when leaves expired (negative delta for Expiration rows)
+is_lwp,Is Leave Without Pay,Check,N,0,0/1,,STOCK-optional; 1 for LWP rows (Leave Type.is_lwp=1)
+holiday_list,Holiday List,Link→Holiday List,N,Holiday List A,must exist if set,,STOCK-optional; used to compute working-day count for the row
+company,Company,Link→Company,Y,Company A,must exist in tabCompany,,required stock field (per Section 4)
+amended_from,Amended From,Link→Leave Ledger Entry,N,LLE-26-09-00001,must exist if set,,STOCK-optional; rarely used — Leave Ledger Entry is append-only and rarely amended

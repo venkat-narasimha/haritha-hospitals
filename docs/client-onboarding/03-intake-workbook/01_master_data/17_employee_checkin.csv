@@ -1,12 +1,18 @@
 fieldname,label,type,required,example,validation,client_value,notes
-employee,Employee,Link,Y,EMP-A001,must exist,,
-employee_name,Employee Name,Data,Y,Employee A,non-empty,join key for prod to dev ID remap,
-time,Time,Datetime,Y,2025-09-01 09:00:00,YYYY-MM-DD HH:MM:SS,24h clock,
-log_type,Log Type,Select,Y,IN,IN/OUT,case-sensitive,
-device_id,Device ID,Data,N,BIO-A001,unique if set,biometric device ID,
-source,Source,Data,N,Biometric,Biometric/Mobile/Manual/ERP,origin of punch,
-skip_auto_attendance,Skip Auto Attendance,Check,N,0,0/1,set 1 to exclude from auto-attendance,
-shift,Shift,Link,N,Shift Type A,must exist if set,for shift-bound checkins,
-latitude,Latitude,Float,N,17.3850,-90 to 90,geolocation from device,
-longitude,Longitude,Float,N,78.4867,-180 to 180,geolocation from device,
-attendance,Attendance,Link,N,HR-ATT-26-09-00001,must exist if set,back-link after auto-attendance,
+employee,Employee,Link→Employee,Y,EMP-A001,must exist in tabEmployee,,required stock field (per Section 4)
+employee_name,Employee Name,Data,N,Employee A,non-empty,,STOCK-optional; RECOMMENDED as join key for prod→dev ID remap (GOTCHA #7)
+time,Time,Datetime,Y,2025-09-01 09:00:00,YYYY-MM-DD HH:MM:SS,,required stock field; 24h clock, naive local time (per Section 4)
+log_type,Log Type,Select,Y,IN,/IN/OUT,,required stock field; case-sensitive IN/OUT (per Section 4 options)
+shift,Shift,Link→Shift Type,N,Shift Type A,must exist if set,,stock-optional; for shift-bound checkins (filled by Attendance scheduler)
+device_id,Location / Device ID,Data,N,Device-A001,unique if set,,stock-optional; biometric/RFID device tag (Section 4 label: Location / Device ID)
+skip_auto_attendance,Skip Auto Attendance,Check,N,0,0/1,,stock-optional; set 1 to exclude punch from auto-attendance scheduler
+attendance,Attendance Marked,Link→Attendance,N,HR-ATT-26-09-00001,must exist if set,,stock-optional; back-link after auto-attendance scheduler pairs this punch (Section 4 label: Attendance Marked)
+shift_start,Shift Start,Datetime,N,2025-09-01 09:00:00,YYYY-MM-DD HH:MM:SS,,stock-optional; planned shift start (set by scheduler)
+shift_end,Shift End,Datetime,N,2025-09-01 18:00:00,YYYY-MM-DD HH:MM:SS,,stock-optional; planned shift end (set by scheduler)
+shift_actual_start,Shift Actual Start,Datetime,N,2025-09-01 09:00:00,YYYY-MM-DD HH:MM:SS,,stock-optional; actual shift start after grace/early windows
+shift_actual_end,Shift Actual End,Datetime,N,2025-09-01 18:00:00,YYYY-MM-DD HH:MM:SS,,stock-optional; actual shift end after grace/early windows
+geolocation,Geolocation,Geolocation,N,0.0000, 0.0000,lat,lon string,,stock-optional; combined lat,lon captured from mobile app
+latitude,Latitude,Float,N,0.0000,-90 to 90,,stock-optional; geolocation from device
+longitude,Longitude,Float,N,0.0000,-180 to 180,,stock-optional; geolocation from device
+offshift,Off-shift,Check,N,0,0/1,,stock-optional; 1 when punch is outside any Shift Assignment window
+overtime_type,Overtime Type,Link→Overtime Type,N,Overtime Type A,must exist if set,,stock-optional; required only if Shift Type.allow_overtime=1 and punch is overtime-eligible
