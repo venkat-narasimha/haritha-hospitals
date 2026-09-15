@@ -1,3 +1,2 @@
 fieldname,label,type,required,example,validation,client_value,notes
-employee_type_name,Employment Type,Data,Y,Employment Type A,unique within company,,autoname source
-description,Description,Text,N,Full-time permanent staff,free-form text,,
+employee_type_name,Employment Type,Data,Y,Full-time,unique,,autoname=field:employee_type_name; standard set: Full-time / Part-time / Contract / Temporary / Internship / Consultant

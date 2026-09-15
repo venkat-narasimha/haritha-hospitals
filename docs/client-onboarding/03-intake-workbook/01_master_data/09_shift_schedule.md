@@ -1,46 +1,64 @@
 # Shift Schedule — Intake Sheet
 
-**DocType:** `Shift Schedule` (master)
+**DocType:** Shift Schedule (not submittable)
 **Module:** HR / Shift Management
-**Autoname rule:** `prompt`
+**Required fields:** 3 (`name`, `frequency`, `shift_type`) + 1 (child `repeat_on_days`)
+**Optional fields:** 1
 
-**Required fields:** 2  |  **Optional fields:** 2
+A Shift Schedule defines a recurring shift pattern (e.g. "OPD Afternoon — every Monday/Wednesday/Friday — shift `A1300S1230`"). It generates Shift Schedule Assignments (a separate DocType, out of P5 scope) for each employee assigned to the schedule.
 
-## Purpose
+> **CRITICAL:** `Shift Schedule` has `autoname='prompt'` — the CSV MUST include a `name` column populated with a client-defined schedule code. See Gotcha #8.
 
-Planned rotation pattern (e.g., ICU-Nurse-Day-Rotation). Child rows define which days of the week are active.
-
-## Field reference
+## Field reference (parent — Shift Schedule)
 
 | fieldname | label | type | required | example | validation | notes |
 |---|---|---|---|---|---|---|
-| `name` | Shift Schedule Name | Data | **Y** | `ICU-Nurse-Day-Rotation` | non-empty (autoname='prompt') |  |
-| `shift_type` | Shift Type | Link→Shift Type | **Y** | `Morning-8h` | must exist in tabShift Type |  |
-| `company` | Company | Link→Company | **N** | `Company A` | must exist if set |  |
-| `enable_auto_shift_schedule` | Enable Auto Shift Schedule | Check | **N** | `0` | 0/1 |  |
+| name | Schedule Name | Data | Y | Schedule A | unique | REQUIRED because autoname=prompt - see gotcha #8; client-defined schedule code |
+| frequency | Frequency | Select | Y | Every Week | Every Week / Every 2 Weeks / Every 3 Weeks / Every 4 Weeks | required stock field |
+| shift_type | Shift Type | Link | Y | T1 | must exist | required stock field; link to Shift Type |
+| amended_from | Amended From | Link | N |  | must exist if set | for amendment workflow only |
 
-## Migration notes
+## Child table: repeat_on_days (separate Data Import)
 
-- GOTCHA #8 part A: autoname='prompt' — name column REQUIRED in CSV.
-- GOTCHA #8 part B: repeat_on_days child rows are DROPPED by Frappe's default fields=['*'] REST pattern. The migration script re-appends child rows programmatically via doc.append().
-- CSV format for child rows: header + N rows where same `name` repeats with different `repeat_on_day` column. OR use a separate child CSV file (ask implementer for format).
+The `repeat_on_days` child table is a Table field on Shift Schedule, pointing at the `Assignment Rule Day` child DocType. **One row per day-of-week that the schedule fires on.** Recommended CSV columns for the child import:
 
-## Child-table format hint
+| fieldname | label | type | required | example | validation | notes |
+|---|---|---|---|---|---|---|
+| day | Day | Select | Y | Monday | Monday / Tuesday / Wednesday / Thursday / Friday / Saturday / Sunday | the weekday on which the schedule fires |
+| parent | Parent Shift Schedule | Link | Y | Schedule A | must exist | reference back to the parent record |
+| parenttype | Parent Type | Data | Y | Shift Schedule | = "Shift Schedule" | constant for this child table |
 
-repeat_on_days child rows: each row has `day` (Sunday-Saturday) and `idx` (sort order)
+> **Pattern:** For an "OPD every weekday" schedule, you would import 5 child rows (Monday, Tuesday, Wednesday, Thursday, Friday), each with `parent=Schedule A`.
+
+## Migration notes (from research §7)
+
+- **Gotcha #8 — `autoname='prompt'` + child-table loss in list payloads:** Two obstacles: (a) `/api/resource/<DT>?fields=['*']` strips child rows from list-view responses — fetch each record individually if needed. (b) `autoname='prompt'` means the `name` must be pinned (this is what the `name` column does). Without `name`, every row fails with `Please set the document name`.
+- **Gotcha #1 — `get_doc()` doctype key:** Any future custom import script must inject `{"doctype": "Shift Schedule", ...}` before constructing the document.
+- Shift Schedule has **zero custom fields** in `haritha_hospital/fixtures/custom_field.json`.
+
+## Healthcare-specific fields
+
+None. Shift Schedule has no custom fields in the `haritha_hospital` custom app. (Per Section 1 of research.)
 
 ## When to use this sheet
 
-| Scenario | Use this sheet? |
+| Scenario | Use Shift Schedule template? |
 |---|---|
-| Complex rotations (e.g., 4-on-2-off for nurses) | Yes |
-| Simple weekday assignments | Use Shift Assignment directly without Shift Schedule |
+| Recurring weekly shift pattern (OPD rotation) | YES — one parent row + N child day rows |
+| Ad-hoc one-off shift | NO — use Shift Assignment template instead |
+| Rotating weekly patterns (Week 1 = morning, Week 2 = evening) | YES — create two Schedule rows with same shift_type |
+| Rotating fortnightly/monthly patterns | YES — set `frequency` accordingly |
 
 ## Common client mistakes
 
-- Empty `name` column.
-- Forgetting repeat_on_days — schedule has no rotation pattern.
+- Omitting the `name` column — **CRITICAL**: every row fails.
+- Setting `frequency = Every Week` but forgetting to add child `repeat_on_days` rows — schedule fires but no days are selected (paradoxical state).
+- Setting `frequency = Every 2 Weeks` but only adding 1 day — schedule fires every other week on that one day. (Often unexpected.)
+- Linking to a `Shift Type` that does not exist — fails LinkValidationError. Import Shift Types first.
+- Confusing Shift Schedule with Shift Assignment — Schedule = template; Assignment = specific date range for an employee.
 
-## Related gotchas
+## Related
 
-This DocType touches gotcha(s): `##8` from `scripts/migrate_master_data.py`.
+- **Shift Type** template's `shift_type` Link points here (one direction).
+- **Shift Assignment** template is the per-employee, per-date-range instantiation.
+- **Shift Schedule Assignment** (separate DocType, OUT OF P5 SCOPE) is the linking record between an Employee and a Schedule.

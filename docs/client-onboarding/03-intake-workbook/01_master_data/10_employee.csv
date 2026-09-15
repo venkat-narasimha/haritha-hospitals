@@ -1,28 +1,37 @@
 fieldname,label,type,required,example,validation,client_value,notes
-naming_series,Series,Select,Y,HR-EMP-.YYYY.-,must be one of the configured series,,HIDDEN by default but reqd=1 per Property Setter — fill it
-employee_name,Employee Name,Data,Y,Employee A,unique across employees,,REQUIRED; used as join key for prod→dev ID remap in downstream templates (GOTCHA #7)
-first_name,First Name,Data,Y,FirstA,non-empty,,required stock field
-last_name,Last Name,Data,Y,LastA,non-empty,,required stock field
-gender,Gender,Link→Gender,Y,Gender A,must exist in tabGender (auto-seeded by Frappe),,REQUIRED — GOTCHA #6: Gender migrates BEFORE Employee
-date_of_birth,Date of Birth,Date,Y,1990-01-15,YYYY-MM-DD,,required stock field
-date_of_joining,Date of Joining,Date,Y,2024-01-15,YYYY-MM-DD,,required stock field
-status,Status,Select,Y,Active,Active/Suspended/Left,,required stock field; defaults Active on insert
-company,Company,Link→Company,Y,Company A,must exist in tabCompany,,REQUIRED — sets Company context
-department,Department,Link→Department,Y,Department A,must exist in tabDepartment,,REQUIRED — GOTCHA #6: Department migrates BEFORE Employee
-designation,Designation,Link→Designation,Y,Designation A,must exist in tabDesignation,,REQUIRED
-branch,Branch,Link→Branch,N,Site A,must exist if set,,optional; required for multi-site
-employment_type,Employment Type,Link→Employment Type,N,Full-time,must exist if set,,CUSTOM field
-grade,Grade,Link→Employee Grade,N,Grade A,must exist if set,,CUSTOM field
-default_shift,Default Shift,Link→Shift Type,N,Morning-8h,must exist in tabShift Type,,CUSTOM field — needs Shift Type migrated FIRST (GOTCHA #6)
-holiday_list,Holiday List,Link→Holiday List,N,Holiday Calendar A,must exist if set,,defaults from Company if blank
-expense_approver,Expense Approver,Link→User,N,,must exist in tabUser (login),,"CUSTOM field — use login email, NOT Employee.name"
-leave_approver,Leave Approver,Link→User,N,,must exist in tabUser,,CUSTOM field — same as expense_approver
-shift_request_approver,Shift Request Approver,Link→User,N,,must exist in tabUser,,CUSTOM field
-payroll_cost_center,Payroll Cost Center,Link→Cost Center,N,Cost Center A,must exist if set,,CUSTOM field
-employee_advance_account,Employee Advance Account,Link→Account,N,Account A,must exist if set,,CUSTOM field
-ifsc_code,IFSC Code,Data,N,BANK0000123,11-char format,,CUSTOM field — for Indian bank accounts; optional
-pan_number,PAN Number,Data,N,ABCDE1234F,10-char format,,CUSTOM field — Indian tax ID; optional
-micr_code,MICR Code,Data,N,123456789,9-digit format,,CUSTOM field — bank check processing; optional
-provident_fund_account,Provident Fund Account,Data,N,PF-12345,free-form,,CUSTOM field — Indian PF; optional
-health_insurance_no,Health Insurance No,Data,N,HI-001,free-form,,CUSTOM field
-health_insurance_provider,Health Insurance Provider,Link→Employee Health Insurance,N,,must exist in tabEmployee Health Insurance,,CUSTOM field
+naming_series,Series,Select,Y,HR-EMP-,HR-EMP-,,required by property setter (reqd=1) - see gotcha #6; client may keep default prefix
+first_name,First Name,Data,Y,Employee A,non-empty,,required stock field
+middle_name,Middle Name,Data,N,,<= 80 chars,,stock optional
+last_name,Last Name,Data,N,Sample,<= 80 chars,,stock optional
+employee_name,Full Name,Data,N,Employee A Sample,non-empty if set,,autogen if blank
+company,Company,Link,Y,Company A,must exist,,required stock field
+status,Status,Select,Y,Active,Active / Inactive / Suspended / Left,,required stock field
+gender,Gender,Link,Y,Not Specified,must exist,,required stock field; import Gender master first (gotcha #6)
+date_of_birth,Date of Birth,Date,Y,1990-01-01,YYYY-MM-DD,,required stock field
+date_of_joining,Date of Joining,Date,Y,2026-09-01,YYYY-MM-DD,,required stock field
+department,Department,Link,N,Department A,must exist if set,,stock optional
+designation,Designation,Link,N,Designation A,must exist if set,,stock optional
+reports_to,Reports to,Link,N,HR-EMP-002,must exist if set,,self-link to another Employee
+branch,Branch,Link,N,Branch A,must exist if set,,stock optional; unused at single-site (gotcha #12)
+holiday_list,Holiday List,Link,N,Holiday List A,must exist if set,,stock optional but functionally required
+salary_mode,Salary Mode,Select,N,,Bank / Cash / Cheque,,stock optional
+bank_name,Bank Name,Data,N,,<= 100 chars,,stock optional
+bank_ac_no,Bank A/C No.,Data,N,,<= 30 chars,,stock optional
+cell_number,Mobile,Data,N,+91-9999999999,phone format,,stock optional
+personal_email,Personal Email,Data,N,employee.a@example.com,email format,,stock optional
+company_email,Company Email,Data,N,,email format,,stock optional
+employment_type,Employment Type,Link,N,Full-time,must exist if set,,custom field; link to Employment Type master
+grade,Grade,Link,N,Grade A,must exist if set,,custom field; unused at single-site (gotcha #13)
+default_shift,Default Shift,Link,Y*,T1,must exist,,custom field; required if auto-attendance enabled (gotcha #6)
+health_insurance_provider,Health Insurance Provider,Link,N,,must exist if set,,custom field
+health_insurance_no,Health Insurance No,Data,N,,<= 50 chars,,custom field
+leave_approver,Leave Approver,Link,N,Administrator,must exist if set,,custom field; link to User
+expense_approver,Expense Approver,Link,N,Administrator,must exist if set,,custom field; link to User
+shift_request_approver,Shift Request Approver,Link,N,Administrator,must exist if set,,custom field; link to User
+pan_number,PAN Number,Data,N,ABCDE1234F,regex if India,,custom field; India tax identifier
+ifsc_code,IFSC Code,Data,N,,11 chars,,custom field; India bank branch code
+micr_code,MICR Code,Data,N,,9 chars,,custom field; India bank MICR
+provident_fund_account,Provident Fund Account,Data,N,,<= 30 chars,,custom field; PF account number
+salary_currency,Salary Currency,Link,N,,must exist if set,,stock optional
+attendance_device_id,Attendance Device ID (Biometric/RF tag ID),Data,N,EMP-001,unique if set,,stock optional; links Checkin to employee
+ctc,Cost to Company (CTC),Currency,N,0,>= 0,,stock optional

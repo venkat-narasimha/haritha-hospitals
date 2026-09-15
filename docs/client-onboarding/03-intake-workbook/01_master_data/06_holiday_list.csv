@@ -1,8 +1,9 @@
 fieldname,label,type,required,example,validation,client_value,notes
-holiday_list_name,Holiday List Name,Data,Y,Holiday Calendar A,unique,,autoname source — primary name field
-from_date,From Date,Date,Y,2026-01-01,YYYY-MM-DD,,start of holiday window
-to_date,To Date,Date,Y,2026-12-31,YYYY-MM-DD; must be >= from_date,,end of holiday window
-color,Color,Color,N,,color picker,,stock
-country,Country,Autocomplete,N,,country name,,stock; auto-fills state list
-subdivision,Subdivision,Autocomplete,N,,state / province,,stock; for auto-helper
-weekly_off,Weekly Off,Select,N,Sunday,/Sunday/Monday/Tuesday/Wednesday/Thursday/Friday/Saturday,,drives weekly-off calendar overlay
+holiday_list_name,Holiday List Name,Data,Y,Holiday List A,unique per company,,autoname=field:holiday_list_name
+from_date,From Date,Date,Y,2026-09-01,YYYY-MM-DD,,list start (inclusive)
+to_date,To Date,Date,Y,2027-08-31,YYYY-MM-DD; >= from_date,,list end (inclusive)
+weekly_off,Weekly Off,Select,N,Sunday,Sunday / Monday / Tuesday / Wednesday / Thursday / Friday / Saturday,,day name (not index) - see gotcha #17
+color,Color,Data,N,Blue,any HTML color,,UI tint for calendar view
+country,Country,Autocomplete,N,,free text,,optional country label
+subdivision,Subdivision,Autocomplete,N,,free text,,optional state/region label
+is_half_day,Is Half Day,Check,N,0,0/1,,enable if half-day holidays exist

@@ -1,7 +1,18 @@
 fieldname,label,type,required,example,validation,client_value,notes
-employee,Employee,Link→Employee,Y,Employee A,must exist in tabEmployee,,required stock
-leave_type,Leave Type,Link→Leave Type,Y,Leave Type A,must exist in tabLeave Type,,required
-from_date,From Date,Date,Y,2026-01-01,YYYY-MM-DD,,required
-to_date,To Date,Date,Y,2026-12-31,YYYY-MM-DD,,required
-new_leaves_allocated,New Leaves Allocated,Float,Y,12.0,>=0,,required
-docstatus,Document Status,Int,Y,1,0=Draft/1=Submitted/2=Cancelled,,submit to drive payroll
+naming_series,Series,Select,Y,HR-LAL-.YYYY.-,HR-LAL-.YYYY.-,,required stock field; submittable DocType
+employee,Employee,Link,Y,HR-EMP-001,must exist,,required stock field
+employee_name,Employee Name,Data,N,Employee A Sample,autogen if blank,,autogen from Employee record
+leave_type,Leave Type,Link,Y,Casual Leave,must exist,,required stock field
+from_date,From Date,Date,Y,2026-09-01,YYYY-MM-DD,,allocation start (inclusive)
+to_date,To Date,Date,Y,2027-08-31,YYYY-MM-DD; >= from_date,,allocation end (inclusive)
+new_leaves_allocated,New Leaves Allocated,Float,N,12,>= 0,,leaves granted this allocation
+carry_forward,Add unused leaves from previous allocations,Check,N,0,0/1,,1 to roll forward unused leaves
+unused_leaves,Unused leaves,Float,N,0,>= 0,,from previous period
+total_leaves_allocated,Total Leaves Allocated,Float,Y,12,>= 0,,required stock field (sum of new + carried)
+total_leaves_encashed,Total Leaves Encashed,Float,N,0,>= 0,,encashed portion (read-only on submit)
+carry_forwarded_leaves_count,Carry Forwarded Leaves,Float,N,0,>= 0,,read-only; derived from carry_forward
+leave_period,Leave Period,Link,N,Period A,must exist if set,,optional link to Leave Period
+leave_policy,Leave Policy,Link,N,Standard Policy,must exist if set,,optional link to Leave Policy
+expired,Expired,Check,N,0,0/1,,1 once allocation window has closed
+description,Description,Text,N,,<= 140 chars,,free-text note
+company,Company,Link,Y,Company A,must exist,,required stock field

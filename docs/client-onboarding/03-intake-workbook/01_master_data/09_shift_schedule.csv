@@ -1,5 +1,5 @@
 fieldname,label,type,required,example,validation,client_value,notes
-name,Shift Schedule Name,Data,Y,ICU-Nurse-Day-Rotation,non-empty (autoname='prompt'),,REQUIRED — autoname='prompt' needs explicit name
-shift_type,Shift Type,Link→Shift Type,Y,Morning-8h,must exist in tabShift Type,,required
-company,Company,Link→Company,N,Company A,must exist if set,,defaults from shift_type
-enable_auto_shift_schedule,Enable Auto Shift Schedule,Check,N,0,0/1,,stock — does NOT auto-run during migration
+name,Schedule Name,Data,Y,Schedule A,unique,,REQUIRED because autoname=prompt - see gotcha #8; client-defined schedule code
+frequency,Frequency,Select,Y,Every Week,Every Week / Every 2 Weeks / Every 3 Weeks / Every 4 Weeks,,required stock field
+shift_type,Shift Type,Link,Y,T1,must exist,,required stock field; link to Shift Type
+amended_from,Amended From,Link,N,,must exist if set,,for amendment workflow only

@@ -1,15 +1,22 @@
 fieldname,label,type,required,example,validation,client_value,notes
-name,Shift Name,Data,Y,Morning-8h,non-empty (autoname='prompt'),,REQUIRED — autoname='prompt' means CSV MUST supply this column or Frappe raises ValidationError
-start_time,Start Time,Time,Y,09:00:00,HH:MM:SS; 24h clock,,required
-end_time,End Time,Time,Y,18:00:00,HH:MM:SS; end_time < start_time means shift spans midnight,,required
-color,Color,Select,N,blue,blue/cyan/fuchsia/green/lime/orange/pink/red,,default 'blue' set via Property Setter; drives roster-UI coloring
-holiday_list,Holiday List,Link→Holiday List,N,Holiday Calendar A,must exist in tabHoliday List,,inherits from Employee/Company if blank
-enable_auto_attendance,Enable Auto Attendance,Check,N,0,0/1,,drives scheduler
-process_attendance_after,Process Attendance After,Date,N,,YYYY-MM-DD; required if enable_auto_attendance=1,,"REQUIRED when auto-attendance is on, else scheduler silently fails"
-working_hours_threshold_for_half_day,Working Hours Threshold for Half Day,Float,N,4.5,hours; 0 disables,,stock
-working_hours_threshold_for_absent,Working Hours Threshold for Absent,Float,N,2.0,hours; 0 disables,,stock
-enable_late_entry_marking,Enable Late Entry Marking,Check,N,0,0/1,,stock
-late_entry_grace_period,Late Entry Grace Period,Int,N,15,minutes,,stock; minutes after start_time before marked late
-enable_early_exit_marking,Enable Early Exit Marking,Check,N,0,0/1,,stock
-early_exit_grace_period,Early Exit Grace Period,Int,N,15,minutes,,stock
-allow_overtime,Allow Overtime,Check,N,0,0/1,,stock
+name,Name,Data,Y,Morning-8h,unique,,REQUIRED because autoname=prompt - see gotcha #4; client-defined shift code
+start_time,Start Time,Time,Y,08:00:00,HH:MM:SS,,required stock field
+end_time,End Time,Time,Y,17:00:00,HH:MM:SS; can be < start_time (cross-midnight),,required stock field
+holiday_list,Holiday List,Link,N,Holiday List A,must exist if set,,optional link to holiday calendar
+determine_check_in_and_check_out,Determine Check-in and Check-out,Select,N,Alternating entries as IN and OUT during the same shift,see options list,,stock Select
+working_hours_calculation_based_on,Working Hours Calculation Based On,Select,N,First Check-in and Last Check-out,see options list,,stock Select
+working_hours_threshold_for_half_day,Working Hours Threshold for Half Day,Float,N,5,>= 0,,hours; below this counts as Half Day
+working_hours_threshold_for_absent,Working Hours Threshold for Absent,Float,N,0,>= 0,,hours; below this counts as Absent
+begin_check_in_before_shift_start_time,Begin check-in before shift start time (in minutes),Int,N,60,>= 0,,minutes before start_time allowed
+late_entry_grace_period,Late Entry Grace Period,Int,N,0,>= 0,,minutes of grace for late IN
+early_exit_grace_period,Early Exit Grace Period,Int,N,0,>= 0,,minutes of grace for early OUT
+allow_check_out_after_shift_end_time,Allow check-out after shift end time (in minutes),Int,N,60,>= 0,,minutes after end_time allowed
+enable_auto_attendance,Enable Auto Attendance,Check,N,0,0/1,,1 to auto-create Attendance from Checkins
+process_attendance_after,Process Attendance After,Date,N,,YYYY-MM-DD,,optional cutoff date
+mark_auto_attendance_on_holidays,Mark Auto Attendance on Holidays,Check,N,0,0/1,,1 to mark attendance on holidays too
+enable_late_entry_marking,Enable Late Entry Marking,Check,N,0,0/1,,1 to flag late IN
+enable_early_exit_marking,Enable Early Exit Marking,Check,N,0,0/1,,1 to flag early OUT
+color,Roster Color,Select,N,Blue,Blue / Cyan / Fuchsia / Green / Lime / Orange / Pink / Red / Violet,,extended by property setter (see Section 2)
+auto_update_last_sync,Automatically update Last Sync of Checkin,Check,N,0,0/1,,1 to track last sync timestamp
+allow_overtime,Allow Overtime,Check,N,0,0/1,,1 to allow overtime calc on this shift
+overtime_type,Overtime Type,Link,N,,must exist if set,,link to Overtime Type

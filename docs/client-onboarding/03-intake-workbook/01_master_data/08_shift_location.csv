@@ -1,6 +1,6 @@
 fieldname,label,type,required,example,validation,client_value,notes
-location_name,Location Name,Data,Y,Site A — Main Block,unique,,autoname source
-latitude,Latitude,Float,Y,17.4126,-90 to 90,,required; +N -S
-longitude,Longitude,Float,Y,78.4080,-180 to 180,,required; +E -W
-checkin_radius,Check-in Radius,Int,N,200,"meters; 50-200 indoors, 500+ for campus",,default if unset
-address,Address,Text,N,"Street A, City A",free-form,,stock
+location_name,Location Name,Data,Y,Site A,unique,,autoname=field:location_name; see gotcha #15 for single-site deployments
+checkin_radius,Checkin Radius,Int,N,200,> 0 meters,,geofence radius for Checkin validity
+latitude,Latitude,Float,N,0.0000,-90 to 90,,decimal degrees; WGS84
+longitude,Longitude,Float,N,0.0000,-180 to 180,,decimal degrees; WGS84
+geolocation,Geolocation,Geolocation,N,,lat,lon format,,alternative to separate lat/long

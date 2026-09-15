@@ -1,5 +1,2 @@
 fieldname,label,type,required,example,validation,client_value,notes
-branch,Branch,Data,Y,Site A,unique within company,,autoname source
-company,Company,Link→Company,Y,Company A,must exist in tabCompany,,every branch belongs to a Company
-branch_code,Branch Code,Data,N,MAIN,short code,,STOCK field — used in payroll reports
-city,City,Data,N,City A,free-form,,stock field
+branch,Branch,Data,Y,Branch A,unique,,autoname=field:branch; NOTE: DocType unused at single-site deployments (see gotcha #12); template still applies for multi-site clients

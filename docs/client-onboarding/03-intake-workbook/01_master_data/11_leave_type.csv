@@ -1,11 +1,24 @@
 fieldname,label,type,required,example,validation,client_value,notes
-leave_type_name,Leave Type,Data,Y,Leave Type A,unique,,primary name
-max_leave_allowed,Maximum Leave Allowed,Int,N,12,>=0,,leave days per year
-max_continuous_days_allowed,Maximum Continuous Days Allowed,Int,N,5,>=0,,stock
-is_carry_forward,Is Carry Forward,Check,N,0,0/1,,stock
-is_lwp,Is Leave Without Pay,Check,N,0,0/1,,stock
-is_earned_leave,Is Earned Leave,Check,N,0,0/1,,stock
-is_compensatory,Is Compensatory,Check,N,0,0/1,,stock
-allow_encashment,Allow Encashment,Check,N,0,0/1,,stock
-max_leaves_encashed,Maximum Leaves Encashed,Int,N,0,>=0,,stock
-earning_component,Earning Component,Link→Salary Component,N,,must exist if set,,stock
+leave_type_name,Leave Type Name,Data,Y,Casual Leave,unique,,autoname=field:leave_type_name
+max_leaves_allowed,Maximum Leave Allocation Allowed per Leave Period,Float,N,12,>= 0,,per-period cap (0 = unlimited at type level)
+applicable_after,Allow Leave Application After (Working Days),Int,N,0,>= 0,,min service days before request
+max_continuous_days_allowed,Maximum Consecutive Leaves Allowed,Int,N,0,>= 0,,0 = unlimited
+is_carry_forward,Is Carry Forward,Check,N,0,0/1,,1 if unused leaves carry to next period
+is_lwp,Is Leave Without Pay,Check,N,0,0/1,,1 marks this as unpaid leave
+is_optional_leave,Is Optional Leave,Check,N,0,0/1,,1 for optional/restricted holidays
+allow_negative,Allow Negative Balance,Check,N,0,0/1,,1 allows over-draw
+include_holiday,Include holidays within leaves as leaves,Check,N,0,0/1,,1 counts holidays inside leave span
+is_compensatory,Is Compensatory,Check,N,0,0/1,,1 marks this as comp-off
+expire_carry_forwarded_leaves_after_days,Expire Carry Forwarded Leaves (Days),Int,N,0,>= 0,,0 = never expire
+allow_encashment,Allow Encashment,Check,N,0,0/1,,1 allows encashment on exit
+earning_component,Earning Component,Link,N,,must exist if set,,link to Salary Component for payroll
+is_earned_leave,Is Earned Leave,Check,N,0,0/1,,1 marks this as accrual-based
+earned_leave_frequency,Earned Leave Frequency,Select,N,,Monthly / Quarterly / Half-Yearly / Yearly,,only meaningful if is_earned_leave=1
+rounding,Rounding,Select,N,,0.25 / 0.5 / 1.0,,leave-day rounding granularity
+maximum_carry_forwarded_leaves,Maximum Carry Forwarded Leaves,Float,N,0,>= 0,,0 = no cap
+is_ppl,Is Partially Paid Leave,Check,N,0,0/1,,1 for partially-paid leaves
+fraction_of_daily_salary_per_leave,Fraction of Daily Salary per Leave,Float,N,0,0 to 1,,only if is_ppl=1
+allow_over_allocation,Allow Over Allocation,Check,N,0,0/1,,1 to bypass allocation cap
+allocate_on_day,Allocate on Day,Select,N,First Day,First Day / Last Day / Date of Joining,,allocation timing
+max_encashable_leaves,Maximum Encashable Leaves,Int,N,0,>= 0,,0 = unlimited
+non_encashable_leaves,Non-Encashable Leaves,Int,N,0,>= 0,,floor of non-encashable balance
