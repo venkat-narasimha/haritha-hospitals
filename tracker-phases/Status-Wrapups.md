@@ -1,8 +1,29 @@
 # Project Status Wrap-ups
 
-> **Consolidated file** — merged from `001-status-current.md` (End-of-day status 2026-08-27) and `002-status-historical-rollback.md` (Historical status + 2026-08-21 rollback).
+> **Consolidated file** — merged from `001-status-current.md` (End-of-day status 2026-08-27) and `002-status-historical-rollback.md` (Historical status + 2026-08-21 rollback). Updated 2026-09-15 with P5 wrap-up.
 
 ----
+
+## 🎯 P5 Client-Onboarding Data Templates Rebuild (✅ DONE 2026-09-15 10:55 IST)
+
+**Output:** 22 data templates + 3 intake-workbook docs at `docs/client-onboarding/03-intake-workbook/`. Tag `v1.0-p5-templates-production-ready` (annotated, on commit `a848f22`; cosmetic polish at `9706f2f`).
+
+**5 sub-phases + verification + cleanup (12 commits total):**
+- Phase 0: research (foundation doc) → Phase 1: 15 master-data → Phase 2: 4 transaction
+- Phase 2.5: verify (found 2 BLOCKER + 7 IMPORTANT + 11 NIT; 1 BLOCKER was FP)
+- Phase 2.6: fix (20 fixes, Option 3 = all)
+- Phase 2.7: re-verify (11/11 SCs PASS, 0 BLOCKER, 0 IMPORTANT)
+- Quote fix + reorg + Phase 3 docs + Phase 4 sweep
+- Phase 5 verdict marker + cleanup + cosmetic Link pass
+
+**Final verification scorecard:** 11/11 SCs PASS, 0 BLOCKER, 0 IMPORTANT, 0 real-data leaks, 19/19 templates resolved, 19/19 signoff blocks, 7/7 Phase 4 checks PASS.
+
+**Key decisions logged:** see `Decisions-Lessons-Learned.md` (2026-09-15 rows).
+**Subagent workflow lessons:** see `.learnings/LEARNINGS.md` #169-#172.
+
+**Out of scope (deferred):** `scripts/upload_*.py` (Frappe Data Import UI works for now); end-to-end import test against a dev site (not done — verified structurally only).
+
+---
 
 ## Source: 001-status-current.md (End-of-day status 2026-08-27 21:02 IST)
 

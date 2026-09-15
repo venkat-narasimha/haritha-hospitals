@@ -10,6 +10,36 @@
 
 | Date | Decision | Rationale |
 |---|---|---|
+| 2026-09-15 | P5 templates rebuilt from actual stock HRMS v16.5.0 schema + haritha_hospital custom_field.json fixture (78 fields), not assumed generic | Research §4 (stock JSON) + §1 (custom fields) + §6 (verdict matrix) were the source-of-truth; each field's required marking verified against this matrix |
+| 2026-09-15 | Verification-first workflow: separate verification subagent after every fix subagent, never trust subagent self-validation | Phase 1 + 2 subagents both self-reported "8/8 SCs pass" but Phase 2.5 verification found 2 BLOCKER + 7 IMPORTANT + 11 NIT. Self-validation is unreliable |
+| 2026-09-15 | Link fields qualified to `Link→<Target>` (not plain `Link`) for client clarity | 6 fields deferred from Phase 2.6 scope (out-of-task-enumeration); closed in commit `9706f2f` cosmetic pass |
+| 2026-09-15 | Audit/wip artifacts (research docs, verify reports, fix summaries, handoffs) excluded from production repo | Only `docs/client-onboarding/03-intake-workbook/*` ships to remote. Audit trail kept in workspace, .gitignore prevents re-introduction (`prompts/P5-*`, `reports/p5/`, `*.html.backup*`). Venkat correction: "don't lie, repo is unstructured" |
+| 2026-09-15 | Phase 5 marked with empty commit + annotated tag (`v1.0-p5-templates-production-ready`), not just a commit message | Tag is the durable marker; commit chain is the audit trail. Tag uses peeled ref `${TAG}^{}` for verification, not bare tag object SHA |
+| 2026-09-15 | `02_settings_checklists/` (3 md) verified PASS — references resolve, no leaks, format consistent | Pre-existing files, out of P5 rebuild scope per original plan; verified during P5 close-out |
+| 2026-09-15 | `02_settings_checklists/03_auto_attendance_policies.md` references `01_master_data/07_shift_type.md` by relative path | Verified cross-reference resolves; no orphan refs |
+
+## P5 Subagent Workflow Lessons (cross-reference to `.learnings/LEARNINGS.md`)
+
+Lessons #169–#172 capture the key P5 subagent patterns:
+- #169: Subagent self-validation is unreliable — always run separate verification
+- #170: Subagent can misread context — spot-check critical claims in main session
+- #171: Tag peeled ref (`${TAG}^{}`) vs tag object SHA — use peeled for commit binding verification
+- #172: CSV-MD parity is easy to break — fix scope must explicitly cover BOTH files when type changes
+
+Full detail in `.learnings/LEARNINGS.md`.
+
+## Known Issues from P5 (resolved)
+
+| Issue | Resolution | Commit |
+|---|---|---|
+| Phase 1 subagent output more thorough than d2ea327 Python generator | Q1 commit kept subagent output (8 Department fields vs 7, 36 Employee fields vs 27) | `28698ee` |
+| 01_department.csv:2 straight quotes in unquoted field (RFC 4180 violation) | Replaced `"` with `'` | `9c70fd2` |
+| `04_employee_grade` invented `grade_name` field | Renamed to `name` (Frappe pseudo-field for `autoname=Prompt`) | `31243cf` |
+| `06_holiday_list` `color` type mismatch (Data vs stock Color) | Changed to `Color` in CSV + MD | `31243cf` + `9c70fd2` |
+| `14_leave_allocation` `description` type mismatch (Text vs stock Small Text) | Changed to `Small Text` in CSV + MD | `31243cf` + `9c70fd2` |
+| 5 templates missing Gotcha #1 documentation | Added Gotcha #1 line to 5 MD files | `31243cf` |
+| 6 plain `Link` fields out of style scope (deferred from Phase 2.6) | Closed in cosmetic pass — qualified to `Link→<Target>` | `9706f2f` |
+| Audit/wip artifacts (prompts/P5-*, reports/p5/*) in repo | Removed from repo + .gitignore updated | `a848f22` |
 | 2026-08-19 | Scope = shift management only | User clarified mid-session; defer hospital modules |
 | 2026-08-19 | hrms 16.5.0 pin | Lesson #44 — v16.5.1+ breaks on `repost_allowed_types` |
 | 2026-08-19 | Shift code = 10-char `[P][HHMM][S][HHMM]` | User-proposed scheme, Option A (lean) |

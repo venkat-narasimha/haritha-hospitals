@@ -30,6 +30,7 @@ A full backup of the original 1492-line TRACKER.md is preserved at [`tracker-pha
 | 3   | [Phase-3-Data-Import.md](tracker-phases/Phase-3-Data-Import.md) | **Phase 3 → 3.10** — Data Import, Reconcile, Bulk Submit, Property Setter, Attendance Link/Backfill, Backup Bundle Fix (017+018+012+019+021+022+023) |
 | 4   | [Phase-4-Shift-Management-Roster-Crash-Fix.md](tracker-phases/Phase-4-Shift-Management-Roster-Crash-Fix.md) | **Phase 4.1 → 4.12** — Shift Type end_time+color, Location backfill, SS submit, SSA create_shifts, Option B 1-SSA-per-employee, Attendance HRMS-recompute, Tailwind color normalization, Roster crash root cause (026+024+025+027+028+029+034+030+033+032+035+031) |
 | 0+  | [Phase-0plus-Foundation-Migration.md](tracker-phases/Phase-0plus-Foundation-Migration.md) | **Phase 0+** — Custom app build + Master Data Migration (prod → dev) (036) |
+| 3+  | [Phase-3plus-Client-Onboarding-Data-Templates.md](tracker-phases/Phase-3plus-Client-Onboarding-Data-Templates.md) | **Phase 3+** — P5 rebuild: 22 data templates + 3 intake-workbook docs (README + signoff + master validation); 11/11 SCs PASS; tag `v1.0-p5-templates-production-ready` |
 | 6   | [Phase-6-Process-Maturity.md](tracker-phases/Phase-6-Process-Maturity.md) | **Phase 6** — Process & Maturity Documentation, 34 docs / ~14,030 lines (037) |
 
 ## Quick Stats
