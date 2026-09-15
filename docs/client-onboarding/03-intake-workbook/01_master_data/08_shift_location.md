@@ -1,62 +1,42 @@
 # Shift Location — Intake Sheet
 
-**DocType:** `Shift Location`
+**DocType:** `Shift Location` (master)
 **Module:** HR / Shift Management
-**Required fields:** 3 (location_name + lat + long)
-**Optional fields:** 4
+**Autoname rule:** `field:location_name`
+
+**Required fields:** 3  |  **Optional fields:** 2
+
+## Purpose
+
+GPS-tagged site location for biometric attendance check-in scope (lat/long + radius from center).
 
 ## Field reference
 
 | fieldname | label | type | required | example | validation | notes |
 |---|---|---|---|---|---|---|
-| `location_name` | Location Name | Data | Y | "Main Hospital - ICU" | unique | autoname from this field |
-| `latitude` | Latitude | Float | Y | 17.3850 | -90 to 90 | From site survey |
-| `longitude` | Longitude | Float | Y | 78.4867 | -180 to 180 | From site survey |
-| `geolocation` | Geolocation | Geolocation | N | – | combined lat/long field | Auto-fills lat/long |
-| `checkin_radius` | Check-in Radius | Int | N | 100 | meters | Geofence radius |
-| `address` | Address | Text | N | "Main Block, 2nd Floor" | – | Human-readable address |
-| `shift_assignment_creation_method` | Shift Assignment Creation Method | Select | N | "Manual" | Manual / Auto / None | – |
-| `check_in_offset` | Check-in Offset | Int | N | 0 | minutes before shift start | – |
-| `check_out_offset` | Check-out Offset | Int | N | 0 | minutes after shift end | – |
+| `location_name` | Location Name | Data | **Y** | `Site A — Main Block` | unique |  |
+| `latitude` | Latitude | Float | **Y** | `17.4126` | -90 to 90 |  |
+| `longitude` | Longitude | Float | **Y** | `78.4080` | -180 to 180 |  |
+| `checkin_radius` | Check-in Radius | Int | **N** | `200` | meters; 50-200 indoors, 500+ for campus |  |
+| `address` | Address | Text | **N** | `Street A, City A` | free-form |  |
 
-## Healthcare-specific fields
+## Migration notes
 
-| fieldname | label | type | required | example | notes |
-|---|---|---|---|---|---|
-| `zone_type` | Zone Type | Select | N | "ICU" | ICU / OT / Ward / OPD / Casualty / Lab / Pharmacy / Admin |
-| `floor` | Floor | Data | N | "2nd" | Building floor for multi-floor hospitals |
-| `requires_late_attendance_alert` | Late Attendance Alert | Check | N | 1 | For critical zones (ICU, Casualty) |
+- GOTCHA #8: although autoname is `field:location_name`, the migration script includes Shift Location in PROMPT_AUTONAME_DOCTYPES so it pins name explicitly on insert (defensive coding against schema drift).
+- The migration script pre-creates ONE canonical Shift Location before processing any Shift Assignment. If client uses a different location name, add that row to this template AND edit `_ensure_shift_location()` in the migration script.
 
-## Validation rules
+## When to use this sheet
 
-- `location_name` unique.
-- `latitude ∈ [-90, 90]`, `longitude ∈ [-180, 180]`.
-- `checkin_radius ≥ 0`; typical 50–200 m for indoor units, 500 m+ for campus-wide.
-- Requires `HR Settings → Allow Geolocation Tracking = 1` (admin enables first).
+| Scenario | Use this sheet? |
+|---|---|
+| Multi-site deployment with GPS check-in | Yes — required per site |
+| Single-site / no GPS check-in | Optional — can be omitted |
 
 ## Common client mistakes
 
-- Using imprecise coordinates (e.g., city centre instead of building entrance).
-- Setting radius too tight (10 m) — fails due to GPS variance; too loose (5 km) — defeats purpose.
-- Not creating separate locations for separate buildings (one "Hospital" location for ICU and Casualty).
-- Forgetting to enable `Allow Geolocation Tracking` in HR Settings first.
+- Lat/long with too many decimal places (use 4-6 max).
+- checkin_radius = 0 (offices — disables check-in).
 
-## Typical hospital shift locations
+## Related gotchas
 
-| location_name | latitude | longitude | checkin_radius | zone_type |
-|---|---|---|---|---|
-| Main Hospital - ICU | (from survey) | (from survey) | 50 | ICU |
-| Main Hospital - OT Block | (from survey) | (from survey) | 50 | OT |
-| Main Hospital - Casualty | (from survey) | (from survey) | 75 | Casualty |
-| Main Hospital - Wards | (from survey) | (from survey) | 100 | Ward |
-| Main Hospital - OPD | (from survey) | (from survey) | 150 | OPD |
-| Main Hospital - Lab | (from survey) | (from survey) | 100 | Lab |
-| Main Hospital - Pharmacy | (from survey) | (from survey) | 50 | Pharmacy |
-| Main Hospital - Admin Block | (from survey) | (from survey) | 200 | Admin |
-
-## Migration notes (see `scripts/migrate_master_data.py`)
-
-- **Autoname contract — GOTCHA #4.** `Shift Location` uses `autoname = "field:location_name"` and is listed in the script's `PROMPT_AUTONAME_DOCTYPES`. The migration script explicitly pins `payload["name"] = location_name` on insert so Frappe uses the canonical name rather than auto-generating one. Client-side: every row must have a non-empty `location_name`; that value becomes the document `name` used by all downstream Shift Assignment Link fields.
-- **Pre-create of canonical name — GOTCHA #9.** The migration script calls `_ensure_shift_location("City A")` BEFORE processing any `Shift Assignment` records. This is hard-coded because production only uses one Shift Location name. If your client uses a different canonical name (e.g., `"Main Campus"`), either (a) include `Main Campus` here in the intake CSV so the script will create it on first Shift Assignment insert, or (b) edit `_ensure_shift_location()` in `scripts/migrate_master_data.py` to use the canonical name from this sheet.
-- **Re-runs are upserts.** Re-running the migration UPDATES existing Shift Location rows by `name`. Lat/long changes will overwrite the live geofence immediately — coordinate changes during go-live should be done as a deliberate re-import, not as a side-effect of an unrelated edit.
-- **Out-of-scope Link fields.** The script does NOT populate `shift_assignment_creation_method`, `check_in_offset`, `check_out_offset`, or `geolocation` automatically — they pass through from the source JSON via `_clean_payload()` if present, otherwise they stay blank.
+This DocType touches gotcha(s): `##8` from `scripts/migrate_master_data.py`.

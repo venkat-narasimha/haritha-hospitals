@@ -1,46 +1,32 @@
 # Branch — Intake Sheet
 
-**DocType:** `Branch`
-**Module:** HR (Stock/Accounts also use Branch)
-**Required fields:** 1
-**Optional fields:** 5+
+**DocType:** `Branch` (master)
+**Module:** HR / Setup
+**Autoname rule:** `field:branch`
+
+**Required fields:** 2  |  **Optional fields:** 2
+
+## Purpose
+
+Physical / logical site location. Drives attendance + GPS check-in scope + per-branch Holiday List overrides.
 
 ## Field reference
 
 | fieldname | label | type | required | example | validation | notes |
 |---|---|---|---|---|---|---|
-| `branch` | Branch | Data | Y | "Main Hospital" | unique | The visible name |
-| `company` | Company | Link → Company | N | "ABC Healthcare Pvt Ltd" | must exist | Branch can belong to one company |
+| `branch` | Branch | Data | **Y** | `Site A` | unique within company |  |
+| `company` | Company | Link→Company | **Y** | `Company A` | must exist in tabCompany |  |
+| `branch_code` | Branch Code | Data | **N** | `MAIN` | short code |  |
+| `city` | City | Data | **N** | `City A` | free-form |  |
 
-## Healthcare-specific fields (custom — recommended)
+## When to use this sheet
 
-| fieldname | label | type | required | example | notes |
-|---|---|---|---|---|---|
-| `branch_code` | Branch Code | Data | N | "MAIN" | Short code for reports (≤6 chars) |
-| `branch_type` | Branch Type | Select | N | "Hospital" | Hospital / Clinic / Lab / Pharmacy / Office |
-| `address_line_1` | Address Line 1 | Data | N | "123 MG Road" | For geofencing + statutory |
-| `city` | City | Data | N | "City A" | – |
-| `state` | State | Link → State | N | "State A" | Drives Holiday List selection |
-| `pincode` | Pincode | Data | N | "500001" | 6-digit Indian pincode |
-| `latitude` | Latitude | Float | N | 17.3850 | – |
-| `longitude` | Longitude | Float | N | 78.4867 | – |
-| `nabh_accredited` | NABH Accredited | Check | N | 1 | For quality reporting |
-| `bed_count` | Bed Count | Int | N | 300 | Operational metric |
-
-## Validation rules
-
-- `branch` unique.
-- `latitude`/`longitude` if set should be valid coordinates.
+| Scenario | Use this sheet? |
+|---|---|
+| Multi-site deployment (hospital + clinic + lab) | Yes — required |
+| Single-site deployment | Optional — Employee.branch can be empty |
 
 ## Common client mistakes
 
-- Confusing Branch with Department — Branch is a *location*, Department is a *function*.
-- Missing `state` — breaks Holiday List assignment (drives per-state holiday list).
-
-## Typical branches for a hospital chain
-
-- Main Hospital (City A)
-- North Wing / Annexe (if separate building)
-- OPD Block
-- Diagnostic Centre (separate location)
-- Satellite Clinic 1, 2, 3 (if applicable)
+- Creating Branch with no Company — fails LinkValidationError.
+- Duplicating branch code across branches — use unique 3-5 char codes.

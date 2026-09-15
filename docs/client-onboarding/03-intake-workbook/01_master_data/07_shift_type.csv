@@ -1,14 +1,15 @@
 fieldname,label,type,required,example,validation,client_value,notes
-name,Shift Name,Data,Y,Morning-8h,unique,,
-start_time,Start Time,Time,Y,06:00:00,HH:MM:SS,,
-end_time,End Time,Time,Y,14:00:00,HH:MM:SS,end<start = night shift,,
-color,Color,Select,N,Blue,Blue/Cyan/Fuchsia/Green/Lime/Orange/Pink/Red/Violet/Yellow,,
-enable_auto_attendance,Enable Auto Attendance,Check,N,1,0/1,,
-process_attendance_after,Process Attendance After,Date,N,2026-09-01,required if enable_auto_attendance=1,,
-working_hours_threshold_for_half_day,Half-Day Threshold (hrs),Float,N,4.0,0 disables,,
-working_hours_threshold_for_absent,Absent Threshold (hrs),Float,N,0,0 disables,,
-enable_late_entry_marking,Enable Late Entry Marking,Check,N,1,0/1,,
-late_entry_grace_period,Late Entry Grace Period,Int,N,15,minutes,,
-enable_early_exit_marking,Enable Early Exit Marking,Check,N,1,0/1,,
-early_exit_grace_period,Early Exit Grace Period,Int,N,15,minutes,,
-allow_overtime,Allow Overtime,Check,N,0,0/1,,
+name,Shift Name,Data,Y,Morning-8h,non-empty (autoname='prompt'),,REQUIRED — autoname='prompt' means CSV MUST supply this column or Frappe raises ValidationError
+start_time,Start Time,Time,Y,09:00:00,HH:MM:SS; 24h clock,,required
+end_time,End Time,Time,Y,18:00:00,HH:MM:SS; end_time < start_time means shift spans midnight,,required
+color,Color,Select,N,blue,blue/cyan/fuchsia/green/lime/orange/pink/red,,default 'blue' set via Property Setter; drives roster-UI coloring
+holiday_list,Holiday List,Link→Holiday List,N,Holiday Calendar A,must exist in tabHoliday List,,inherits from Employee/Company if blank
+enable_auto_attendance,Enable Auto Attendance,Check,N,0,0/1,,drives scheduler
+process_attendance_after,Process Attendance After,Date,N,,YYYY-MM-DD; required if enable_auto_attendance=1,,"REQUIRED when auto-attendance is on, else scheduler silently fails"
+working_hours_threshold_for_half_day,Working Hours Threshold for Half Day,Float,N,4.5,hours; 0 disables,,stock
+working_hours_threshold_for_absent,Working Hours Threshold for Absent,Float,N,2.0,hours; 0 disables,,stock
+enable_late_entry_marking,Enable Late Entry Marking,Check,N,0,0/1,,stock
+late_entry_grace_period,Late Entry Grace Period,Int,N,15,minutes,,stock; minutes after start_time before marked late
+enable_early_exit_marking,Enable Early Exit Marking,Check,N,0,0/1,,stock
+early_exit_grace_period,Early Exit Grace Period,Int,N,15,minutes,,stock
+allow_overtime,Allow Overtime,Check,N,0,0/1,,stock

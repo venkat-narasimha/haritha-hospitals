@@ -1,7 +1,5 @@
 fieldname,label,type,required,example,validation,client_value,notes
-designation_name,Designation Name,Data,Y,Senior Consultant,unique,,
-description,Description,Text,N,Senior clinical role,,,
-clinical_role,Clinical Role,Select,N,Doctor,Doctor/Nurse/Technician/Support/Admin,,
-requires_registration,Requires Medical Registration,Check,N,1,0/1,,
-min_qualification,Minimum Qualification,Data,N,MBBS, MD,,,
-appraisal_template,Appraisal Template,Link,N,,must exist if set,,
+designation_name,Designation Name,Data,Y,Designation A,unique within company,,autoname source
+description,Description,Text,N,Role description here,free-form text,,shown on Employee + Leave docs
+appraisal_template,Appraisal Template,Link→Appraisal Template,N,,must exist in tabAppraisal Template,,custom field — used if appraisal cycle linked
+skills,Skills,Table→Designation Skill,N,,child rows,,custom field — required skills per role

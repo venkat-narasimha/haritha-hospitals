@@ -1,62 +1,44 @@
 # Holiday List — Intake Sheet
 
-**DocType:** `Holiday List` (parent) + `Holiday` (child table)
-**Module:** HR
-**Required fields:** 3 (parent) + 1 (per child row)
-**Optional fields:** 5
+**DocType:** `Holiday List` (master)
+**Module:** HR / Setup
+**Autoname rule:** `field:holiday_list_name`
 
-## Parent DocType field reference
+**Required fields:** 3  |  **Optional fields:** 4
+
+## Purpose
+
+Calendar of organizational + statutory holidays. Foundation for Attendance 'On Leave' auto-creation + Leave date calculations.
+
+## Field reference
 
 | fieldname | label | type | required | example | validation | notes |
 |---|---|---|---|---|---|---|
-| `holiday_list_name` | Holiday List Name | Data | Y | "State A Holiday Calendar 2026" | unique | Visible name |
-| `from_date` | From Date | Date | Y | "2026-01-01" | YYYY-MM-DD | Start of period |
-| `to_date` | To Date | Date | Y | "2026-12-31" | YYYY-MM-DD, ≥from_date | End of period |
-| `country` | Country | Link → Country | N | "India" | auto-fills state list | For auto-helper |
-| `subdivision` | Subdivision | Link | N | "State A" | Indian state | For auto-helper |
-| `weekly_off` | Weekly Off | Select | N | "Sunday" | Sun–Sat | One-click fill (uses `holidays` PyPI) |
-| `holidays` | Holidays (child table) | Table | Y | (see below) | each row: date + description | REQUIRED child table |
+| `holiday_list_name` | Holiday List Name | Data | **Y** | `Holiday Calendar A` | unique |  |
+| `from_date` | From Date | Date | **Y** | `2026-01-01` | YYYY-MM-DD |  |
+| `to_date` | To Date | Date | **Y** | `2026-12-31` | YYYY-MM-DD; must be >= from_date |  |
+| `color` | Color | Color | **N** | `` | color picker |  |
+| `country` | Country | Autocomplete | **N** | `` | country name |  |
+| `subdivision` | Subdivision | Autocomplete | **N** | `` | state / province |  |
+| `weekly_off` | Weekly Off | Select | **N** | `Sunday` | /Sunday/Monday/Tuesday/Wednesday/Thursday/Friday/Saturday |  |
 
-## Child table row fields (`Holiday` child)
+## Healthcare-specific extensions (optional, India-context)
 
-| fieldname | label | type | required | example | notes |
-|---|---|---|---|---|---|
-| `holiday_date` | Date | Date | Y | "2026-01-26" | YYYY-MM-DD; must be within parent from/to |
-| `description` | Description | Data | Y | "Republic Day" | Visible in calendar |
-| `weekly_off` | Weekly Off | Check | N | 0 | Auto-marked if matches `weekly_off` setting |
+- If client operates in a jurisdiction with state-specific holidays (e.g., regional founding day, religious observance), add to the Holiday rows — not the parent.
 
-## Healthcare-specific fields
+## Child-table format hint
 
-| fieldname | label | type | required | example | notes |
-|---|---|---|---|---|---|
-| `applicable_to` | Applicable To | Select | N | "All Staff" | All Staff / Doctors Only / Nurses Only / Admin Only |
+CSV may include child Holiday rows by repeating the holiday_list_name with different holiday_date + description values. The migration script processes child rows when the parent is processed.
 
-## Validation rules
+## When to use this sheet
 
-- Each `holiday_date` in child table must be unique within the list.
-- `to_date ≥ from_date`.
-- One Holiday List per state if multi-state operations.
+| Scenario | Use this sheet? |
+|---|---|
+| Initial deployment — define current year's holidays | Yes — required |
+| Annual holiday calendar update | Yes — overwrite with new year's data |
 
 ## Common client mistakes
 
-- Forgetting to include Republic Day, Independence Day, Gandhi Jayanti, state-specific holidays.
-- Using one Holiday List for multi-state — assign per Branch or per Department.
-- Mixing weekly off into the list (use `weekly_off` setting instead).
-- Importing 2025 holidays for a 2026 deployment — confirm period alignment with go-live.
-
-## Standard holidays for Indian hospitals (State A Holiday Calendar 2026 example)
-
-1. Republic Day (Jan 26)
-2. Maha Shivaratri (Feb)
-3. Holi (Mar)
-4. Good Friday (Mar/Apr)
-5. Ugadi / Telugu New Year (Mar/Apr)
-6. Dr. B.R. Ambedkar's Birthday (Apr 14)
-7. May Day (May 1)
-8. Ramzan Eid (varies — lunar)
-9. Independence Day (Aug 15)
-10. Ganesh Chaturthi (Aug/Sep)
-11. Regional cultural festival (Oct, state-specific)
-12. Diwali (Oct/Nov)
-13. Christmas (Dec 25)
-+ weekly off: Sunday
+- Setting to_date before from_date — fails ValidationError.
+- Mixing up Calendar type with Holiday type — Calendar is the parent, Holiday is the child.
+- Omitting weekly_off — calendar UI shows every day as work-day.

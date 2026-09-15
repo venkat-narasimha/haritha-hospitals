@@ -1,30 +1,28 @@
 fieldname,label,type,required,example,validation,client_value,notes
-employee_name,Employee Name,Data,Y,Aarav Kumar Sharma,non-empty,,derived from names
-employee_number,Employee Number,Data,Y,HRH-EMP-0001,unique,,
-first_name,First Name,Data,Y,Aarav,non-empty,,
-last_name,Last Name,Data,N,Sharma,,,
-gender,Gender,Select,Y,Male,Male/Female/Other,,
-date_of_birth,Date of Birth,Date,Y,1990-05-12,YYYY-MM-DD,<=today,,
-date_of_joining,Date of Joining,Date,Y,2024-01-15,YYYY-MM-DD,,
-status,Status,Select,Y,Active,Active/Suspended/Left/Permanently Disabled,,
-company,Company,Link,Y,ABC Healthcare Pvt Ltd,must exist,,
-department,Department,Link,N,Cardiology,must exist,,
-designation,Designation,Link,N,Senior Consultant,must exist,,
-employment_type,Employment Type,Link,N,Full-time,must exist,,
-branch,Branch,Link,N,Main Hospital,must exist,,
-grade,Grade,Link,N,A2,must exist,,
-reports_to,Reports To,Link,N,EMP-0001,must exist if set,,
-leave_approver,Leave Approver,Link,N,hr.manager@hosp.com,must exist if set,,
-default_shift,Default Shift,Link,N,Morning-8h,must exist,,
-attendance_device_id,Attendance Device ID,Data,N,BIO-12345,unique if set,biometric ID,
-holiday_list,Holiday List,Link,N,State A Holiday Calendar 2026,must exist,defaults from Company,
-cell_number,Cell Number,Data,N,+91-9876543210,,,
-personal_email,Personal Email,Data,N,aarav@gmail.com,valid email,one of personal/company required for User,
-company_email,Company Email,Data,N,aarav@hosp.com,valid email,one of personal/company required for User,
-blood_group,Blood Group,Select,N,B+,A+/A-/B+/B-/AB+/AB-/O+/O-,REQUIRED for clinical staff,
-medical_council_reg_no,Medical Council Reg. No.,Data,N,REG-A-0001,,REQUIRED for doctors,
-reg_validity_date,Registration Validity,Date,N,2027-12-31,YYYY-MM-DD,,
-specialization,Specialization,Data,N,Cardiology,,,
-emergency_contact_name,Emergency Contact Name,Data,N,Sunita Sharma,,REQUIRED for clinical staff,
-emergency_phone_number,Emergency Phone,Data,N,+91-9876543211,,REQUIRED for clinical staff,
-next_of_kin,Next of Kin,Data,N,Sunita Sharma (Spouse),,,
+naming_series,Series,Select,Y,HR-EMP-.YYYY.-,must be one of the configured series,,HIDDEN by default but reqd=1 per Property Setter — fill it
+employee_name,Employee Name,Data,Y,Employee A,unique across employees,,REQUIRED; used as join key for prod→dev ID remap in downstream templates (GOTCHA #7)
+first_name,First Name,Data,Y,FirstA,non-empty,,required stock field
+last_name,Last Name,Data,Y,LastA,non-empty,,required stock field
+gender,Gender,Link→Gender,Y,Gender A,must exist in tabGender (auto-seeded by Frappe),,REQUIRED — GOTCHA #6: Gender migrates BEFORE Employee
+date_of_birth,Date of Birth,Date,Y,1990-01-15,YYYY-MM-DD,,required stock field
+date_of_joining,Date of Joining,Date,Y,2024-01-15,YYYY-MM-DD,,required stock field
+status,Status,Select,Y,Active,Active/Suspended/Left,,required stock field; defaults Active on insert
+company,Company,Link→Company,Y,Company A,must exist in tabCompany,,REQUIRED — sets Company context
+department,Department,Link→Department,Y,Department A,must exist in tabDepartment,,REQUIRED — GOTCHA #6: Department migrates BEFORE Employee
+designation,Designation,Link→Designation,Y,Designation A,must exist in tabDesignation,,REQUIRED
+branch,Branch,Link→Branch,N,Site A,must exist if set,,optional; required for multi-site
+employment_type,Employment Type,Link→Employment Type,N,Full-time,must exist if set,,CUSTOM field
+grade,Grade,Link→Employee Grade,N,Grade A,must exist if set,,CUSTOM field
+default_shift,Default Shift,Link→Shift Type,N,Morning-8h,must exist in tabShift Type,,CUSTOM field — needs Shift Type migrated FIRST (GOTCHA #6)
+holiday_list,Holiday List,Link→Holiday List,N,Holiday Calendar A,must exist if set,,defaults from Company if blank
+expense_approver,Expense Approver,Link→User,N,,must exist in tabUser (login),,"CUSTOM field — use login email, NOT Employee.name"
+leave_approver,Leave Approver,Link→User,N,,must exist in tabUser,,CUSTOM field — same as expense_approver
+shift_request_approver,Shift Request Approver,Link→User,N,,must exist in tabUser,,CUSTOM field
+payroll_cost_center,Payroll Cost Center,Link→Cost Center,N,Cost Center A,must exist if set,,CUSTOM field
+employee_advance_account,Employee Advance Account,Link→Account,N,Account A,must exist if set,,CUSTOM field
+ifsc_code,IFSC Code,Data,N,BANK0000123,11-char format,,CUSTOM field — for Indian bank accounts; optional
+pan_number,PAN Number,Data,N,ABCDE1234F,10-char format,,CUSTOM field — Indian tax ID; optional
+micr_code,MICR Code,Data,N,123456789,9-digit format,,CUSTOM field — bank check processing; optional
+provident_fund_account,Provident Fund Account,Data,N,PF-12345,free-form,,CUSTOM field — Indian PF; optional
+health_insurance_no,Health Insurance No,Data,N,HI-001,free-form,,CUSTOM field
+health_insurance_provider,Health Insurance Provider,Link→Employee Health Insurance,N,,must exist in tabEmployee Health Insurance,,CUSTOM field

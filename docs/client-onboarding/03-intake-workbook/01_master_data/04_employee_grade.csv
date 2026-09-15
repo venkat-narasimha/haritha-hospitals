@@ -1,7 +1,5 @@
 fieldname,label,type,required,example,validation,client_value,notes
-grade_name,Grade Name,Data,Y,A2,unique,,
-description,Description,Text,N,Junior Doctors and Nurses,,,
-default_currency,Default Currency,Link,N,INR,must exist,,
-min_salary,Minimum Salary,Currency,N,40000,>=0,,
-max_salary,Maximum Salary,Currency,N,80000,>=min_salary,,
-pay_band,Pay Band,Data,N,Clinical-Band-2,,,
+grade_name,Grade,Data,Y,Grade A,unique within company,,autoname source
+description,Description,Text,N,Pay band for [role group],free-form text,,
+currency,Currency,Link→Currency,N,INR,must exist in tabCurrency,,no custom field — stock
+default_salary_structure,Default Salary Structure,Link→Salary Structure,N,,must exist in tabSalary Structure,,stock; used when creating new Employee

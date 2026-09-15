@@ -1,4 +1,3 @@
 fieldname,label,type,required,example,validation,client_value,notes
-title,Title,Data,Y,Grade A2 Policy,unique,,
-leave_type (child),Leave Type,Link,Y,Casual Leave,must exist,,
-annual_allocation (child),Annual Allocation,Float,Y,12,>=0,,
+title,Title,Data,Y,Leave Policy A,unique,,autoname source
+description,Description,Text,N,Annual leave policy for Staff Nurse role,free-form,,stock

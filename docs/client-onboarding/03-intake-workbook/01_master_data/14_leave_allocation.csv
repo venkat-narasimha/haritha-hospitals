@@ -1,11 +1,7 @@
 fieldname,label,type,required,example,validation,client_value,notes
-employee,Employee,Link,Y,EMP-0001,must exist,,
-leave_type,Leave Type,Link,Y,Casual Leave,must exist,,
-from_date,From Date,Date,Y,2026-01-01,YYYY-MM-DD,,
-to_date,To Date,Date,Y,2026-12-31,YYYY-MM-DD,>from_date,,
-new_leaves_allocated,New Leaves Allocated,Float,Y,12,>=0,,
-leave_period,Leave Period,Link,N,Leave Period 2026,must exist if set,,
-leave_policy,Leave Policy,Link,N,Grade A2 Policy,must exist if set,,
-carry_forward,Carry Forward Unused Leaves,Check,N,0,0/1,,
-unused_leaves,Unused Leaves (carry over),Float,N,0,>=0,,
-notes,Notes,Text,N,Mid-year hire adjustment,,reason for manual allocation,
+employee,Employee,Link→Employee,Y,Employee A,must exist in tabEmployee,,required stock
+leave_type,Leave Type,Link→Leave Type,Y,Leave Type A,must exist in tabLeave Type,,required
+from_date,From Date,Date,Y,2026-01-01,YYYY-MM-DD,,required
+to_date,To Date,Date,Y,2026-12-31,YYYY-MM-DD,,required
+new_leaves_allocated,New Leaves Allocated,Float,Y,12.0,>=0,,required
+docstatus,Document Status,Int,Y,1,0=Draft/1=Submitted/2=Cancelled,,submit to drive payroll

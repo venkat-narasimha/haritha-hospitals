@@ -1,42 +1,36 @@
 # Designation — Intake Sheet
 
-**DocType:** `Designation`
-**Module:** HR
-**Required fields:** 1
-**Optional fields:** 3
+**DocType:** `Designation` (master)
+**Module:** HR / Setup
+**Autoname rule:** `field:designation_name`
+
+**Required fields:** 1  |  **Optional fields:** 3
+
+## Purpose
+
+Job titles / roles within the Company. Designations are linked from Employee.designation and drive approval limits + salary bands.
 
 ## Field reference
 
 | fieldname | label | type | required | example | validation | notes |
-|---|---|---|---|---|---|
-| `designation_name` | Designation Name | Data | Y | "Senior Consultant" | unique | The job title |
-| `description` | Description | Text | N | "Senior clinical role" | – | Optional free text |
-| `required_skills` | Required Skills | Table → Employee Skill | N | (rows) | child: skill | Feeds Employee Skill Map |
-| `appraisal_template` | Appraisal Template | Link → Appraisal Template | N | "" | must exist if set | For performance reviews |
+|---|---|---|---|---|---|---|
+| `designation_name` | Designation Name | Data | **Y** | `Designation A` | unique within company |  |
+| `description` | Description | Text | **N** | `Role description here` | free-form text |  |
+| `appraisal_template` | Appraisal Template | Link→Appraisal Template | **N** | `` | must exist in tabAppraisal Template |  |
+| `skills` | Skills | Table→Designation Skill | **N** | `` | child rows |  |
 
-## Healthcare-specific fields (custom)
+## Healthcare-specific extensions (optional, India-context)
 
-| fieldname | label | type | required | example | notes |
-|---|---|---|---|---|---|
-| `clinical_role` | Clinical Role | Select | N | "Doctor" | Doctor / Nurse / Technician / Support / Admin |
-| `requires_registration` | Requires Medical Registration | Check | N | 1 | For roles needing NMC/state council reg |
-| `min_qualification` | Minimum Qualification | Data | N | "MBBS, MD" | Used for job posting + filtering |
+- If client uses clinical role categorization, the custom `skills` table child rows let you attach required skills (e.g., 'BLS Certified', 'ACLS Certified') per designation.
 
-## Validation rules
+## When to use this sheet
 
-- `designation_name` is unique across the system.
-- `clinical_role` (if added as custom) drives Employee custom-field validation (e.g., forces `medical_council_reg_no` if `requires_registration=1`).
+| Scenario | Use this sheet? |
+|---|---|
+| Initial deployment — define all job titles | Yes — bulk import |
+| New hire cohort adds a new role | Yes — single-row insert |
 
 ## Common client mistakes
 
-- Spelling inconsistencies ("Senior Consultant" vs "Sr Consultant") — ERPNext treats them as different.
-- Mixing clinical and non-clinical designations in the same sheet — keep them separate or use `clinical_role` field to differentiate.
-- Creating one designation per person — Designation is a *role*, not a person.
-
-## Typical hospital designations to import
-
-- **Medical:** Medical Director, HOD, Senior Consultant, Consultant, Junior Consultant, Registrar, Senior Resident (SR), Junior Resident (JR), Intern, Medical Officer
-- **Nursing:** Chief Nursing Officer, Nursing Superintendent, Nurse In-charge, Staff Nurse, ANM, Nursing Assistant
-- **Allied Health:** Pharmacist, Lab Technician, Radiology Technician, OT Technician, Dialysis Technician
-- **Support:** Receptionist, Housekeeping Supervisor, Security Supervisor, Maintenance Technician, Dietary Supervisor
-- **Admin:** Admin Manager, HR Executive, Finance Officer, IT Administrator, Medical Records Officer
+- Creating too many designations (50+) — keep the list tight (real job families).
+- Title-casing inconsistencies (e.g., 'staff nurse' vs 'Staff Nurse') — Frappe compares names case-sensitively on Linux MariaDB.

@@ -2,69 +2,52 @@
 
 **DocType:** `Shift Assignment` (submittable)
 **Module:** HR / Shift Management
-**Required fields:** 4
-**Optional fields:** 5+
+**Autoname rule:** `prompt`
 
-> **Note:** Shift Assignment is typically auto-generated from Shift Schedule via "Create Shift Assignments" button. This sheet is for **bulk backfill of historical assignments** or **manual ad-hoc adjustments**.
+**Required fields:** 8  |  **Optional fields:** 4
+
+## Purpose
+
+Concrete employee × date-range × shift-type allocation. The operational rotation that drives attendance.
 
 ## Field reference
 
 | fieldname | label | type | required | example | validation | notes |
 |---|---|---|---|---|---|---|
-| `employee` | Employee | Link → Employee | Y | "EMP-0001" | must exist | – |
-| `shift_type` | Shift Type | Link → Shift Type | Y | "Morning-8h" | must exist | – |
-| `company` | Company | Link → Company | Y | "ABC Healthcare Pvt Ltd" | auto-fetched from employee | Required even if auto-fetched |
-| `start_date` | Start Date | Date | Y | "2026-09-01" | YYYY-MM-DD | Assignment start |
-| `end_date` | End Date | Date | N | "2026-09-30" | YYYY-MM-DD, ≥start_date; blank = ongoing | Optional |
-| `status` | Status | Select | N | "Active" | Active / Inactive | – |
-| `shift_location` | Shift Location | Link → Shift Location | N | "Main Hospital - ICU" | must exist if set | – |
-| `overtime_type` | Overtime Type | Link → Overtime Type | N | "" | must exist if set | For OT calculation |
-| `shift_request` | Shift Request | Link → Shift Request | N | "" | must exist if set | Auto-linked when created from request |
-| `shift_schedule_assignment` | Shift Schedule Assignment | Link | N | "" | must exist if set | When created from schedule |
-| `docstatus` | Document Status | Int | Y | 1 | 0=Draft, 1=Submitted, 2=Cancelled | Submit to make active |
+| `name` | Shift Assignment Name | Data | **Y** | `Shift Assignment A` | non-empty (autoname='prompt') |  |
+| `employee` | Employee | Link→Employee | **Y** | `Employee A` | must exist in tabEmployee |  |
+| `employee_name` | Employee Name | Data | **Y** | `Employee A` | non-empty; case-sensitive match |  |
+| `shift_type` | Shift Type | Link→Shift Type | **Y** | `Morning-8h` | must exist in tabShift Type |  |
+| `company` | Company | Link→Company | **N** | `Company A` | must exist if set |  |
+| `start_date` | Start Date | Date | **Y** | `2026-01-01` | YYYY-MM-DD |  |
+| `end_date` | End Date | Date | **Y** | `2026-12-31` | YYYY-MM-DD |  |
+| `status` | Status | Select | **Y** | `Active` | Active/Inactive |  |
+| `docstatus` | Document Status | Int | **Y** | `1` | 0=Draft/1=Submitted/2=Cancelled |  |
+| `shift_location` | Shift Location | Link→Shift Location | **N** | `Site A — Main Block` | must exist if set |  |
+| `shift_request` | Shift Request | Link→Shift Request | **N** | `` | must exist if set |  |
+| `shift_schedule_assignment` | Shift Schedule Assignment | Link→Shift Schedule Assignment | **N** | `` | NULLIFIED by migration script (GOTCHA #9) |  |
 
-## Healthcare-specific fields
+## Migration notes
 
-None required — Shift Location's `zone_type` (custom) provides healthcare context.
-
-## Validation rules
-
-- `end_date ≥ start_date` (or blank for ongoing).
-- `status=Active` requires `docstatus=1` (submitted).
-- Cannot overlap with another Active Shift Assignment for the same employee (Frappe validates on submit).
-
-## Common client mistakes
-
-- Leaving `docstatus=0` (Draft) — assignment won't activate auto-attendance.
-- Overlapping assignments for the same employee — validation error on submit.
-- Not specifying `company` — auto-fetch should work, but explicit is safer for Data Import.
-- Importing without `status=Active` — assignments won't drive attendance.
+- GOTCHA #7: The script remaps the `employee` Link using `employee_name` as the join key. Both columns REQUIRED — the prod→dev ID mapping needs both.
+- GOTCHA #9: `shift_schedule_assignment` is ALWAYS NULLIFIED (set to None) by the migration script regardless of source value. Leave that column blank.
+- GOTCHA #9: `_ensure_shift_location()` pre-creates a canonical Shift Location before processing any Shift Assignment. If your client uses a different location name, populate 08_shift_location.csv AND edit `_ensure_shift_location()` accordingly.
+- Migration order: Shift Request must migrate BEFORE Shift Assignment (one SA in production references an SR).
 
 ## When to use this sheet
 
 | Scenario | Use this sheet? |
 |---|---|
-| Backfill historical rotations for payroll | **Yes** — import last 6–12 months for accurate OT calculations |
-| Set up monthly rosters going forward | **No** — use Shift Schedule + auto-generation |
-| Manual swap (A covers B's shift tomorrow) | **Yes** — one-off ad-hoc assignment |
-| Bulk roster re-import after policy change | **Yes** — cancel old + import new |
+| Initial deployment — bulk rotation | Yes |
+| Mid-deployment reassignment | Yes |
+| Temporary shift swap | Use Shift Request + workflow |
 
-## Backfill example
+## Common client mistakes
 
-For a nurse (EMP-0001) who worked 8h-rotating in August 2026:
-- 10 Morning shifts (1st–10th, every other day)
-- 10 Evening shifts
-- 11 Night shifts (incl. Sundays)
+- Populating shift_schedule_assignment — it will be discarded anyway.
+- Missing employee_name — remap will fail.
+- Date validation: end_date must be >= start_date, else rejected.
 
-→ 31 separate Shift Assignment rows, alternating between Morning-8h / Evening-8h / Night-8h Shift Types.
+## Related gotchas
 
-> Tip: For large backfills (>500 rows), use a script that generates rows from a rotation pattern rather than manual CSV entry. See `[your_app].scripts.generate_shift_assignments`.
-
-## Migration notes (see `scripts/migrate_master_data.py`)
-
-- **Employee ID remap by `employee_name` — GOTCHA #7.** The migration script builds `DEV_EMP_BY_NAME` once at the top of `run()` from the already-migrated dev-side Employees, then walks every Shift Assignment record and remaps `employee` from the prod ID to the dev ID using `employee_name` as the join key. Client-side: every row in your CSV MUST have a non-empty `employee_name` column — if blank, the script cannot resolve the dev-side `employee` and the row fails with `LinkValidationError`.
-- **`shift_schedule_assignment` is NULLIFIED — GOTCHA #9.** Every Shift Assignment has a `shift_schedule_assignment` Link field pointing at the `Shift Schedule Assignment` DocType, which is OUT OF SCOPE for this migration. The script explicitly sets `rec["shift_schedule_assignment"] = None` before insert. Client-side: leave the `shift_schedule_assignment` column blank in your CSV; any non-empty value will be discarded by the script.
-- **`shift_request` Link is preserved.** The migration script migrates `Shift Request` BEFORE `Shift Assignment` (see `MIGRATION_ORDER`). As long as the source SR exists on the target site, the SR link is preserved. If the SR does NOT exist on the target site, the Link is dropped silently on insert (Frappe does not fail on missing optional Links at insert time for `docstatus=0` records).
-- **`Shift Location` must exist — GOTCHA #9.** The migration script calls `_ensure_shift_location("City A")` once before processing any Shift Assignment record. This pre-creates a single canonical Shift Location with that name (production only uses one location). If your client uses a different canonical name, add that row to the `08_shift_location.csv` sheet AND edit `_ensure_shift_location()` in the script to match — otherwise every SA insert fails with `LinkValidationError: Shift Location "City A" not found`.
-- **`docstatus` is set from source JSON.** The migration script preserves the source `docstatus` value (0 = Draft, 1 = Submitted, 2 = Cancelled). To migrate cancelled SA records alongside active ones, include them with `docstatus=2`.
-- **Upsert by `name`.** The script upserts by document `name` (e.g., `HR-SHA-26-08-05318`). Re-runs UPDATE existing SA rows in place — date overlaps and Shift Type changes overwrite the live record, which immediately affects attendance.
+This DocType touches gotcha(s): `##7, ##9` from `scripts/migrate_master_data.py`.

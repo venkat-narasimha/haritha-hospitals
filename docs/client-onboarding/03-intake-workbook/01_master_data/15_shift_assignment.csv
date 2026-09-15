@@ -1,14 +1,13 @@
 fieldname,label,type,required,example,validation,client_value,notes
-name,SA Document Name,Data,Y,HR-SHA-26-09-00001,unique,REQUIRED — autoname='prompt',
-employee,Employee,Link,Y,EMP-0001,must exist,,
-employee_name,Employee Name,Data,Y,Aarav Kumar Sharma,non-empty,REQUIRED for prod→dev ID remap (GOTCHA #7),
-shift_type,Shift Type,Link,Y,Morning-8h,must exist,,
-company,Company,Link,Y,ABC Healthcare Pvt Ltd,auto-fetched from employee,,
-start_date,Start Date,Date,Y,2026-09-01,YYYY-MM-DD,,
-end_date,End Date,Date,N,2026-09-30,YYYY-MM-DD,blank = ongoing,
-status,Status,Select,N,Active,Active/Inactive,,
-shift_location,Shift Location,Link,N,Main Hospital - ICU,must exist if set,,
-overtime_type,Overtime Type,Link,N,,must exist if set,,
-shift_request,Shift Request,Link,N,HR-SHR-26-09-00001,must exist if set,optional Link preserved by script,
-shift_schedule_assignment,Shift Schedule Assignment,Link,N,,discarded by script,NULLIFIED by migration (GOTCHA #9) — leave blank,
-docstatus,Document Status,Int,Y,1,0=Draft/1=Submitted/2=Cancelled,submit to make active,
+name,Shift Assignment Name,Data,Y,Shift Assignment A,non-empty (autoname='prompt'),,REQUIRED — autoname='prompt' needs explicit name
+employee,Employee,Link→Employee,Y,Employee A,must exist in tabEmployee,,REQUIRED — but remapped from employee_name by migration script (GOTCHA #7)
+employee_name,Employee Name,Data,Y,Employee A,non-empty; case-sensitive match,,REQUIRED — join key for prod→dev ID remap (GOTCHA #7)
+shift_type,Shift Type,Link→Shift Type,Y,Morning-8h,must exist in tabShift Type,,REQUIRED
+company,Company,Link→Company,N,Company A,must exist if set,,auto-fetched from employee
+start_date,Start Date,Date,Y,2026-01-01,YYYY-MM-DD,,required
+end_date,End Date,Date,Y,2026-12-31,YYYY-MM-DD,,required
+status,Status,Select,Y,Active,Active/Inactive,,stock
+docstatus,Document Status,Int,Y,1,0=Draft/1=Submitted/2=Cancelled,,submit to activate
+shift_location,Shift Location,Link→Shift Location,N,Site A — Main Block,must exist if set,,stock; defaults from shift_type
+shift_request,Shift Request,Link→Shift Request,N,,must exist if set,,preserved by script; created by Shift Request migration first
+shift_schedule_assignment,Shift Schedule Assignment,Link→Shift Schedule Assignment,N,,NULLIFIED by migration script (GOTCHA #9),,LEAVE BLANK — always NULL in dev regardless of source value

@@ -1,39 +1,29 @@
 # Employment Type — Intake Sheet
 
-**DocType:** `Employment Type`
-**Module:** HR
-**Required fields:** 1
-**Optional fields:** 1
+**DocType:** `Employment Type` (master)
+**Module:** HR / Setup
+**Autoname rule:** `field:employee_type_name`
+
+**Required fields:** 1  |  **Optional fields:** 1
+
+## Purpose
+
+Contractual engagement category (Full-time / Part-time / Contract / Intern). Drives leave accrual rules + probation + contract end-date tracking.
 
 ## Field reference
 
 | fieldname | label | type | required | example | validation | notes |
 |---|---|---|---|---|---|---|
-| `name` | Employment Type Name | Data | Y | "Full-time" | unique | autoname from this field |
-| `description` | Description | Text | N | "Permanent full-time staff" | – | Free text |
+| `employee_type_name` | Employment Type | Data | **Y** | `Employment Type A` | unique within company |  |
+| `description` | Description | Text | **N** | `Full-time permanent staff` | free-form text |  |
 
-## Healthcare-specific fields
+## When to use this sheet
 
-None required — standard `description` is enough.
-
-## Validation rules
-
-- `name` is unique; used as a Link field on Employee.
-- Cannot delete an Employment Type if any Employee references it (Frappe blocks delete by default).
+| Scenario | Use this sheet? |
+|---|---|
+| Initial deployment | Yes — define ~4-7 types |
+| Adding a new contract type | Yes — single-row insert |
 
 ## Common client mistakes
 
-- Using "Permanent" vs "Full-time" inconsistently — pick one canonical label.
-- Creating too granular types (e.g., "Full-time Day", "Full-time Night") — use Shift Type for time-pattern variations, not Employment Type.
-
-## Standard employment types to import
-
-| name | description |
-|---|---|
-| Full-time | Permanent full-time staff (typically 40h/week or rotational 48h/week for hospital) |
-| Part-time | Permanent part-time staff (typically <30h/week) |
-| Contract | Fixed-term contract (e.g., 1-year renewable) |
-| Locum | Temporary / on-call doctor covering a shift |
-| Visiting Consultant | External consultant who visits on scheduled days |
-| Internship | Intern (MBBS, Nursing, Lab Tech) |
-| Probation | Initial employment period (often 6 months) |
+- Too-granular types (e.g., 'Resident-1st-Year', 'Resident-2nd-Year') — keep to ~4-7 canonical types.

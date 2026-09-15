@@ -1,11 +1,5 @@
 fieldname,label,type,required,example,validation,client_value,notes
-branch,Branch,Data,Y,Main Hospital,unique,,
-company,Company,Link,N,ABC Healthcare Pvt Ltd,must exist,,
-branch_code,Branch Code,Data,N,MAIN,short code,,
-branch_type,Branch Type,Select,N,Hospital,Hospital/Clinic/Lab/Pharmacy/Office,,
-state,State,Link,N,State A,drives Holiday List,,
-city,City,Data,N,City A,,,
-pincode,Pincode,Data,N,500001,6-digit Indian pincode,,
-latitude,Latitude,Float,N,17.3850,,,
-longitude,Longitude,Float,N,78.4867,,,
-bed_count,Bed Count,Int,N,300,,,
+branch,Branch,Data,Y,Site A,unique within company,,autoname source
+company,Company,Link→Company,Y,Company A,must exist in tabCompany,,every branch belongs to a Company
+branch_code,Branch Code,Data,N,MAIN,short code,,STOCK field — used in payroll reports
+city,City,Data,N,City A,free-form,,stock field
