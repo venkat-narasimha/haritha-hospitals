@@ -1,5 +1,5 @@
 fieldname,label,type,required,example,validation,client_value,notes
-department_name,Department,Data,Y,Department A,unique per company,,autoname=field:department_name; bare name OK (Frappe appends " - <abbr>" on save - see gotcha #11)
+department_name,Department,Data,Y,Department A,unique per company,,autoname=field:department_name; bare name OK (Frappe appends ' - <abbr>' on save - see gotcha #11)
 parent_department,Parent Department,Link→Department,N,Department A,must exist if set,,use for nested hierarchy; leave blank for top-level
 company,Company,Link→Company,Y,Company A,must exist,,Company is configured in ERPNext before workbook
 is_group,Is Group,Check,N,0,0/1,,set 1 only for group/parent rows (do not import employees under group)
