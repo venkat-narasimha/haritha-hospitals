@@ -1,180 +1,152 @@
 # Haritha Hospitals
 
-ERPNext + HRMS deployment for **Processbricks' Haritha Hospitals** project — a real hospital shift-management and HRMS rollout. Built on Frappe v16 with a custom app (`haritha_hospital`) that captures all customizations as portable fixtures, plus a migration playbook for replicating any env.
+> ERPNext + HRMS deployment for **Processbricks' Haritha Hospitals** project — shift management + HRMS basics on Frappe v16 with a custom app (`haritta_hospital`).
+
+[![Frappe](https://img.shields.io/badge/Frappe-v16.30.0-blue)](https://frappeframework.com) [![ERPNext](https://img.shields.io/badge/ERPNext-v16.30.0-blue)](https://docs.frappe.io) [![HRMS](https://img.shields.io/badge/HRMS-v16.5.0-blue)](https://docs.frappe.io/hr) [![Public](https://img.shields.io/badge/repo-public-lightgrey)](#license)
+
+---
+
+## About
+
+Production deployment of **Frappe v16.30.0 + ERPNext v16.30.0 + HRMS v16.5.0** for a real hospital chain. A custom app `haritta_hospital` captures 274 production-validated customizations as portable fixtures, plus an idempotent migration script for replicating any env.
 
 | | |
 |---|---|
 | **Owner** | Venkat Narasimha (Processbricks) |
-| **Started** | 2026-04-01 (concept); project on this repo 2026-08-19 |
-| **Stack** | Frappe v16.30.0 · ERPNext v16.30.0 · HRMS v16.5.0 (pinned) · custom app `haritha_hospital` |
-| **Envs** | `pberpprod.duckdns.org` (prod) · `pberpdev.duckdns.org` (dev) · `dev-erp.duckdns.org` (Venkat VPS prototyping) |
-| **Scope** | Shift management + HRMS basics (employees, departments, shift types, attendance, leave) |
-| **Out of scope** | Wards, beds, OTs, pharmacy, lab, billing, full Chart of Accounts, cost centers beyond the 2 created (deferred) |
+| **Started** | 2026-04-01 (concept); project repo from 2026-08-19 |
+| **Stack** | Frappe v16.30.0 · ERPNext v16.30.0 · HRMS v16.5.0 · custom app `haritta_hospital` |
+| **Envs** | `pberpprod.duckdns.org` (prod) · `pberpdev.duckdns.org` (dev) · `dev-erp.duckdns.org` (Venkat VPS prototype) |
+| **In scope** | Shift management + HRMS basics (employees, departments, shift types, attendance, leave) |
+| **Out of scope** | Wards, beds, OTs, pharmacy, lab, billing, full CoA beyond the 2 cost centers (deferred) |
+
+For full project status (phase history, milestones, customizations catalog, conventions), see **[docs/handbook/00-foundations/00-project-status.md](docs/handbook/00-foundations/00-project-status.md)**.
 
 ---
 
-## Project Status (2026-08-31)
+## Quick Start
 
-- **Custom app `haritha_hospital` built** — captures **274 production-validated customizations** as Frappe JSON fixtures (78 Custom Fields + 189 Property Setters + 3 Print Formats + 2 Notifications + 2 Letter Heads).
-- **Installed on both envs** — `pberpdev` (fresh, all 274 loaded) and `pberpprod` (idempotent re-install verified, `installed_apps` updated, count matches).
-- **Master data migrated prod → dev** — 16 DocTypes via `scripts/migrate_master_data.py`. pberpdev now mirrors prod: 1 Company, 210 Employees, 37 Departments, 25 Shift Types, 8,118 Shift Assignments, 6,300 Attendance, 12,562 Employee Checkins, etc.
-- **Phase 6 + Tier 6 documentation complete** — 35 docs across 9 tiers (`docs/handbook/`), ~15,900 lines. Tier 0-5 (foundations, schema, workflow, client, runbooks, process) + Tier 6/Tier 9 (`09-compliance/`, ISO 27001-aligned policies + CMM L5 maturity) + Tier 7-8 (user manuals + testing). Mermaid diagrams rendered to PNG.
-- **Client demo deck + speaker script** — `docs/handbook/03-client/`: 11-slide deck (`03.4`), PPTX export (`03.4.pptx`, 543 KB), speaker script (`03.5`), 10 screenshots from pberpprod, 20 mermaid-rendered diagrams.
-- **P1 outage resolved (2026-08-29 03:06 IST)** — gunicorn `--preload` sys.path freeze after `install-app`; both envs restarted (~30-60s downtime each, zero data loss). Always restart backend after `install-app` (LEARNINGS #153).
-- **Roster SPA verified rendering** — Phase 4.10/4.11 fixes held; `/hr/roster` shows 211 employees × 31 days without crash.
+This is a deployed customization for an existing Frappe bench. To reproduce locally:
 
-| Phase | State |
+```bash
+# 1. Install custom app (in your bench env)
+bench get-app https://github.com/venkat-narasimha/haritha_hospital.git
+bench install-app haritha_hospital --site <yoursite>
+
+# 2. Run master data migration (16 DocTypes, idempotent)
+bench execute haritta_hospital.scripts.migrate_master_data.run --site <yoursite>
+
+# 3. Verify
+bench --site <yoursite> console
+>>> frappe.get_all("Employee", limit=5, pluck="name")
+```
+
+See [`scripts/migrate_master_data.py`](scripts/migrate_master_data.py) for the migration script + 10 documented gotchas.
+
+For client data intake templates (master + transaction CSVs), see [`docs/client-onboarding/03-intake-workbook/`](docs/client-onboarding/03-intake-workbook/).
+
+---
+
+## Documentation
+
+| Doc | Purpose |
 |---|---|
-| Phase 0 — Schema planning | ✅ done |
-| Phase 1 — Schema approval | ✅ done |
-| Phase 2 — Site setup (pberpprod) | ✅ done |
-| Phase 3 — Data import (24,511 records) | ✅ done |
-| Phase 3.5–3.10 — Reconcile / bulk-submit / property setters / linkage | ✅ done |
-| Phase 4 — Roster crash + Attendance HRMS-recompute | ✅ done |
-| Phase 0+ — Custom app + master data migration + outage recovery | ✅ done |
-| Phase 5 — Production readiness (DR, security, perf, UAT) | ⏳ skipped per Venkat |
-| Phase 6 — Process & maturity docs | ✅ done (35 docs, 9 tiers, 2026-08-29) |
-| Phase 6 — Tier 6 Compliance/Maturity | ✅ done (12 docs: ISO 27001 + CMM L5, 2026-08-29) |
-| Client demo deck + script | ✅ done (2026-08-30) |
-
----
-
-## Recent Deliverables (2026-08-30)
-
-| Deliverable | Path | Notes |
-|---|---|---|
-| **Client demo deck** | `docs/handbook/03-client/03.4-client-presentation.pptx` | 11 slides, 543 KB, screenshots + diagrams embedded |
-| **Speaker script** | `docs/handbook/03-client/03.5-speaker-script.md` | Talking notes for each slide |
-| **Demo screenshots** | `docs/handbook/03-client/screenshots/` | 10 PNGs from pberpprod (login, dashboard, roster, etc.) |
-| **Diagram assets** | `docs/handbook/03-client/assets/` | 20 mermaid-rendered PNGs |
-| **Phase 6 + Tier 6 docs** | `docs/handbook/` | 35 docs, ~15,900 lines, 9 tiers |
-
----
-
-## Stack
-
-- **Frappe** v16.30.0 — foundation framework
-- **ERPNext** v16.30.0 — accounting, inventory, selling, buying
-- **HRMS** v16.5.0 — pinned per Lesson #44 (v16.5.1+ breaks on `repost_allowed_types`)
-- **MariaDB** 10.x — Docker named volumes, restart-safe
-- **Redis** — cache + queue broker; Socket.IO for realtime desk
-- **Docker Compose** — compose-based deployment (`erp-{env}-*` containers on main VPS, `erpdev-*` on Venkat VPS)
-- **nginx-proxy** — reverse proxy with TLS termination (DuckDNS + Let's Encrypt / self-signed fallback)
-- **Custom app** `haritha_hospital` (0.0.1) — owns the 274 customizations as fixtures
-- **Python 3.11** — Frappe v16 baseline
-- **3 environments**: `pberpdev` (dev), `pberpqa` (QA — skipped for Haritha per Venkat), `pberpprod` (prod)
+| **[docs/DIRECTORY_GUIDE.md](docs/DIRECTORY_GUIDE.md)** | Diátaxis-aligned map of all `docs/` content — find the right doc for the right need (tutorial / how-to / reference / explanation) |
+| **[docs/HARITHA_HOSPITALS_GUIDE.md](docs/HARITHA_HOSPITALS_GUIDE.md)** | Comprehensive end-to-end guide (architecture, customizations, migration, ops runbook) |
+| **[docs/handbook/](docs/handbook/)** | Primary documentation — 9 tiers, ~15,900 lines (foundations, schema, workflow, client, runbooks, process, user manuals, testing, compliance) |
+| **[TRACKER.md](TRACKER.md)** | Phase-by-phase history + subagent log |
+| **[AGENTS.md](AGENTS.md)** | Process conventions for AI + human collaborators |
 
 ---
 
 ## Repo layout
 
-| Path | Purpose |
-|---|---|
-| `TRACKER.md` | Project tracker — phase history, subagent log, decisions |
-| `README.md` | This file — top-level project overview |
-| `HARITHA_HOSPITALS_GUIDE.md` | *(at `docs/HARITHA_HOSPITALS_GUIDE.md`)* — comprehensive end-to-end guide (architecture, customizations, migration, ops) |
-| `INDEX.md` | Curated reading index |
-| `DECISIONS.md` | Decision log |
-| `WORKFLOW.md` | Shift management workflow notes |
-| `PRODUCTION-READINESS-AUDIT-2026-08-21.md` | Pre-rollback audit |
-| `MIGRATION-GUIDE.md` | Migration playbook reference |
-| `all_schemas.csv` | Schema definitions for 15 master entities (schema-only, single CSV) |
-| `masters/` | Source CSVs — 19 files, ~1.77 MB, 24,758 rows (Company, Department, Designation, Employee, Shift Type, Shift Assignment, Attendance, Employee Checkin, etc.) |
-| `docs/` | Documentation — `HARITHA_HOSPITALS_GUIDE.md` + `handbook/` (Tier 0-8) + `pberp-setup-plan.md` |
-| `docs/handbook/` | **Phase 6 documentation** — 35 docs, 9 tiers, ~15,900 lines (foundations, schema, workflow, client, runbooks, process, user manuals, testing, compliance) |
-| `docs/handbook/03-client/` | **Client demo deliverable** — markdown deck (`03.4`), PPTX export (`03.4.pptx`, 543 KB), speaker script (`03.5`), 10 screenshots from pberpprod, 20 mermaid-rendered diagrams |
-| `docs/client-onboarding/` | Client onboarding data collection kit — 6-phase process doc, intake workbook (15 DocTypes), 6 sign-off templates, settings checklists |
-| `docs/handbook/09-compliance/` | **ISO 27001 + CMM L5 docs** (12 policies/maturity docs, internal best-practice reference) |
-| `tracker-phases/` | Project tracker split into per-phase files (master `TRACKER.md` is the index) |
-| `scripts/` | Utility scripts (≈45 files) — `migrate_master_data.py`, `recreate_property_setters.py`, `bulk_submit.py`, `fix_attendance_hrms_recompute.py`, `verify_csvs.py`, `update_tracker.py`, etc. |
-| `fixtures/` | Legacy fixtures dir (pre-custom-app) |
-| `mapping/` | Data mapping rules |
-| `scout/` | Source data scout reports |
-| `archive/` | Phase A fixtures bundle (`fixtures.tar.gz`) + `REPORT.md` + `logs/` |
-| `audit/` | Fixture audit reports (pberpprod detail + summary) |
-| `config/` | `cron.tab` for backup cron |
-| `updates/` | Phase update JSON snapshots |
-| `reports/` | Generated reports |
-| `.gitignore` | Standard Frappe ignores |
+```
+.
+├── README.md                              ← you are here (slim navigation + standard sections)
+├── AGENTS.md                              ← process conventions for collaborators
+├── TRACKER.md                             ← project phase tracker
+├── prompts/                               ← canonical deck-generation prompts (5 modules + 2 utility)
+├── scripts/                               ← operational scripts (~45 files; migrate_master_data.py is primary)
+├── masters/                               ← source CSVs (19 files, ~1.77 MB, 24,758 rows)
+├── docs/
+│   ├── DIRECTORY_GUIDE.md                 ← Diátaxis-aligned wayfinding (start here for docs/)
+│   ├── handbook/                          ← primary documentation (9 tiers)
+│   │   ├── 00-foundations/                ← project overview, status (incl. 00-project-status.md)
+│   │   ├── 01-schema/                     ← data model reference
+│   │   ├── 02-workflow/                   ← end-to-end process
+│   │   ├── 03-client/                     ← HTML presentation decks + demo script + FAQ
+│   │   ├── 04-runbooks/                   ← operational procedures
+│   │   ├── 04-testing/                    ← manual UI walkthrough + bench execute companion
+│   │   ├── 05-process/                    ← methodology, decision logs
+│   │   ├── 07-user-manuals/               ← HR Manager / Employee / Admin guides
+│   │   ├── 08-testing/                    ← test plans, regression scripts
+│   │   └── 09-compliance/                 ← ISO 27001 + CMM L5
+│   ├── client-onboarding/                 ← client-facing deliverables (templates, signoff, mapping)
+│   │   ├── 03-intake-workbook/            ← 19 CSV+MD templates (master+transaction)
+│   │   └── ...
+│   ├── HARITHA_HOSPITALS_GUIDE.md
+│   ├── DECISIONS.md
+│   ├── WORKFLOW.md
+│   └── PRODUCTION-READINESS-AUDIT-2026-08-21.md
+├── tracker-phases/                        ← per-phase tracker files (master TRACKER.md is the index)
+├── config/                                ← cron.tab for backups
+├── updates/                               ← phase update JSON snapshots
+├── audit/                                 ← fixture audit reports
+├── archive/                               ← superseded/historical content (do NOT work from here)
+└── pdfs/                                  ← generated PDFs
+```
 
-> There is no `memory/` or `uploads/` at this level. Daily logs and source data live in the OpenClaw workspace, not the project repo.
-
----
-
-## Customizations catalog
-
-All captured as Frappe fixtures in the `venkat-narasimha/haritha_hospital` custom app repo (`apps/haritha_hospital/haritha_hospital/fixtures/`).
-
-| Type | Count | Notes |
-|---|---:|---|
-| Custom Fields | 78 | Employee (PAN, IFSC, approvers), Company (Payroll cost center), Attendance (status extensions), Shift Type (color + HRMS flags), Shift Assignment (Dept link), Holiday List (Telangana regional), Leave Application workflow |
-| Property Setters | 189 | Largest category — ~120 HRMS, ~50 ERPNext, ~19 Frappe core. Status options, defaults, mandatory toggles, field order |
-| Print Formats | 3 | Payslip, Shift Card, Leave Application |
-| Notifications | 2 | Both disabled (Shift assignment change + Leave approval pending) |
-| Letter Heads | 2 | Haritha Hospitals (default) + Haritha Hospitals — Confidential (HR/Payroll) |
-| **Total** | **274** | ✅ All production-validated on both `pberpdev` and `pberpprod` |
-
----
-
-## Quick links
-
-- **[HARITHA_HOSPITALS_GUIDE.md](docs/HARITHA_HOSPITALS_GUIDE.md)** — comprehensive guide (architecture, customizations, migration, ops runbook)
-- **[TRACKER.md](TRACKER.md)** — phase-by-phase history + subagent log
-- **[docs/handbook/](docs/handbook/)** — Phase 6 Tier 0-8 documentation (foundations, schema, workflow, runbooks, user manuals, testing)
-- **[scripts/migrate_master_data.py](scripts/migrate_master_data.py)** — idempotent master data migration (16 DocTypes, 10 gotchas documented)
-- **[scripts/recreate_property_setters.py](scripts/recreate_property_setters.py)** — idempotent Property Setter recreate (HRMS doesn't list `Property Setter` as a fixture)
-- **[masters/](masters/)** — 19 source CSVs (canonical reference)
-- **[INDEX.md](INDEX.md)** — curated reading index
+For full directory tree, run `tree -L 3` or see the [DIRECTORY_GUIDE](docs/DIRECTORY_GUIDE.md).
 
 ---
 
 ## Key operational links
 
-- **Prod:** https://pberpprod.duckdns.org
-- **Dev:** https://pberpdev.duckdns.org
-- **Venkat VPS prototype:** https://dev-erp.duckdns.org
-- **Roster SPA:** https://pberpprod.duckdns.org/hr/roster
+| Env | URL |
+|---|---|
+| Prod | https://pberpprod.duckdns.org |
+| Dev | https://pberpdev.duckdns.org |
+| Venkat VPS prototype | https://dev-erp.duckdns.org |
+| Roster SPA | https://pberpprod.duckdns.org/hr/roster |
 
 ---
 
-## Conventions (current)
+## Contributing
 
-- **Git commits:** `venkat-narasimha <srivenkatnarasimha@gmail.com>` (Rule #11)
-- **Custom Fields:** all in `haritha_hospital` fixtures from day 1 (Rule #9)
-- **HRMS pin:** v16.5.0 only (Lesson #44 — v16.5.1+ breaks on `repost_allowed_types`)
-- **Shift codes:** 10-char `[P][HHMM][S][HHMM]` (actual format `[GMAN]\d{4}[RS]\d{4}` — HRMS-native flags)
-- **Color palette:** G=blue, M=green, A=orange, N=violet (lowercase Tailwind, matching `MonthViewTable.vue`)
-- **Always restart backend container** after `bench install-app` (Lesson #153 — gunicorn `--preload` sys.path freeze)
-- **DB passwords verified monthly** via `docker exec erp-${env}-db-1 printenv MYSQL_ROOT_PASSWORD` (Lesson #154)
-- **Holidays:** standard Indian national + 4-5 Telangana regional
-- **QA env skipped** for Haritha — direct dev → prod promotion with custom-app fixtures as the safety net
+See **[AGENTS.md](AGENTS.md)** for process conventions including:
 
----
+- Git commit identity + message conventions
+- Subagent dispatch + verification patterns (this repo uses many)
+- "Do not break rules" — no main-session file writes for heavy work; use subagents
+- Required vs Optional field rule (don't guess — mark "?" + report)
+- Sanitization rule (no real client identifiers in public repo)
+- Verification-before-claiming-done discipline
 
-## Recent milestones
-
-- **2026-08-29 — Phase 6 docs complete** — 22 docs across 8 tiers (`docs/handbook/`), ~10,000 lines, Mermaid diagrams
-- **2026-08-29 — Master data migration prod → dev** — 16 DocTypes via `migrate_master_data.py`; 8,118 Shift Assignments on dev, all bulk-submitted; idempotent script saved
-- **2026-08-29 — P1 outage resolved** — gunicorn `--preload` sys.path freeze; both envs restarted, zero data loss; LEARNINGS #153
-- **2026-08-28 — Custom app `haritha_hospital` installed** — 274 customizations verified on both envs; idempotent
-- **2026-08-28 — Phase 4.10/4.11 Roster crash fixed** — CapitalCase → lowercase Tailwind colors; SPA now renders 211 × 31 cleanly
-- **2026-08-28 — Phase 4.8 Attendance HRMS-recompute** — 6,300 → 9,734 Attendance records; `early_exit` count 7 → 1,498 (the main bug from Phase 3.8)
-- **2026-08-27 — Phase 3.6/3.7/3.8/3.9/3.10** — bulk-submit 6,314 docs, recreate_property_setters.py, attendance linkage, populate fields, backup bundle fix
-- **2026-08-26 — Phase 3 data import** — 24,511 records across 9 entities
-- **2026-08-25 — Phase 2 site setup** — pberpprod.duckdns.org fresh init + apps installed (frappe, erpnext, hrms 16.5.0, payments)
-- **2026-08-21 — Rollback event** — `pberp.duckdns.org` env destroyed in Option-B teardown; preserved CSVs + git history; restart from Phase 1
+For AI-assisted work, prompts are at `prompts/`. The 5 module deck prompts (`*-cmm-l5-presentation.md`) generate the HTML presentations in `docs/handbook/03-client/`.
 
 ---
 
-## References
+## Conventions (summary)
 
-- **Custom app repo:** https://github.com/venkat-narasimha/haritha_hospital (custom app + 274 fixtures)
-- **Frappe docs:** https://docs.frappe.io/
-- **HRMS docs:** https://docs.frappe.io/hr/
-- **Frappe framework:** https://frappeframework.com/docs/
-- **LEARNINGS:** `/root/.openclaw/workspace/.learnings/LEARNINGS.md` (workspace-level, includes #44, #106, #114, #142-#150, #151-#157)
-- **MEMORY:** `/root/.openclaw/workspace/MEMORY.md` (workspace-level tech stack + DB passwords)
+- **Git commits:** `venkat-narasimha <srivenkatnarasimha@gmail.com>` (per Rule #11)
+- **Custom Fields:** all in `haritta_hospital` fixtures from day 1
+- **HRMS pin:** v16.5.0 only (v16.5.1+ breaks on `repost_allowed_types`)
+- **Always restart backend container** after `bench install-app` (gunicorn `--preload` sys.path freeze)
 
 ---
 
-*Last updated: 2026-09-10 — renamed phase6→handbook, phase-a→archive, added client-onboarding + walkthrough, fixed 42 stale path refs*
+## License
+
+This is an internal Processbricks / Haritha Hospitals deployment. Custom app `haritta_hospital` source is at https://github.com/venkat-narasimha/haritha_hospital (MIT or as specified there).
+
+---
+
+## Contact
+
+- **Project owner:** Venkat Narasimha
+- **Custom app issues:** https://github.com/venkat-narasimha/haritha_hospital/issues
+- **Workspace context:** `/root/.openclaw/workspace/` (LEARNINGS + MEMORY there)
+
+---
+
+*README restructured 2026-09-15: slimmed to standard README + repo map; detailed status relocated to [docs/handbook/00-foundations/00-project-status.md](docs/handbook/00-foundations/00-project-status.md).*
