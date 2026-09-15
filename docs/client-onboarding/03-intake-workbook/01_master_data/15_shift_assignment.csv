@@ -9,6 +9,6 @@ start_date,Start Date,Date,Y,2026-09-01,YYYY-MM-DD,,required stock field
 end_date,End Date,Date,N,2026-09-15,YYYY-MM-DD; >= start_date,,optional; blank = open-ended assignment
 status,Status,Select,N,Active,Active / Inactive,,stock optional; defaults to Active
 shift_location,Shift Location,Link→Shift Location,N,Site A,must exist if set,,optional; pre-create Site A (gotcha #9, gotcha #15)
-department,Department,Link,N,Department A,must exist if set,,optional; derived from Employee
-amended_from,Amended From,Link,N,,must exist if set,,for amendment workflow only
+department,Department,Link→Department,N,Department A,must exist if set,,optional; derived from Employee
+amended_from,Amended From,Link→Shift Assignment,N,,must exist if set,,for amendment workflow only
 overtime_type,Overtime Type,Link→Overtime Type,N,,must exist if set,,optional; only if shift allows overtime

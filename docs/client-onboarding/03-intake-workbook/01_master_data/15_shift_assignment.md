@@ -23,8 +23,8 @@ A Shift Assignment is a per-employee, per-shift, per-date-range scheduling recor
 | end_date | End Date | Date | N | 2026-09-15 | YYYY-MM-DD; >= start_date | optional; blank = open-ended assignment |
 | status | Status | Select | N | Active | Active / Inactive | stock optional; defaults to Active |
 | shift_location | Shift Location | Link→Shift Location | N | Site A | must exist if set | optional; pre-create Site A (gotcha #9, gotcha #15) |
-| department | Department | Link | N | Department A | must exist if set | optional; derived from Employee |
-| amended_from | Amended From | Link | N |  | must exist if set | for amendment workflow only |
+| department | Department | Link→Department | N | Department A | must exist if set | optional; derived from Employee |
+| amended_from | Amended From | Link→Shift Assignment | N |  | must exist if set | for amendment workflow only |
 | overtime_type | Overtime Type | Link→Overtime Type | N |  | must exist if set | optional; only if shift allows overtime |
 
 > **Field `shift_schedule_assignment` is intentionally OMITTED.** This field links to a DocType (`Shift Schedule Assignment`) that is out of P5 scope. The migration script NULLIFIES it on every SA before upsert. See research §8 Q5.

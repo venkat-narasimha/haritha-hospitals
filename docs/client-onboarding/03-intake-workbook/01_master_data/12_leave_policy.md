@@ -15,7 +15,7 @@ A Leave Policy bundles one or more Leave Types with allocation rules into a name
 |---|---|---|---|---|---|---|
 | title | Title | Data | Y | Standard Policy | unique | autoname=field:title |
 | leave_policy_details | Leave Policy Details | Table | N |  | child rows required | child table Leave Policy Detail - see Migration notes; do NOT add in this CSV (Data Import handles via separate upload) |
-| amended_from | Amended From | Link | N |  | must exist if set | for amendment workflow only |
+| amended_from | Amended From | Link→Leave Policy | N |  | must exist if set | for amendment workflow only |
 
 ## Child table: leave_policy_details (separate Data Import)
 

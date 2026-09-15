@@ -18,9 +18,9 @@ Employee is the central HR master. It references Department, Designation, Branch
 | middle_name | Middle Name | Data | N |  | <= 80 chars | stock optional |
 | last_name | Last Name | Data | N | Sample | <= 80 chars | stock optional |
 | employee_name | Full Name | Data | N | Employee A Sample | non-empty if set | autogen if blank |
-| company | Company | Link | Y | Company A | must exist | required stock field |
+| company | Company | Link→Company | Y | Company A | must exist | required stock field |
 | status | Status | Select | Y | Active | Active / Inactive / Suspended / Left | required stock field |
-| gender | Gender | Link | Y | Not Specified | must exist | required stock field; import Gender master first (gotcha #6) |
+| gender | Gender | Link→Gender | Y | Not Specified | must exist | required stock field; import Gender master first (gotcha #6) |
 | date_of_birth | Date of Birth | Date | Y | 1990-01-01 | YYYY-MM-DD | required stock field |
 | date_of_joining | Date of Joining | Date | Y | 2026-09-01 | YYYY-MM-DD | required stock field |
 | department | Department | Link→Department | N | Department A | must exist if set | stock optional |
