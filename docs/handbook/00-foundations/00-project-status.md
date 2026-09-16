@@ -106,7 +106,7 @@ All captured as Frappe fixtures in the `venkat-narasimha/haritha_hospital` custo
 ## More status docs
 
 - **[TRACKER.md](https://github.com/venkat-narasimha/haritha-hospitals/blob/main/TRACKER.md)** — phase-by-phase history + subagent log
-- **[docs/HARITHA_HOSPITALS_GUIDE.md](../HARITHA_HOSPITALS_GUIDE.md)** — comprehensive end-to-end guide
+- **[docs/HARITHA_HOSPITALS_GUIDE.md](../../HARITHA_HOSPITALS_GUIDE.md)** — comprehensive end-to-end guide (corrected from `../HARITHA_HOSPITALS_GUIDE.md` which resolved to `docs/handbook/HARITHA_HOSPITALS_GUIDE.md` 404)
 - **[DECISIONS.md](https://github.com/venkat-narasimha/haritha-hospitals/blob/main/docs/DECISIONS.md)** — decision log
 
 ---
