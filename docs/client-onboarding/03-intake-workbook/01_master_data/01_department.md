@@ -35,7 +35,38 @@ The `haritha_hospital` custom app adds 8 custom fields to `Department`. The two 
 | `payroll_cost_center` | Payroll Cost Center | Link→Cost Center | set if this department has its own payroll Cost Center for expense allocation |
 | `leave_block_list` | Leave Block List | Link→Leave Block List | set if this department has restricted leave-block dates |
 
-The other 6 (`approvers`, `column_break_9`, `section_break_4`, `shift_request_approver`, `leave_approvers`, `expense_approvers`) are layout/child-table fields and are populated via the Frappe web UI, not Data Import.
+The other 5 (`approvers`, `column_break_9`, `section_break_4`, `shift_request_approver`, `expense_approvers`) are layout/child-table fields and are populated via the Frappe web UI, not Data Import. The `leave_approvers` child table is documented below.
+
+## Leave Approvers (child table) — HRMS v16
+
+> **HRMS v16 gap** (Sep 17–21 audit, Item 6): Per-Department approver inheritance was missing from earlier intake. Without populating this child table, Leave Application approval cannot resolve a Department approver, and any employee whose HR Settings has `leave_approver_mandatory_in_leave_application=1` will fail `Leave Application.submit()`.
+
+The `leave_approvers` child table is attached to each Department and stores one or more User records who can approve Leave Applications from anyone in that Department (or any nested child Department).
+
+| fieldname | label | type | required | example | validation | notes |
+|---|---|---|---|---|---|---|
+| approver | Approver | Link→User | Y | `Administrator` | User must exist | **Schema field is `approver`, NOT `leave_approver`** — Sep 18 schema gotcha; the Stream 3 brief used the wrong field name |
+| role | Role | (n/a) | — | — | — | No `role` field exists in the HRMS v16 schema. Single-level approver only; multi-level (primary / secondary) requires a custom script. |
+
+### Behaviour
+
+- **Per-Department scope:** `leave_approvers` rows on a Department apply to all employees whose `Employee.department` resolves to that Department (including nested child Departments).
+- **Inheritance:** Child Departments inherit approvers from their parent if they have no rows of their own.
+- **Required when:** HR Settings → `leave_approver_mandatory_in_leave_application` is **1** (default in HRMS v16). If set, `Leave Application.submit()` raises a validation error when no approver resolves.
+- **Workbook dependency:** This template pairs with [`02_settings_checklists/01_hr_settings.md`](../02_settings_checklists/01_hr_settings.md) — set `leave_approver_mandatory_in_leave_application` and the **Workflow for Leave Application** together with this child table.
+
+### Example
+
+| Department | approver (User) | Result |
+|---|---|---|
+| `Department X - HH` | `Administrator` | Any employee in `Department X - HH` (or its children) routes leave to `Administrator` |
+| `Nursing - HH` | `nurse.manager@hospital.example` | Nursing staff leave routes to the nurse manager |
+
+### How to populate
+
+- **Not via this CSV.** Child tables cannot be Data-Imported through the master-data CSV format. They must be set via the Frappe web UI: open the Department record → expand **Leave Approvers** → add row → set **Approver** to a User.
+- **Or programmatically** via the partner's migration script: `frappe.get_doc({"doctype":"Department","name":dept,"leave_approvers":[{"approver":"Administrator"}]}).save()`. The seed helper `_ensure_department_approvers()` (used for Shift Requests — see `migration/`) can be extended for Leave Approvers.
+- **Bulk seeding tip:** For hospital onboarding, seed `Administrator` as the Department approver for every Department, then have HR replace per-Department after go-live via the web UI.
 
 ## When to use this sheet
 

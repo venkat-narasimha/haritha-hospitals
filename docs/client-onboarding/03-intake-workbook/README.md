@@ -79,6 +79,8 @@ Templates are paired `.csv` + `.md`. CSV is the import target; MD is the field r
 
 **Reading the table:** `MIGRATION_ORDER rank` comes from research §3.1. Templates marked `— (App create)` are populated through the App's normal create flow (UI / Data Import standalone / device auto-import / system generation) — not by the partner's master-data migration script.
 
+> **See also:** [`02_settings_checklists/`](./02_settings_checklists/) — Phase 5 configuration checklists for HR Settings, Payroll Settings, and auto-attendance policies. These are out of the master-data CSV import flow but must be completed before UAT. Start with [`01_hr_settings.md`](./02_settings_checklists/01_hr_settings.md) (added Sep 21: **Workflow for Leave Application** + **Email Account** sections).
+
 ---
 
 ## 4. Import Order + Dependencies
@@ -219,7 +221,7 @@ docs/client-onboarding/03-intake-workbook/
 │   ├── 17_employee_checkin.{csv,md}
 │   ├── 18_leave_application.{csv,md}
 │   └── 19_leave_ledger_entry.{csv,md}
-├── 02_settings_checklists/                      (out of P5 scope — separate wave)
+├── 02_settings_checklists/                      ([HR Settings](./02_settings_checklists/01_hr_settings.md) · [Payroll Settings](./02_settings_checklists/02_payroll_settings.md) · [Auto-Attendance Policies](./02_settings_checklists/03_auto_attendance_policies.md) — Phase 5)
 ├── 03_signoff/
 │   ├── 01_per_doctype_signoff_template.md       (rebuilt Phase 3 — this file)
 │   └── 02_master_validation_report.md           (rebuilt Phase 3 — this file)
@@ -258,6 +260,9 @@ docs/client-onboarding/03-intake-workbook/
 
 ## Related
 
+- [`02_settings_checklists/01_hr_settings.md`](./02_settings_checklists/01_hr_settings.md) — HR Settings configuration checklist (HRMS v16 Workflow for Leave Application + Email Account sections, Sep 21)
+- [`02_settings_checklists/02_payroll_settings.md`](./02_settings_checklists/02_payroll_settings.md) — Payroll Settings configuration checklist
+- [`02_settings_checklists/03_auto_attendance_policies.md`](./02_settings_checklists/03_auto_attendance_policies.md) — Auto-attendance policy checklist (Shift Location geofence, grace periods, biometric integration)
 - [`prompts/P5-rebuild-research.md`](../../../prompts/P5-rebuild-research.md) — Source-of-truth compilation (custom-field inventory, stock DocType JSON, MIGRATION_ORDER, gotcha index)
 - [`prompts/P5-rebuild-plan.md`](../../../prompts/P5-rebuild-plan.md) — 8-SC verification protocol
 - [`reports/p5/P5-reverify-report.md`](../../../reports/p5/P5-reverify-report.md) — Phase 2.7 verdict (22/22 fixes + 11/11 SCs PASS)

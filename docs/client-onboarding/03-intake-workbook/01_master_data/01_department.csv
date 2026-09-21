@@ -6,3 +6,4 @@ is_group,Is Group,Check,N,0,0/1,,set 1 only for group/parent rows (do not import
 disabled,Disabled,Check,N,0,0/1,,soft-disable flag
 payroll_cost_center,Payroll Cost Center,Link→Cost Center,N,,must exist if set,,custom field; link to Cost Center for payroll postings
 leave_block_list,Leave Block List,Link→Leave Block List,N,,must exist if set,,custom field; optional block-list reference
+leave_approvers,Leave Approvers (child table),Table,N (web UI),,child table — not Data-Importable,,schema field is 'approver' (Link→User, required); see 01_department.md §Leave Approvers and 02_settings_checklists/01_hr_settings.md
