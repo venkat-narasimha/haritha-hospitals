@@ -9,6 +9,23 @@
 
 ---
 
+## 📌 Recent Activity (Sep 17–21, 2026) — Demo Readiness Push
+
+5-day intensive push to bring the system to demo-ready state and resolve all sign-off transactions. See [`archive/docs/manager-briefing-2026-09-21.md`](archive/docs/manager-briefing-2026-09-21.md) for the full manager-review briefing.
+
+| Date | Event |
+|---|---|
+| 2026-09-17 | Demo readiness audit + 1 prod fix (Company.default_holiday_list on Haritha Hospitals) |
+| 2026-09-18 | Manual transaction testing (60 transactions, 6 modules) + Streams 1–5 + sign-off commit (51 PASS) |
+| 2026-09-19 | Stream 5 Maximum effort (4 prerequisites + 3 write-tests) + sign-off updated to 58 PASS; Sample Leave Application HR-LAP-2026-00001 submitted end-to-end with Leave Ledger Entry; Fiscal Year fix (2025-2026 + 2026-2027) |
+| 2026-09-21 | 211 Holiday List Assignments batch-submitted + renumbering (T-001 to T-079, +19 new transactions); 8 client template items (5 new master templates + 3 template updates); 2 hotfix scrubs (sanitization) |
+
+**Demo readiness verdict (current):** ✅ READY (full, no caveats). Custom Fields 78/78, Property Setters 189/189, Leave Engine (Approver, 211 Holiday List Assignments, Leave Period 2026-2027, 3 Leave Allocations, notification template), HR Settings configured. Test Company kept per operator decision (manual testing sandbox); 0 Branches = single-site per repo Gotcha #12.
+
+**Sign-off state (post-renumber):** 77 ✅ PASS / 0 ⬜ DEFERRED / 1 ❌ NOT DONE / 1 🚫 REMOVED = 78 sign-off rows. Total defined = 79 (1 removed from sign-off but documented as out-of-scope).
+
+---
+
 **Master tracker split:** this file is now a slim index. Full phase detail lives under [`tracker-phases/`](tracker-phases/).
 
 A full backup of the original 1492-line TRACKER.md is preserved at [`tracker-phases/000-FULL-TRACKER-backup.md`](tracker-phases/000-FULL-TRACKER-backup.md).
