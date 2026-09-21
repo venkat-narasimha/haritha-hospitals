@@ -103,20 +103,20 @@ Final readiness check after all cleanup work landed on `main`. Every area PASS, 
 ## Recent milestones
 
 - **2026-09-21 — Demo readiness REACHED (full, no caveats)** — All areas PASS after final clean-up: 211 Holiday List Assignments batch-submitted, transactions renumbered T1-T60 → T-001-T-079 (added 19 new entries), scrub hotfix removed internal refs, 3 existing + 5 new master template commits landed
-- **2026-09-21 — 5 new master templates added** — Fiscal Year, Skill, Onboarding Template, Separation Template, Holiday List Assignment (commit `5ff8a6e` — current `main` HEAD)
-- **2026-09-21 — 3 existing client templates updated** — Department (add `leave_approvers`), HR Settings (add Workflow + Email Account sections), README (link `settings_checklists/`) (commit `c1313ce`)
-- **2026-09-21 — Scrub hotfix on synthesized report** — removed 7 internal-infrastructure references per operator feedback (commit `cf45ee2`)
-- **2026-09-21 — Transactions renumbered to T-001-T-079** — T1-T60 replaced by properly-flowing numbering; 19 new setup transactions added across Sections A/B/C; sign-off grew to 77 PASS / 0 DEFERRED / 1 NOT DONE / 1 REMOVED (commit `76e1b15`)
+- **2026-09-21 — 5 new master templates added** — Fiscal Year, Skill, Onboarding Template, Separation Template, Holiday List Assignment (current `main` HEAD)
+- **2026-09-21 — 3 existing client templates updated** — Department (add `leave_approvers`), HR Settings (add Workflow + Email Account sections), README (link `settings_checklists/`)
+- **2026-09-21 — Scrub hotfix on synthesized report** — removed 7 internal-infrastructure references per operator feedback
+- **2026-09-21 — Transactions renumbered to T-001-T-079** — T1-T60 replaced by properly-flowing numbering; 19 new setup transactions added across Sections A/B/C; sign-off grew to 77 PASS / 0 DEFERRED / 1 NOT DONE / 1 REMOVED
 - **2026-09-21 — 211 Holiday List Assignments batch-submitted** — all rows promoted docstatus 0 → 1 via per-doc `hla.submit()` (Stream 3B raw SQL INSERT left them in Draft; one-shot fix, 0 errors)
 - **2026-09-19 — Sample Leave Application submitted end-to-end** — `HR-LAP-2026-00001`, Casual Leave -1.0 day on 2026-10-02, Leave Ledger Entry created. Three-attempt retry: caught NotificationTemplate-vs-Email-Template schema gap; HR Settings `leave_approval_notification_template` set; caught Holiday List Assignment `docstatus=0` bug → fix via `hla.submit()` on `HR-HLA-2026-00003`; third attempt succeeded
 - **2026-09-19 — Fiscal Years created on Haritha Hospitals** — FY 2025-2026 (2025-04-01 → 2026-03-31) and FY 2026-2027 (2026-04-01 → 2027-03-31), both linked to Haritha Hospitals
-- **2026-09-19 — Stream 5 Maximum effort** — 4 prod docs created (`HR-EMP-ONT-00001` Onboarding Template, `HR-EMP-00422` Ex-Employee status=Left, `HR-EMP-STP-00001` Separation Template, `HR-EMP-SEP-2026-00001` Separation draft); 3 write-tests added for T52/T57/T58; T60 removed (commit `fb6cf5d`, sign-off updated to 58 PASS)
+- **2026-09-19 — Stream 5 Maximum effort** — 4 prod docs created (`HR-EMP-ONT-00001` Onboarding Template, `HR-EMP-00422` Ex-Employee status=Left, `HR-EMP-STP-00001` Separation Template, `HR-EMP-SEP-2026-00001` Separation draft); 3 write-tests added for T52/T57/T58; T60 removed (sign-off updated to 58 PASS)
 - **2026-09-18 — Manual transaction testing complete (60 transactions, 6 modules)** — Venkat's manual report uploaded + Streams 1-4 executed end-to-end:
   - Stream 1 — Investigation of pending T-items: 8 PASS / 4 FAIL-SYSTEMIC / 13 FAIL-MANUAL / 3 FAIL-DATA / 4 UNCLEAR (~36 KB written)
   - Stream 2 — 13 manual corrections + 7 inline notes applied to both test docs (test docs grew: 1,203 → 1,262 lines; 1,015 → 1,087 lines)
   - Stream 3 — Leave setup on prod (Leave Approver on Department X-HH, Holiday List on Test User, Leave Period 2026-2027 `HR-LPR-2026-00001`, 3 Leave Allocations submitted for Test User: Earned=12d / Casual=12d / Sick=6d, sample Leave Application drafted `HR-LAP-2026-00001`)
   - Stream 3B — Fix 1: HR Settings `standard_working_hours = 8.0`; Fix 2: 211 Holiday List Assignments created (after schema catch for `applicable_for` + `assigned_to`)
-  - Stream 4 — Sign-off checkboxes + sanitization grep + commit `4623220` (initial sign-off: 59 rows)
+  - Stream 4 — Sign-off checkboxes + sanitization grep (initial sign-off: 59 rows)
   - Push to `main`
 - **2026-09-17 — Demo readiness audit + 1 prod fix applied** — Audit surfaced 3 issues; operator decisions recorded (skip FY for now, apply Holiday List, keep Test Company intentionally); audit doc grew to ~205 lines after operator decisions. Backup taken, then applied `Company.default_holiday_list = "Haritha Hospitals Holiday List"` on Haritha Hospitals
 
