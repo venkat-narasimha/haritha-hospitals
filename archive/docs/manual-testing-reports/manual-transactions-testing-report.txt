@@ -1,0 +1,115 @@
+# Manual Transaction Testing Report — Venkat — 2026-09-18
+
+Source: Venkat's upload 2026-09-18 20:33 IST. Workspace copy for subagent reference.
+Test docs: `docs/handbook/04-testing/manual-ui-walkthrough.md` + `bench-execute-snippets.md`
+Test company: Test Company on pberpprod
+
+---
+
+## Organization Management
+
+T1-pass, "Test ICU" is created.
+T2-pass, "Test User" is created.
+T3-employee grade was never created and it is an optional field as we don't want any payroll right now. So T3 is not done.
+T4- It did not fail as expected. The "X" department is actually saved without any error.
+T5- pass, result: `Department X - HH already exists`
+T6- The "Test" branch was created and it did not ask for a company set and no errors.
+T7- "Test Role" is created with no errors.
+T8- "Grade X" is created and auto assigned to "Test User" But there is no `pay_band` field.
+T9- pass, "Test Type" is created.
+T10- pending, why we need to run migration script?
+T11- pass
+T12- PAN, IFSC, etc. are not custom fields. They already exist in employee edit page.
+
+## Shift Management
+
+T13- pass, "Morning-8h" is created with 9-5 times.
+T14- pass, (in T002 we created "Test User") shift assignment for "Test User" is created with shift type "Morning-8h" and start date as 17-sep-2026 and Permanently Submitted HR-SHA-26-09-00001.
+T15- Employee checkin for "Test User" is create with checkin time "17-09-2026 09:01:03" and log type as "IN" - "EMP-CKIN-09-2026-000001".
+But I don't know if it is pass or fail
+1. I can see the Checkin in the employee checkin list but not in attendance page.
+2. shift field populated from Employee.default_shift
+3. where to find working_hours? I don't know.
+You check and tell me if it is pass or fail or if I miss anything or manual is unclear.
+T16- HR-ATT-2026-06304 is created and submitted but no errors which we expected for errors. Also I don't know if his shift type is auto assigned or not. Also Employee checkin and Attendance series are different. Please check the Transaction 16.
+T17- pass, i gave start date 18sep2026, end date 17sep2026. it showed error: "End Date must be after Start Date". But I manually selected shift type before dates.
+T18- created new shift location "Guntur" but it did not ask for lat,long and i did not find them anywhere in UI.
+T19- pass, created and submitted new shift schedule "Test Schedule" for "Morning-8h" shift type for every week on mon, tue, wed, thu.
+T20- there is no date range to select. I selected "Test User" and status as "Present" and saved.
+
+T21- pass
+{"name":"EMP-CKIN-09-2026-000002","owner":"Administrator","creation":"2026-09-18 10:25:55.223209","modified":"2026-09-18 10:25:55.223209","modified_by":"Administrator","docstatus":0,"idx":0,"employee":"HR-EMP-00421","employee_name":"Test User","log_type":"","shift":"Morning-8h","overtime_type":null,"time":"2026-09-18 10:25:29","device_id":null,"skip_auto_attendance":1,"attendance":null,"latitude":0,"longitude":0,"geolocation":null,"shift_start":"2026-09-18 09:00:00","shift_end":"2026-09-18 17:00:00","offshift":0,"shift_actual_start":"2026-09-18 08:00:00","shift_actual_end":"2026-09-18 18:00:00","doctype":"Employee Checkin","__last_sync_on":"2026-09-18T04:55:56.309Z"}
+
+T22- passed only when "Include Holidays" is checked.
+{"name":"HR-ARQ-26-09-00001","owner":"Administrator","creation":"2026-09-18 10:29:21.747267","modified":"2026-09-18 10:29:37.566861","modified_by":"Administrator","docstatus":1,"idx":0,"employee":"HR-EMP-00421","employee_name":"Test User","department":"X - HH","company":"Haritha Hospitals","from_date":"2026-09-21","to_date":"2026-09-26","half_day":0,"include_holidays":1,"shift":"","reason":"Work From Home","doctype":"Attendance Request"}
+
+## Leave Management
+
+T23- pass
+{"name":"Test Leave Type","owner":"Administrator","creation":"2026-09-18 10:33:07.517007","modified":"2026-09-18 10:33:07.517007","modified_by":"Administrator","docstatus":0,"idx":0,"leave_type_name":"Test Leave Type","max_leaves_allowed":0,"applicable_after":0,"max_continuous_days_allowed":0,"is_carry_forward":1,"is_lwp":0,"is_ppl":0,"fraction_of_daily_salary_per_leave":0,"is_optional_leave":1,"allow_negative":0,"allow_over_allocation":0,"include_holiday":0,"is_compensatory":1,"maximum_carry_forwarded_leaves":0,"expire_carry_forwarded_leaves_after_days":0,"allow_encashment":0,"max_encashable_leaves":0,"non_encashable_leaves":0,"earning_component":null,"is_earned_leave":0,"earned_leave_frequency":"Monthly","allocate_on_day":"Last Day","rounding":"","doctype":"Leave Type","__last_sync_on":"2026-09-18T05:03:08.628Z"}
+
+T24- pass
+{"name":"HR-LPOL-2026-00001","owner":"Administrator","creation":"2026-09-18 10:34:47.111485","modified":"2026-09-18 10:34:53.726351","modified_by":"Administrator","docstatus":1,"idx":1,"title":"Test Leave Policy","doctype":"Leave Policy","leave_policy_details":[{"name":"g2nehsc2hu","owner":"Administrator","creation":"2026-09-18 10:34:47.111485","modified":"2026-09-18 10:34:53.726351","modified_by":"Administrator","docstatus":1,"idx":1,"leave_type":"Casual Leave","annual_allocation":0,"parent":"HR-LPOL-2026-00001","parentfield":"leave_policy_details","parenttype":"Leave Policy","doctype":"Leave Policy Detail","__unsaved":1},{"name":"g2nn38arfi","owner":"Administrator","creation":"2026-09-18 10:34:47.111485","modified":"2026-09-18 10:34:53.726351","modified_by":"Administrator","docstatus":1,"idx":2,"leave_type":"Test Leave Type","annual_allocation":0,"parent":"HR-LPOL-2026-00001","parentfield":"leave_policy_details","parenttype":"Leave Policy","doctype":"Leave Policy Detail","__unsaved":1},{"name":"g2nv54eg6f","owner":"Administrator","creation":"2026-09-18 10:34:47.111485","modified":"2026-09-18 10:34:53.726351","modified_by":"Administrator","docstatus":1,"idx":3,"leave_type":"Sick Leave","annual_allocation":"0","parent":"HR-LPOL-2026-00001","parentfield":"leave_policy_details","parenttype":"Leave Policy","doctype":"Leave Policy Detail","__unsaved":1}]}
+
+T25- fail
+There is no leave period but I tried with custom range but when I click on Allocate Leave then nothing happened.
+
+T26- fail
+It is saying "Please set Leave Approver for the Employee: Test User or for the Employee's Department: X - HH"
+
+T27, T28- fail due to above T26 reason also.
+
+T29- fail, There is no Salary Structure assigned to HR-EMP-00421. First assign a Salary Structure. (no leave period)
+
+T30- fail, when trying to save then a pop came "No Holiday List was found for Employee HR-EMP-00421 or their company Haritha Hospitals for date 18-09-2026. Please assign through Holiday List Assignment"
+
+T31-T36 - fail due to above reasons.
+
+From this, I came to know that we did not set up leave management with all proper transactions.
+We need to add new transactions.
+I see there are NO transactions for assigning "Leave approvers", "Holiday List", etc. to an employee.
+I consider this as failure of Leave Management.
+
+## Employee Lifecycle
+
+T37- Employee Onboarding was never happened and there are no existing Onboarding templates.
+T39- No employee with status=Left exists
+T40- fail, NO Employee with outstanding earned leave allocation.
+
+T38 and T41 - pass, initially there is not grade and branch to this user so now I added.
+{"name":"HR-EMP-00421","owner":"Administrator","creation":"2026-09-17 10:55:14.956983","modified":"2026-09-18 11:31:56.820891","modified_by":"Administrator","docstatus":0,"idx":0,"employee":"HR-EMP-00421","naming_series":"HR-EMP-","first_name":"Test User","employee_name":"Test User","gender":"Male","date_of_birth":"2001-10-12","date_of_joining":"2025-03-01","status":"Active","create_user_permission":1,"create_user_automatically":0,"company":"Haritha Hospitals","department":"X - HH","grade":"Grade X","prefered_contact_email":"","unsubscribed":0,"current_accommodation_type":"","permanent_accommodation_type":"","ctc":0,"salary_currency":"INR","salary_mode":"","marital_address_type":"","blood_group":"","notice_number_of_days":0,"date_of_retirement":"2061-10-12","leave_encashed":"","lft":421,"rgt":422,"old_parent":"","doctype":"Employee","education":[],"external_work_history":[],"internal_work_history":[],"branch":"Test"}
+
+T42- pass, No skills existing already so created a new skill now.
+1. you should have added this transaction earlier. You missed this along with some others which we discussed for above transactions.
+{"name":"HR-EMP-00421","owner":"Administrator","creation":"2026-09-18 11:35:34.685626","modified":"2026-09-18 11:37:43.143629","modified_by":"Administrator","docstatus":0,"idx":0,"employee":"HR-EMP-00421","employee_name":"Test User","designation":"","doctype":"Employee Skill Map","employee_skills":[{"docstatus":0,"doctype":"Employee Skill","name":"kungknt2vf","__unsaved":1,"owner":"Administrator","evaluation_date":"2026-09-18","parent":"HR-EMP-00421","parentfield":"employee_skills","parenttype":"Employee Skill Map","idx":1,"proficiency":1,"skill":"Test Skill 1","creation":"2026-09-18 11:35:34.685626","modified":"2026-09-18 11:37:43.143284","modified_by":"Administrator"}],"trainings":[]}
+
+T43- fail, NO Pending Separation record exists.
+
+T44- pending
+1. fail with "Separation Begins On is required."
+2. added Separation Begins On 21-09-2026. Then saved and when tried to submit then we got a pop up "No Holiday List was found for Employee HR-EMP-00421 or their company Haritha Hospitals for date 18-09-2026. Please assign through Holiday List Assignment." So the document is draft only now.
+{"name":"HR-EMP-SEP-2026-00001","owner":"Administrator","creation":"2026-09-18 11:41:40.043758","modified":"2026-09-18 11:41:40.043758","modified_by":"Administrator","docstatus":0,"idx":0,"employee":"HR-EMP-00421","employee_name":"Test User","department":"X - HH","designation":null,"employee_grade":"Grade X","company":"Haritha Hospitals","boarding_status":"Pending","resignation_letter_date":null,"boarding_begins_on":"2026-09-21","project":null,"employee_separation_template":null,"notify_users_by_email":0,"exit_interview":null,"amended_from":null,"doctype":"Employee Separation","activities":[],"__last_sync_on":"2026-09-18T06:11:41.114Z"}
+
+## Reports
+
+T45-T50 - pending, I want you to evaluate.
+
+# Monthly Attendance Sheet:
+https://pberpprod.duckdns.org/desk/query-report/Monthly%20Attendance%20Sheet?filter_based_on=Month&month=9&year=2026&company=Haritha+Hospitals&include_company_descendants=1
+https://pberpprod.duckdns.org/desk/query-report/Monthly%20Attendance%20Sheet?filter_based_on=Month&month=5&year=2025&company=Haritha+Hospitals&include_company_descendants=1
+https://pberpprod.duckdns.org/desk/query-report/Monthly%20Attendance%20Sheet?filter_based_on=Month&month=6&year=2025&company=Haritha+Hospitals&include_company_descendants=1
+
+# Shift Attendance
+https://pberpprod.duckdns.org/desk/query-report/Shift%20Attendance?from_date=2025-05-26&to_date=2025-06-24&company=Haritha+Hospitals&consider_grace_period=1&include_attendance_without_checkins=1
+
+# Employee Hours Utilization & Project Profitability
+In URLs: https://pberpprod.duckdns.org/desk/query-report/Employee%20Hours%20Utilization%20Based%20On%20Timesheet https://pberpprod.duckdns.org/desk/query-report/Project%20Profitability
+We got a pop up messages - "The metrics for this report are calculated based on Standard Working Hours. Please set Standard Working Hours in HR Settings."
+Note: I did not know if we should consider these employee hours utilization and project profitability reports.
+
+# Final Note on Reports:
+I want you to evaluate all the reports and tell me. But I think first we need to set/do the transactions that we missed earlier like HR Setup, employee lifecycle, leave, etc.
+
+## Edge cases
+
+T51-T60 - I want you to evaluate all these.
