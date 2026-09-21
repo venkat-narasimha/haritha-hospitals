@@ -25,10 +25,22 @@ Collects all master data needed to import a healthcare client into ERPNext + HRM
 
 ---
 
+## Structure
+
+The workbook is organized into three sub-directories:
+
+- `01_master_data/` — one-time setup templates (Company, Department, Holiday List, Skill, Onboarding/Separation Templates, etc.). Items #1–#13.
+- `02_transaction_data/` — per-employee / per-record transactional templates (Leave Allocation, Attendance, Employee Checkin, Shift Assignment, Leave Application, Leave Ledger Entry). Items #14–#19.
+- `03_signoff/` — sign-off documents (per-DocType signoff blocks + master roll-up validation report).
+
+Templates #1–#13 are setup masters populated once per company; templates #14–#19 are recurring per-employee / per-record data populated through normal app usage, Data Import, or device integrations.
+
+---
+
 ## 2. Workflow (4 steps)
 
 ```
-1. Download  → grab CSV from 01_master_data/
+1. Download  → grab CSV from `01_master_data/` (master, #1–#13) or `02_transaction_data/` (transactional, #14–#19)
 2. Fill      → replace client_value placeholders with real data
 3. Sign off  → per DocType: 03_signoff/01_per_doctype_signoff_template.md
 4. Import    → partner runs Data Import on sandbox, then production
@@ -70,12 +82,12 @@ Templates are paired `.csv` + `.md`. CSV is the import target; MD is the field r
 | 11 | Leave Type | [`11_leave_type.csv`](./01_master_data/11_leave_type.csv) + [.md](./01_master_data/11_leave_type.md) | CL / SL / EL / LWP / etc. | — (App create) |
 | 12 | Leave Policy | [`12_leave_policy.csv`](./01_master_data/12_leave_policy.csv) + [.md](./01_master_data/12_leave_policy.md) | Leave-type bundles per role | — (App create) |
 | 13 | Leave Period | [`13_leave_period.csv`](./01_master_data/13_leave_period.csv) + [.md](./01_master_data/13_leave_period.md) | Annual leave cycles | — (App create) |
-| 14 | Leave Allocation | [`14_leave_allocation.csv`](./01_master_data/14_leave_allocation.csv) + [.md](./01_master_data/14_leave_allocation.md) | Per-employee leave balances | — (App create) |
-| 15 | Shift Assignment | [`15_shift_assignment.csv`](./01_master_data/15_shift_assignment.csv) + [.md](./01_master_data/15_shift_assignment.md) | Roster rows | **#17** |
-| 16 | Attendance | [`16_attendance.csv`](./01_master_data/16_attendance.csv) + [.md](./01_master_data/16_attendance.md) | Daily attendance (auto-created from Checkins) | — (App create) |
-| 17 | Employee Checkin | [`17_employee_checkin.csv`](./01_master_data/17_employee_checkin.csv) + [.md](./01_master_data/17_employee_checkin.md) | Biometric/RFID log rows | — (device import) |
-| 18 | Leave Application | [`18_leave_application.csv`](./01_master_data/18_leave_application.csv) + [.md](./01_master_data/18_leave_application.md) | Leave requests (UI-submitted) | — (App create) |
-| 19 | Leave Ledger Entry | [`19_leave_ledger_entry.csv`](./01_master_data/19_leave_ledger_entry.csv) + [.md](./01_master_data/19_leave_ledger_entry.md) | System-generated ledger (not user-editable) | — (system-generated) |
+| 14 | Leave Allocation | [`14_leave_allocation.csv`](./02_transaction_data/14_leave_allocation.csv) + [.md](./02_transaction_data/14_leave_allocation.md) | Per-employee leave balances | — (App create) |
+| 15 | Shift Assignment | [`15_shift_assignment.csv`](./02_transaction_data/15_shift_assignment.csv) + [.md](./02_transaction_data/15_shift_assignment.md) | Roster rows | **#17** |
+| 16 | Attendance | [`16_attendance.csv`](./02_transaction_data/16_attendance.csv) + [.md](./02_transaction_data/16_attendance.md) | Daily attendance (auto-created from Checkins) | — (App create) |
+| 17 | Employee Checkin | [`17_employee_checkin.csv`](./02_transaction_data/17_employee_checkin.csv) + [.md](./02_transaction_data/17_employee_checkin.md) | Biometric/RFID log rows | — (device import) |
+| 18 | Leave Application | [`18_leave_application.csv`](./02_transaction_data/18_leave_application.csv) + [.md](./02_transaction_data/18_leave_application.md) | Leave requests (UI-submitted) | — (App create) |
+| 19 | Leave Ledger Entry | [`19_leave_ledger_entry.csv`](./02_transaction_data/19_leave_ledger_entry.csv) + [.md](./02_transaction_data/19_leave_ledger_entry.md) | System-generated ledger (not user-editable) | — (system-generated) |
 
 **Reading the table:** `MIGRATION_ORDER rank` comes from research §3.1. Templates marked `— (App create)` are populated through the App's normal create flow (UI / Data Import standalone / device auto-import / system generation) — not by the partner's master-data migration script.
 
@@ -138,7 +150,7 @@ These are the gotchas most likely to bite clients filling templates. Full gotcha
 | #6 | 10_employee | Employee `gender` / `default_shift` ordering | Gender + Shift Type masters MUST be imported first. Both fields use `mandatory_depends_on` — insert fails if masters missing. → [10_employee.md](./01_master_data/10_employee.md) |
 | #11 | 01_department | Department name auto-suffix | Enter the bare name (`Nursing`), NOT `Nursing - HH`. Frappe appends the company abbreviation on save. Typing it twice → `Nursing - HH - HH`. → [01_department.md](./01_master_data/01_department.md) |
 | #17 | 06_holiday_list | `weekly_off` is a STRING | Use day name (`Sunday`), NOT numeric index (`0`). Stock Select stores full string. → [06_holiday_list.md](./01_master_data/06_holiday_list.md) |
-| #7 | 10_employee + 15_shift_assignment | Employee ID remap | Fill `employee_name` exactly as on the Employee record. Prod and dev Employee IDs (`HR-EMP-00211` vs `HR-EMP-00002`) differ; remap joins on `employee_name`. → [10_employee.md](./01_master_data/10_employee.md), [15_shift_assignment.md](./01_master_data/15_shift_assignment.md) |
+| #7 | 10_employee + 15_shift_assignment | Employee ID remap | Fill `employee_name` exactly as on the Employee record. Prod and dev Employee IDs (`HR-EMP-00211` vs `HR-EMP-00002`) differ; remap joins on `employee_name`. → [10_employee.md](./01_master_data/10_employee.md), [15_shift_assignment.md](./02_transaction_data/15_shift_assignment.md) |
 
 Gotcha #1 (`get_doc()` doctype key injection) affects every DocType and is documented in every template's MD. Other in-scope gotchas (#4, #8, #9, #12, #13, #14, #15, #16) are covered in their respective template MDs.
 
@@ -201,7 +213,8 @@ These are accepted as-is — Data Import resolves them correctly. Cosmetic `Link
 docs/client-onboarding/03-intake-workbook/
 ├── README.md                                    (this file — rebuilt Phase 3)
 ├── AUDIT-REPORT.md                              (Phase 2.5 baseline, untouched)
-├── 01_master_data/
+├── 01_master_data/                              (one-time setup templates, items #1–#13)
+│   ├── README.md
 │   ├── 01_department.{csv,md}                   (rebuilt Phase 1)
 │   ├── 02_designation.{csv,md}
 │   ├── 03_employment_type.{csv,md}
@@ -214,7 +227,9 @@ docs/client-onboarding/03-intake-workbook/
 │   ├── 10_employee.{csv,md}
 │   ├── 11_leave_type.{csv,md}
 │   ├── 12_leave_policy.{csv,md}
-│   ├── 13_leave_period.{csv,md}
+│   └── 13_leave_period.{csv,md}
+├── 02_transaction_data/                         (per-employee / per-record transactional templates, items #14–#19)
+│   ├── README.md
 │   ├── 14_leave_allocation.{csv,md}
 │   ├── 15_shift_assignment.{csv,md}
 │   ├── 16_attendance.{csv,md}                   (rebuilt Phase 2)
