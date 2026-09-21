@@ -7,15 +7,15 @@
 **Related artifacts:**
 - `docs/handbook/04-testing/manual-ui-walkthrough.md` (UI walkthrough with click-by-click steps)
 - `docs/handbook/04-testing/bench-execute-snippets.md` (programmatic companion)
-- Sign-off commit: `fb6cf5d` on `main`
+- Sign-off: see sign-off tables at the bottom of each test doc for current pass/fail state
 
 ---
 
 ## Summary
 
-Manual transactions testing covered **79 transactions across 3 sections**: System Configuration (Section A, 7 transactions for HR Settings + Fiscal Year + Workflow + Email), Test Data Setup (Section B, 8 transactions for Skill/Onboarding/Separation Templates + status=Left test employee + Holiday List Assignments + Leave Period + Leave Approver + Leave Allocations), and Operational Tests (Section C, 64 transactions across 6 modules: Org Mgmt, Shift Mgmt, Leave Mgmt, Lifecycle, Reports, Edge cases). Venkat executed the UI walkthrough on 2026-09-18 and recorded findings + JSON payloads for the created docs. Initial run surfaced several systemic gaps (Leave Approver not configured, Holiday List Assignment missing, no Leave Period) which were resolved in follow-up streams. Final verdicts reflect the resolved state at sign-off `fb6cf5d`.
+Manual transactions testing covered **79 transactions across 3 sections**: System Configuration (Section A, 7 transactions for HR Settings + Fiscal Year + Workflow + Email), Test Data Setup (Section B, 8 transactions for Skill/Onboarding/Separation Templates + status=Left test employee + Holiday List Assignments + Leave Period + Leave Approver + Leave Allocations), and Operational Tests (Section C, 64 transactions across 6 modules: Org Mgmt, Shift Mgmt, Leave Mgmt, Lifecycle, Reports, Edge cases). Venkat executed the UI walkthrough on 2026-09-18 and recorded findings + JSON payloads for the created docs. Initial run surfaced several systemic gaps (Leave Approver not configured, Holiday List Assignment missing, no Leave Period) which were resolved in follow-up streams. Final verdicts reflect the post-resolution state at sign-off.
 
-### Verdict distribution (post-resolution, sign-off `fb6cf5d`)
+### Verdict distribution (post-resolution)
 
 | Marker | Count |
 |---|---:|
@@ -196,7 +196,7 @@ The raw report flagged several unclear or out-of-date steps. These were correcte
 1. **DRAFT state hides submit-time validation errors** — always attempt `frappe.submit()` to surface the full validation chain. Discovered when a sample Leave Application submitted only after `HR Settings.leave_approval_notification_template` was set.
 2. **HRMS v16 Leave Application has no default UI Approve button** — production deploys need a Workflow doc or Custom Script. Console-path submit (`status="Approved"` then `doc.submit()`) is a workable shortcut for demos.
 3. **Holiday List Assignment rows must be submitted (`docstatus=1`) to be visible to leave-app-submit validators.** Stream 3B created them via raw `INSERT ... SELECT` — left them in Draft state. Fix: `hla.submit()` per row (or batch UPDATE) to flip docstatus.
-4. **Schema assumptions need read-before-write verification.** NotificationTemplate vs Email Template mismatch in Stream 5 was caught by a subagent meta-probe before the write attempt.
+4. **Schema assumptions need read-before-write verification.** NotificationTemplate vs Email Template mismatch in Stream 5 was caught by a meta-probe before the write attempt.
 5. **Pre-flight `SHOW PROCESSLIST` matters when OperationalError appears.** Lock contention from a failed submit can block later reads on the same doc.
 6. **Operator preference: ask inline questions in chat, not via structured `ask_user` calls** (recorded 2026-09-21).
 
@@ -214,7 +214,5 @@ The raw report flagged several unclear or out-of-date steps. These were correcte
 
 - **Raw report (archived):** `archive/docs/manual-testing-reports/manual-transactions-testing-report.txt`
 - **Test docs:** `docs/handbook/04-testing/manual-ui-walkthrough.md` + `bench-execute-snippets.md`
-- **Investigation findings:** `workspace/investigation-2026-09-18-pending-transactions.md`
-- **Sign-off commit:** `fb6cf5d` on `main`
-- **Audit file (verification + lessons):** `workspace/audit-2026-09-17-demo-readiness.md`
-- **Stream outputs (workspace):** Streams 1-5 subagent reports in `/root/.openclaw/workspace/`
+- **Sign-off:** see sign-off tables at the bottom of each test doc for current pass/fail state
+- **Internal verification notes:** maintained in working notes outside this repo (not tracked in git)
