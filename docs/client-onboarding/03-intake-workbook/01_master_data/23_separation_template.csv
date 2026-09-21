@@ -1,0 +1,8 @@
+fieldname,label,type,required,example,validation,client_value,notes
+title,Title,Data,Y,Test Separation Template,unique,,autoname=field:title
+company,Company,Link→Company,Y,Haritha Hospitals,must exist,,required Link; typically Haritha Hospitals
+department,Department,Link→Department,N,X - HH,must exist if set,,optional scope-restriction; blank = all departments
+step_name,Step Name,Data,Y,Exit Interview,non-empty,,child-table column; activity title in separation checklist
+step_number,Step Number,Int,N,1,>= 1,,child-table column; execution order
+description,Description,Text,N,Schedule exit interview with HR,free text,,child-table column; detailed instructions
+required,Required,Check,N,1,0/1,,child-table column; 1 blocks completion until checked off

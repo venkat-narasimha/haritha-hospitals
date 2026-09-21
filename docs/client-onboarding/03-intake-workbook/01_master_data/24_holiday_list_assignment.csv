@@ -1,0 +1,7 @@
+fieldname,label,type,required,example,validation,client_value,notes
+applicable_for,Applicable For,Select,Y,Employee,Employee / Company,,drives Dynamic Link target for assigned_to
+assigned_to,Assigned To,Dynamic Link,Y,HR-EMP-00421,resolves against applicable_for,,must exist in Employee or Company DocType per applicable_for value
+employee_name,Employee Name,Data,N,Test User,non-empty if set,,display field; auto-fills when applicable_for=Employee
+employee_company,Employee Company,Link→Company,N,Haritha Hospitals,must exist if set,,display / validation; leave blank when applicable_for=Company
+holiday_list,Holiday List,Link→Holiday List,Y,Haritha Hospitals Holiday List,must exist,,the calendar being assigned
+from_date,From Date,Date,Y,2025-01-01,YYYY-MM-DD,,effective start date; resolver picks most-recent-from_date <= today

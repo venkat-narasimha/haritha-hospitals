@@ -1,0 +1,6 @@
+fieldname,label,type,required,example,validation,client_value,notes
+year,Year,Data,Y,2026-2027,unique,,autoname=field:year; canonical form YYYY-YYYY
+year_start_date,Year Start Date,Date,Y,2026-04-01,YYYY-MM-DD,,India FY default = April 1
+year_end_date,Year End Date,Date,Y,2027-03-31,YYYY-MM-DD; >= year_start_date,,India FY default = March 31
+disabled,Disabled,Check,N,0,0/1,,soft-disable flag
+company,Company,Link→Company,Y,Haritha Hospitals,must exist,,child-table column; repeat parent columns to add multiple Companies per Fiscal Year

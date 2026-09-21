@@ -1,0 +1,3 @@
+fieldname,label,type,required,example,validation,client_value,notes
+skill_name,Skill Name,Data,Y,Test Skill 1,unique,,autoname=field:skill_name
+description,Description,Text,N,Skill for testing,<= 500 chars,,free-text note
