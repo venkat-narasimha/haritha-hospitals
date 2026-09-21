@@ -464,6 +464,10 @@
           <li>Default leave policy per grade.</li>
           <li>Approval authority thresholds.</li>
         </ul>
+        <aside class="grade-note" style="margin-top:var(--space-24); padding:var(--space-16); border-left:4px solid var(--accent); background:var(--code-bg); border-radius:4px; font-size:15px; color:var(--text);">
+          <strong style="color:var(--primary);">Note on Grade Setup in HRMS v16:</strong>
+          The <code style="font-family:var(--font-mono); background:#fff; padding:2px 6px; border-radius:3px; border:1px solid #e2e8f0;">pay_band</code> field on Grade is <strong>optional</strong> for clients that don't run payroll. If your setup is HRMS-only (no Payroll module), you can create grades without <code style="font-family:var(--font-mono); background:#fff; padding:2px 6px; border-radius:3px; border:1px solid #e2e8f0;">pay_band</code> and the system will work correctly. Only set <code style="font-family:var(--font-mono); background:#fff; padding:2px 6px; border-radius:3px; border:1px solid #e2e8f0;">pay_band</code> if you're linking grades to a Salary Structure / payroll processing.
+        </aside>
         <div class="grade-bars">
           <div class="grade-bar"><span class="grade-name">T1</span><div class="grade-fill" style="width:25%;"></div><span class="grade-salary">entry</span></div>
           <div class="grade-bar"><span class="grade-name">T2</span><div class="grade-fill" style="width:50%;"></div><span class="grade-salary">junior</span></div>
