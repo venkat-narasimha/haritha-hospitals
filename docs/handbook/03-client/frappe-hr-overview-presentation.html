@@ -465,80 +465,9 @@
       <aside class="speaker-notes">Org Management is the foundation. Every downstream feature — attendance, leave, payroll — reads the Employee master. The deep-dive deck walks each entity and field group in detail.<br><br>Transition: "Next: how do we know who's actually showing up?"</aside>
     </section>
 
-    <!-- Slide 7 — Attendance Management -->
+    <!-- Slide 7 — Employee Lifecycle Management -->
     <section class="slide" id="slide-7">
       <div class="slide-number">7 / 14</div>
-      <h2 class="slide-title">Attendance Management</h2>
-      <div class="body">
-        <p>Attendance Management tracks daily presence (Present / Absent / On Leave / Half Day). Inputs from biometric + mobile + manual routes through Auto Attendance.</p>
-        <ul>
-          <li>Multi-source inputs (biometric / mobile / manual).</li>
-          <li>Auto Attendance engine consolidates punches.</li>
-          <li>Scales to ~12,000+ rows/month cleanly.</li>
-        </ul>
-        <div class="source-flow">
-          <div class="source-node">Biometric<br><small style="font-weight:400; color:var(--secondary);">device punch</small></div>
-          <span class="source-arrow">→</span>
-          <div class="source-node">Mobile<br><small style="font-weight:400; color:var(--secondary);">GPS check-in</small></div>
-          <span class="source-arrow">→</span>
-          <div class="source-node">Manual<br><small style="font-weight:400; color:var(--secondary);">HR entry</small></div>
-          <span class="source-arrow">→</span>
-          <div class="source-node consolidated">Attendance Ledger</div>
-        </div>
-
-      </div>
-      <aside class="speaker-notes">Three input sources converge into one consolidated Attendance ledger per employee per day. Auto Attendance handles the heavy lifting. The deep-dive deck covers the engine, validations, and reporting.<br><br>Transition: "Presence is one side — the other is when work happens."</aside>
-    </section>
-
-    <!-- Slide 8 — Shift Management -->
-    <section class="slide" id="slide-8">
-      <div class="slide-number">8 / 14</div>
-      <h2 class="slide-title">Shift Management</h2>
-      <div class="body">
-        <p>Shift Management defines shift patterns (Shift Type), assigns them per day per employee (Shift Assignment), and rolls up to attendance via Auto Attendance.</p>
-        <ul>
-          <li>25+ Shift Types (morning, evening, night, split, …).</li>
-          <li>~7,800+ Shift Assignments scale-tested.</li>
-          <li>Roster view by employee, department, or branch.</li>
-        </ul>
-        <div class="shift-calendar">
-          <div class="shift-day morning"><span class="day-label">MON</span><span class="shift-name">Morning</span><small style="font-size:9px; color:var(--secondary);">06–14</small></div>
-          <div class="shift-day morning"><span class="day-label">TUE</span><span class="shift-name">Morning</span><small style="font-size:9px; color:var(--secondary);">06–14</small></div>
-          <div class="shift-day evening"><span class="day-label">WED</span><span class="shift-name">Evening</span><small style="font-size:9px; color:var(--secondary);">14–22</small></div>
-          <div class="shift-day morning"><span class="day-label">THU</span><span class="shift-name">Morning</span><small style="font-size:9px; color:var(--secondary);">06–14</small></div>
-          <div class="shift-day night"><span class="day-label">FRI</span><span class="shift-name">Night</span><small style="font-size:9px; color:var(--secondary);">22–06</small></div>
-          <div class="shift-day off"><span class="day-label">SAT</span><span class="shift-name">OFF</span></div>
-          <div class="shift-day off"><span class="day-label">SUN</span><span class="shift-name">OFF</span></div>
-        </div>
-
-      </div>
-      <aside class="speaker-notes">Shift Management answers "when does the work happen". The Shift Type is the pattern; Shift Assignment is the per-day-per-employee slot. The v2 deck is canonical and frozen, so the answer lives there.<br><br>Transition: "What about when work doesn't happen — leave."</aside>
-    </section>
-
-    <!-- Slide 9 — Leave Management -->
-    <section class="slide" id="slide-9">
-      <div class="slide-number">9 / 14</div>
-      <h2 class="slide-title">Leave Management</h2>
-      <div class="body">
-        <p>Leave Management configures leave types + policies + periods, allocates days per employee, and records every leave movement as an immutable <strong>Leave Ledger Entry</strong>.</p>
-        <ul>
-          <li>7 Leave Types (CL, SL, EL, …).</li>
-          <li>3-layer model: Config → Policy → Action.</li>
-          <li>Audit trail via Leave Ledger Entry.</li>
-        </ul>
-        <div class="layer-diagram">
-          <div class="layer-row config">Config (Leave Types)<span class="layer-sub">CL · SL · EL · …</span></div>
-          <div class="layer-row policy">Policy (Allocation + Approvers)<span class="layer-sub">per Grade / Type</span></div>
-          <div class="layer-row action">Action (Application + Ledger)<span class="layer-sub">immutable ledger</span></div>
-        </div>
-
-      </div>
-      <aside class="speaker-notes">Leave is three layers deep: Config defines types, Policy allocates days, Action records actual movement on an immutable ledger. The deep-dive deck shows each layer + the workflows.<br><br>Transition: "One last mandatory module — what about when employees start, move, or leave?"</aside>
-    </section>
-
-    <!-- Slide 10 — Employee Lifecycle Management -->
-    <section class="slide" id="slide-10">
-      <div class="slide-number">10 / 14</div>
       <h2 class="slide-title">Employee Lifecycle Management</h2>
       <div class="body">
         <p>Employee Lifecycle covers Onboarding (entry), Promotion + Transfer (growth), Separation (exit), and Skill Map (supporting reference). Structured hire-to-retire workflows.</p>
@@ -575,6 +504,77 @@
 
       </div>
       <aside class="speaker-notes">Lifecycle is hire to retire. Four stages, three groupings: entry (pre-joining, onboarding), growth (promotion, transfer), exit (separation). Skill Map is a supporting reference. The deep-dive deck walks each stage.<br><br>Transition: "Now the connections — how these five modules interact in real workflow."</aside>
+    </section>
+
+    <!-- Slide 8 — Shift Management -->
+    <section class="slide" id="slide-8">
+      <div class="slide-number">8 / 14</div>
+      <h2 class="slide-title">Shift Management</h2>
+      <div class="body">
+        <p>Shift Management defines shift patterns (Shift Type), assigns them per day per employee (Shift Assignment), and rolls up to attendance via Auto Attendance.</p>
+        <ul>
+          <li>25+ Shift Types (morning, evening, night, split, …).</li>
+          <li>~7,800+ Shift Assignments scale-tested.</li>
+          <li>Roster view by employee, department, or branch.</li>
+        </ul>
+        <div class="shift-calendar">
+          <div class="shift-day morning"><span class="day-label">MON</span><span class="shift-name">Morning</span><small style="font-size:9px; color:var(--secondary);">06–14</small></div>
+          <div class="shift-day morning"><span class="day-label">TUE</span><span class="shift-name">Morning</span><small style="font-size:9px; color:var(--secondary);">06–14</small></div>
+          <div class="shift-day evening"><span class="day-label">WED</span><span class="shift-name">Evening</span><small style="font-size:9px; color:var(--secondary);">14–22</small></div>
+          <div class="shift-day morning"><span class="day-label">THU</span><span class="shift-name">Morning</span><small style="font-size:9px; color:var(--secondary);">06–14</small></div>
+          <div class="shift-day night"><span class="day-label">FRI</span><span class="shift-name">Night</span><small style="font-size:9px; color:var(--secondary);">22–06</small></div>
+          <div class="shift-day off"><span class="day-label">SAT</span><span class="shift-name">OFF</span></div>
+          <div class="shift-day off"><span class="day-label">SUN</span><span class="shift-name">OFF</span></div>
+        </div>
+
+      </div>
+      <aside class="speaker-notes">Shift Management answers "when does the work happen". The Shift Type is the pattern; Shift Assignment is the per-day-per-employee slot. The v2 deck is canonical and frozen, so the answer lives there.<br><br>Transition: "What about when work doesn't happen — leave."</aside>
+    </section>
+
+    <!-- Slide 9 — Attendance Management -->
+    <section class="slide" id="slide-9">
+      <div class="slide-number">9 / 14</div>
+      <h2 class="slide-title">Attendance Management</h2>
+      <div class="body">
+        <p>Attendance Management tracks daily presence (Present / Absent / On Leave / Half Day). Inputs from biometric + mobile + manual routes through Auto Attendance.</p>
+        <ul>
+          <li>Multi-source inputs (biometric / mobile / manual).</li>
+          <li>Auto Attendance engine consolidates punches.</li>
+          <li>Scales to ~12,000+ rows/month cleanly.</li>
+        </ul>
+        <div class="source-flow">
+          <div class="source-node">Biometric<br><small style="font-weight:400; color:var(--secondary);">device punch</small></div>
+          <span class="source-arrow">→</span>
+          <div class="source-node">Mobile<br><small style="font-weight:400; color:var(--secondary);">GPS check-in</small></div>
+          <span class="source-arrow">→</span>
+          <div class="source-node">Manual<br><small style="font-weight:400; color:var(--secondary);">HR entry</small></div>
+          <span class="source-arrow">→</span>
+          <div class="source-node consolidated">Attendance Ledger</div>
+        </div>
+
+      </div>
+      <aside class="speaker-notes">Three input sources converge into one consolidated Attendance ledger per employee per day. Auto Attendance handles the heavy lifting. The deep-dive deck covers the engine, validations, and reporting.<br><br>Transition: "Presence is one side — the other is when work happens."</aside>
+    </section>
+
+    <!-- Slide 10 — Leave Management -->
+    <section class="slide" id="slide-10">
+      <div class="slide-number">10 / 14</div>
+      <h2 class="slide-title">Leave Management</h2>
+      <div class="body">
+        <p>Leave Management configures leave types + policies + periods, allocates days per employee, and records every leave movement as an immutable <strong>Leave Ledger Entry</strong>.</p>
+        <ul>
+          <li>7 Leave Types (CL, SL, EL, …).</li>
+          <li>3-layer model: Config → Policy → Action.</li>
+          <li>Audit trail via Leave Ledger Entry.</li>
+        </ul>
+        <div class="layer-diagram">
+          <div class="layer-row config">Config (Leave Types)<span class="layer-sub">CL · SL · EL · …</span></div>
+          <div class="layer-row policy">Policy (Allocation + Approvers)<span class="layer-sub">per Grade / Type</span></div>
+          <div class="layer-row action">Action (Application + Ledger)<span class="layer-sub">immutable ledger</span></div>
+        </div>
+
+      </div>
+      <aside class="speaker-notes">Leave is three layers deep: Config defines types, Policy allocates days, Action records actual movement on an immutable ledger. The deep-dive deck shows each layer + the workflows.<br><br>Transition: "One last mandatory module — what about when employees start, move, or leave?"</aside>
     </section>
 
     <!-- Slide 11 — How the modules connect -->
