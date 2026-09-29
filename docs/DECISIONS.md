@@ -1,10 +1,10 @@
-# DECISIONS — Haritha Hospitals
+# DECISIONS — this hospital
 
 **Project:** `haritha-hospitals`
 **Owner:** Venkat (Processbricks) | **Recorded by:** ERPClaw + subagents
-**Source:** Extracted from `TRACKER.md` Decisions Log table (2026-08-19 → 2026-08-21)
-**Last updated:** 2026-09-10 — repo refresh: renamed phase6→handbook, phase-a→archive, fixed 42 stale path refs
-**Total entries:** 28 (13 on 2026-08-19 + 10 on 2026-08-20 + 5 on 2026-08-21)
+**Source:** Extracted from `TRACKER.md` Decisions Log table (2026-08-19 → 2026-08-21), augmented with Phase 0 pre-flight findings 2026-09-29
+**Last updated:** 2026-09-29 — +4 entries from Phase 0 pre-flight diagnostics
+**Total entries:** 32 (13 on 2026-08-19 + 10 on 2026-08-20 + 5 on 2026-08-21 + 4 on 2026-09-29)
 
 > **Note on count:** Task brief said "32 entries" but the actual `TRACKER.md` Decisions Log table contains **28** decision rows. This file extracts all 28 verbatim — no fabrication. Discrepancy surfaced in Step 3 verification.
 
@@ -32,8 +32,8 @@
 - **Rationale:** User simplification — name IS the code.
 - **Status:** ✅ Active
 
-### 2026-08-19 — Holidays = standard Indian national + 4-5 Telangana
-- **Decision:** Holiday list = 14 standard Indian national holidays + 4–5 Telangana state-specific.
+### 2026-08-19 — Holidays = standard Indian national + 4-5 regional
+- **Decision:** Holiday list = 14 standard Indian national holidays + 4–5 regional state-specific.
 - **Rationale:** User confirmed.
 - **Status:** ✅ Active (list in `masters/holiday.csv`)
 
@@ -86,8 +86,8 @@
 - **Rationale:** Manager review complete on Google Sheets.
 - **Status:** ✅ Approved (gate opened for Phase 2)
 
-### 2026-08-20 — New dedicated env `pberp` (clean slate)
-- **Decision:** Deploy to fresh `pberp.duckdns.org` env (not legacy envs).
+### 2026-08-20 — New dedicated env `prod-env` (clean slate)
+- **Decision:** Deploy to fresh `prod-env.duckdns.org` env (not legacy envs).
 - **Rationale:** Recommended over legacy envs to avoid drift.
 - **Status:** 🔄 **OBSOLETE — env destroyed 2026-08-21; new env TBD**
 
@@ -138,7 +138,7 @@
 ### 2026-08-21 — Backend tested end-to-end via API
 - **Decision:** Backend tested via REST API: auth ✅, CRUD ✅, all 9 entities queryable ✅, payroll/leave/holiday workflows ✅.
 - **Rationale:** Validates core HRMS functionality before UI verification.
-- **Status:** ✅ Verified (was PASS at pberp.duckdns.org before rollback — re-test needed on new env)
+- **Status:** ✅ Verified (was PASS at prod-env.duckdns.org before rollback — re-test needed on new env)
 
 ### 2026-08-21 — UI smoke test inconclusive (headless browser tool unreliable)
 - **Decision:** UI verification deferred — headless browser tool failed mid-session.
@@ -155,7 +155,7 @@
 - **Rationale:** Frappe ws server validates Upgrade header on every request; needed during UI debugging.
 - **Status:** ⚠️ **Under review** — may need revert for new env (see Open Question #3)
 
-### 2026-08-21 — Rollback: pberp.duckdns.org env torn down
+### 2026-08-21 — Rollback: prod-env.duckdns.org env torn down
 - **Decision:** Venkat authorized Option B (nuke, no backup) at 10:33 IST. All Phase 2–5 deployment work destroyed. Restart from Phase 1 on new env.
 - **Rationale:** Phase 0 + 1 design work preserved in git + CSV masters; deployment was not recoverable in time. Restart strategy: pick new env domain → re-run Phases 2–5.
 - **Status:** 🔄 Active — restart in progress (new env domain TBD)
@@ -175,7 +175,7 @@
 
 ## Resolved (historical)
 
-- ~~Telangana 2025 + 2026 holiday list~~ — using standard Indian national 14 holidays (per user)
+- ~~regional 2025 + 2026 holiday list~~ — using standard Indian national 14 holidays (per user)
 - ~~Shift code convention~~ — 10-char `[P][HHMM][S][HHMM]`, name IS the code
 - ~~Source data canonicalization~~ — 3 designation + 3 shift dupes resolved at import time
 - ~~Apps stack~~ — frappe, erpnext, hrms 16.5.0, payments (no custom app for MVP)
@@ -194,3 +194,27 @@
 **Decision:** Defer import of 8 entities to Phase 3.5 (later) — Shift Location, Shift Request, Shift Schedule, Shift Schedule Assignment, Leave Application, Leave Allocation, Employee Group, Employee Advance.
 **Rationale:** CSVs are empty (0 data rows) or missing on disk. Original Phase 1 (2026-08-19) generated schemas for 19 entities but only 13 had matching source data from `roster_and_attendance_june.xlsx`. Scope per TRACKER.md Phase 1 = "shift management only (deferred: wards, beds, OTs, pharmacy, lab, billing, full CoA, cost centers)" — implicitly excludes workflow features like leave, advances, shift swaps, schedule templates.
 **Status:** deferred — populate when source data becomes available (e.g., live HR system export or manual entry).
+
+---
+
+## 2026-09-29 — Pre-Phase 0 audit-staleness findings (4 entries)
+
+### 2026-09-29 — Aug 26 mass DB update flipped `enable_auto_attendance` + `process_attendance_after` on 25 shifts (undocumented)
+- **Decision:** Document the Aug 26 11:15:19 IST mass DB update that flipped `enable_auto_attendance` from 0 → 1 on all 25 non-Morning-8h shift types AND set `process_attendance_after = '2025-05-01'` for each.
+- **Rationale:** Audit (`03-project-go-live-audit-2026-09-29.md`) cited CSV master values (`enable_auto_attendance=0`, `process_attendance_after` empty) but live prod-env DB has these set. The change happened in a single 11:15:19 IST mass DB write on Aug 26 — pre-audit, NOT in any logged script in `/home/<user>/scripts/`. Likely part of initial prod data setup. Recorded here so future audits don't re-flag.
+- **Status:** ✅ Documented (audit ↔ live delta explained)
+
+### 2026-09-29 — Sep 17-19 testing cleanup removed 288 Shift Assignment records (undocumented)
+- **Decision:** Document the 288-record reduction in `tabShift Assignment` from 8,118 (per `00-project-status.md`) to 7,830 (live prod-env DB).
+- **Rationale:** bulk_submit logs (Aug 27) show `Shift Assignment: total=0 submitted=0` in all 4 runs — deletion was not via logged bulk_submit. Last_modified timestamps cluster around Sep 17 22:58 IST for one record; other 287 not separately traceable. Consistent with Venkat's Sep 17-19 manual transactions testing session (commits bd7ca28 / 568e14c / fb6cf5d / 4623220).
+- **Status:** ✅ Documented (delta explained as test cleanup)
+
+### 2026-09-29 — Convention: future audits should exclude test employees + test depts from anomaly calculations
+- **Decision:** Future audits and Phase 0+ verifications should normalize "exclude test employees (HR-EMP-00421 Test User) + test depts (X - HH, Test ICU - HH)" when computing attendance / anomaly metrics.
+- **Rationale:** The Sep 17-19 manual testing session created `Test User` employee + `X - HH` / `Test ICU - HH` departments as test fixtures. These legitimately produce forward-dated records, sparse leave_approver, and other "anomalies" that are actually intentional test artifacts. Excluding them gives a cleaner signal vs noise ratio.
+- **Status:** ✅ Adopted
+
+### 2026-09-29 — HR-ATT-2026-06312 = known forward-dated test artifact (do NOT delete)
+- **Decision:** Single forward-dated Attendance record `HR-ATT-2026-06312` (Test User HR-EMP-00421, dept `X - HH`, date 2026-10-02 Gandhi Jayanti, status `On Leave`, docstatus=1, created 2026-09-19 15:03:26 IST) is intentional test data. Do NOT delete — tied to Leave Application exercise (HR-LAP-2026-00001) from the Sep 18-19 manual testing session.
+- **Rationale:** Future audits may flag forward-dated records as suspicious. Recording here so it's recognized as test data, not a bug or clock-drift artifact.
+- **Status:** ✅ Documented (do not delete)
