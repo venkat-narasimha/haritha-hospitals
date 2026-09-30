@@ -48,6 +48,26 @@ A full backup of the original 1492-line TRACKER.md is preserved at [`tracker-pha
 
 ---
 
+## 📌 Recent Activity (Sep 30 PM, 2026) — HRMS Module Not Found Fix
+
+| Date | Event |
+|---|---|
+| 2026-09-30 ~18:00 IST | **HRMS Module Not Found fix saga begins** — Venkat tried importing 30-row CSV to assign `leave_approver` to the 32 employees still on Administrator fallback. Data Import Tool threw `ModuleNotFoundError: No module named 'hrms'`. Root cause: gunicorn workers (system Python) didn't have hrms in `sys.path` because HRMS was installed via `bench install-app` at runtime, not baked into the image. |
+| 2026-09-30 ~18:10 IST | **Fix attempt 1 — sitecustomize.py:** Created `/usr/local/lib/python3.14/site-packages/sitecustomize.py` adding venv site-packages to `sys.path`. Verified `import hrms` works in fresh Python, but **did not fully fix it** because gunicorn workers (preforked with stale sys.path) still failed. |
+| 2026-09-30 ~18:20 IST | **Fix attempt 2 — start.sh source venv:** Modified `/home/<user>/scripts/start.sh`. **Discovered stale file** — actual active file is `/home/<user>/erpnext/erp-prod/compose.yaml`. |
+| 2026-09-30 ~18:35 IST | **Backend crash loop (typo):** Patched correct file `/usr/local/bin/start.sh` inside container with gunicorn path missing `/frappe/` segment → container exit-126 crash loop. Fixed via main session. |
+| 2026-09-30 ~18:40 IST | **Read-only audit (subagent)** — Confirmed active compose = `compose.yaml` (not pwd.yml), image = `frappe/erpnext:v16.31.1` (PUBLIC, no HRMS baked in). Compose template supports `${CUSTOM_IMAGE:-frappe/erpnext}:${CUSTOM_TAG:-...}` env vars. Builder dir: `/home/<user>/erpnext/erp-prod/` (frappe_docker clone with `images/layered/Containerfile`). Data preserved via named volumes. |
+| 2026-09-30 ~19:00–22:40 IST | **4× rebuild attempts via subagent failed** because Gateway restarts killed the long-running subagent sessions (build takes 10–15 min). |
+| 2026-09-30 ~22:30 IST | **Manual build by Venkat — SUCCESS.** Created `apps.json` (only `[frappe/hrms v16.5.0, venkat-nasimha/haritha_hospital main]` — frappe/erpnext baked into layered base image). Built via `docker buildx build --build-arg FRAPPE_BRANCH=version-16 --build-arg APPS_JSON_BASE64="$(base64 -w0 apps.json)" -t frappe/custom_apps:version-16 -f images/layered/Containerfile .`. Image created (3.47 GB) with all 4 apps. |
+| 2026-09-30 ~22:40 IST | **Deployed** via `docker compose up -d` (~5 min downtime, all volumes preserved). All 7+ containers on `frappe/custom_apps:version-16`. |
+| 2026-09-30 ~22:40 IST | **Verified `import hrms` works** via `docker exec erp-prod-backend-1 /home/<user>/frappe-bench/env/bin/python -c "import hrms"`. Scheduler still firing (last HRMS execution at 22:34:07). Backend HTTP 200. |
+| 2026-09-30 ~22:45 IST | **Server Script fix (subagent) — NEW bug surfaced during CSV retry:** `Provision User on Employee Activate` Server Script had underscore-prefixed helper names (`_gen_pwd`, `_slug`, `_email_from`) that RestrictedPython's `safe_exec` rejected. Subagent renamed to `gen_pwd`, `slug`, `email_from` (plus `local_slug` for shadow-avoidance). Saved via `frappe.db.set_value`. `Employee.doc.save()` now works. |
+| 2026-09-30 ~23:00 IST | **CSV import SUCCESS** — All 30 rows now have `leave_approver = medicalsuperdinet1194404@harithahospitals.com`. |
+
+**Final state at 23:03 IST:** Full hrms journey closed. `frappe/custom_apps:version-16` running on prod. HRMS baked into image. Server Script sandbox-safe. CSV import working. 8 known Phase D backlog items still open (SMTP, `User.role_profile_name` persistence fix, `Role.module_profile` Custom Field, 2nd Server Script rewrite, 12 small-dept leave_approver fallback, image version drift, DR test, quarterly drills).
+
+---
+
 ## Phase Index
 
 > **Consolidated 2026-08-30:** 38 numbered phase files merged into 9 logical phase documents (preserving all content). The numbered filenames referenced in the right-column summaries (e.g. `003+004+005`) point to the original files, which are preserved in git history.
@@ -68,6 +88,7 @@ A full backup of the original 1492-line TRACKER.md is preserved at [`tracker-pha
 | A   | [Phase-A-Execution.md](tracker-phases/Phase-A-Execution.md) | **Phase A** — RBAC + Workflows + Dashboards + User Provisioning (2026-09-30) |
 | B   | [Phase-B-Activation.md](tracker-phases/Phase-B-Activation.md) | **Phase B** — Auto-Attendance Activation (2026-09-30 PM) — config fixes (threshold 2.0, weekly_off=None, backfill +9,309 records) |
 | D   | (in-flight tracker file) | **Phase D** — Production Hardening (2026-09-30 PM, SMTP-less per Venkat) — HRMS heartbeat, Module Profile, Server Script rewrite, security audit |
+| F   | [HRMS-Module-Fix-Epic.md](tracker-phases/HRMS-Module-Fix-Epic.md) | **HRMS Module Fix** — custom image build with HRMS baked in + Server Script sandbox-safe rewrite (2026-09-30 PM) |
 | E   | (in-flight tracker file) | **Phase E** — Handover Package + Phase E+1 Org Chart (2026-09-30 PM) — 5 docs + org chart setup |
 | C   | n/a | **Phase C** — Custom App Rename CANCELLED per Venkat "dont rename" instruction (2026-09-30) |
 
@@ -76,7 +97,7 @@ A full backup of the original 1492-line TRACKER.md is preserved at [`tracker-pha
 ## Quick Stats
 
 - Environments: pberpdev, prod-env (pberpqa skipped)
-- Active env (2026-09-30 17:45 IST): prod-env.duckdns.org (Phase A + B + D + E closed; Phase C cancelled; custom app pushed to haritha_hospital repo; leave_approver fix attempt blocked by hrms ModuleNotFoundError; backend container status unknown after start.sh fix)
+- Active env (2026-09-30 23:03 IST): prod-env.duckdns.org (Phase A + B + D + E closed + HRMS Module Fix closed; Phase C cancelled; custom app pushed to haritha_hospital repo; 32 employees leave_approver updated via CSV import after HRMS module-not-found fix; running on custom image `frappe/custom_apps:version-16` with HRMS baked in)
 - See per-phase files for commit counts, customizations captured, and run logs.
 
 ## See Also
