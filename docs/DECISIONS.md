@@ -228,6 +228,23 @@
 - **Rationale:** Walked through the Phase A design doc (112 KB, 18,388 words, 11 artifacts + 4 verifications + 3 architectural decisions + 10 open questions) with Venkat over 4 blocks. Decisions captured 2026-09-30 07:41-09:38 IST. Notable choice: Branches added now (Decision 6) — adds ~1.5-2h to execution time but future-proofs multi-site this hospital. 2FA deferred entirely (Decision 7) for now — re-evaluate after Phase B. SMTP deferred to Phase D (Decision 1) — Phase A.10 end-to-end test runs without notification verification (known gap).
 - **Status:** ✅ Locked — design doc updated, plan doc updated, notes file updated. Awaiting Phase A execution kickoff.
 
+### 2026-09-30 — Phase A EXECUTION COMPLETE (10/10 steps)
+
+- **Decision:** All 10 Phase A execution steps complete on prod (`prod-env.duckdns.org`). Closed in single batch 2026-09-30 07:41 → 11:30 IST (~3.5h wall time including waits). Awaiting Venkat's end-of-batch review + sign-off.
+- **Rationale:** Live verification (Phase 0) found HRMS scheduler broken; Phase 0 fixed it. Phase A design walkthrough captured 13 locked decisions (SMTP defer to Phase D, 2FA none, Branches added now, Password policy as-is, Notifications via tabNotification System-only, etc.). Execution batch: A.1-A.4 (Roles + Role Profiles + Permission Manager, 858 perm values) → A.5-A.6 (leave_approver populated, User Permissions created — initial bulk-creation deferred to A.11) → A.7-A.8 (Workflows + Workspaces) → A.11 (User Provisioning + Module Profile + A.5/A.6 re-runs, 211 Employee Users provisioned) → A.9 (test users + E2E, 6/6 pass) → A.10 (final backup + sign-off). Notable choices in execution: role_profile_name didn't persist on User.insert(), force-inserted via tabHas Role (workaround); bench restart required between bulk operations due to stale Frappe role cache; SMTP not configured so notification emails don't deliver (known Phase D gap).
+- **Status:** ✅ Complete (batch sign-off pending Venkat review). Phase A officially closed. Phase B (auto-attendance production activation) unblocked.
+
+### Phase D backlog (carried forward from Phase A)
+- [ ] **SMTP configuration** — required for notification emails, password reset emails, welcome emails. Currently zero outgoing email.
+- [ ] **`User.role_profile_name` persistence fix** — investigate why field doesn't persist on User.insert(); may require patching User class or using hook-based approach.
+- [ ] **`Role.module_profile` Custom Field** — Role DocType in Frappe v16 doesn't have this field natively; add as Custom Field to enable true per-role module visibility.
+- [ ] **Server Scripts sandbox-safe rewrite** — 2 of the 3 installed Server Scripts use `from datetime` (blocked by RestrictedPython); rewrite using `frappe.utils.getdate()` before production traffic.
+- [ ] **12 small dept leave_approver assignments** — Cardiology, Dialysis, CSSD, Endoscopy, Internal Audit, Legal, Medical Records, Medical Services, Nursing-OT, Operation Theatre, Transport, Typing Pool all fall back to `Administrator` as leave_approver because no manager-level designation exists. HR Manager to manually assign dept heads.
+- [ ] **Image version drift confirmation** — prod container runs `frappe/erpnext:v16.31.1` but plan baseline says `v16.30.0`. Verify with Venkat that v16.31.1 bump was intentional and HRMS app version still matches expectations.
+- [ ] **Quarterly DB password audit** (script it)
+- [ ] **Quarterly DR drill** (run 04.3 procedure against temp container per Phase D Plan)
+- [ ] **Run 8-phase regression test (08.3) on prod-env** — requires restoring qa-env or spinning up new test env
+
 ---
 
 ## Open follow-up items (carry-forward)
