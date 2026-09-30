@@ -218,3 +218,18 @@
 - **Decision:** Single forward-dated Attendance record `HR-ATT-2026-06312` (Test User HR-EMP-00421, dept `X - HH`, date 2026-10-02 Gandhi Jayanti, status `On Leave`, docstatus=1, created 2026-09-19 15:03:26 IST) is intentional test data. Do NOT delete — tied to Leave Application exercise (HR-LAP-2026-00001) from the Sep 18-19 manual testing session.
 - **Rationale:** Future audits may flag forward-dated records as suspicious. Recording here so it's recognized as test data, not a bug or clock-drift artifact.
 - **Status:** ✅ Documented (do not delete)
+
+---
+
+## 2026-09-30 — Phase A Design Decisions Locked (1 entry)
+
+### 2026-09-30 — Phase A Design Decisions Locked (13)
+- **Decision:** Locked all 13 Phase A design decisions (see `docs/handbook/05-process/06-phase-a-design-2026-09-30.md` § "Venkat Decisions Locked" for full table).
+- **Rationale:** Walked through the Phase A design doc (112 KB, 18,388 words, 11 artifacts + 4 verifications + 3 architectural decisions + 10 open questions) with Venkat over 4 blocks. Decisions captured 2026-09-30 07:41-09:38 IST. Notable choice: Branches added now (Decision 6) — adds ~1.5-2h to execution time but future-proofs multi-site this hospital. 2FA deferred entirely (Decision 7) for now — re-evaluate after Phase B. SMTP deferred to Phase D (Decision 1) — Phase A.10 end-to-end test runs without notification verification (known gap).
+- **Status:** ✅ Locked — design doc updated, plan doc updated, notes file updated. Awaiting Phase A execution kickoff.
+
+---
+
+## Open follow-up items (carry-forward)
+
+- Phase A execution kickoff (gated on Venkat YES — ~7-8h wall time, Branch DocType + Custom Field in scope per Decision 6)

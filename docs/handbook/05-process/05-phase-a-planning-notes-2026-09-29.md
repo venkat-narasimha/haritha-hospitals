@@ -83,3 +83,29 @@ Read this file + the plan doc §5 Phase A + §9 baseline. Then design:
 6. Dashboard cards + chart sources
 
 **Gate before execution:** All 6 above must be reviewed + signed off by Venkat before any Role/Permission/Workflow change is pushed.
+
+---
+
+## Venkat Decisions Locked (2026-09-30 09:38 IST)
+
+All 13 Phase A design decisions are locked. The detailed design doc is at `docs/handbook/05-process/06-phase-a-design-2026-09-30.md`.
+
+| # | Decision | Value |
+|---|---|---|
+| 1 | SMTP | Defer to Phase D (option c) |
+| 2 | COO role | System Manager |
+| 3 | Manager / GM cluster | Default Employee + per-dept overrides |
+| 4 | Roster Manager count | 4 (3 Nursing Supervisors + 1 Nursing Superintendent) |
+| 5 | HR Mgr / HR User boundary | 1 HR Manager + 2 HR Users |
+| 6 | Branches | Add now |
+| 7 | 2FA | None |
+| 8 | Password policy | Adopt as-is (min 12, score 3, 90-day expiry, history 5) |
+| 9 | Notifications | tabNotification, System channel initially, Email in Phase D |
+| 10 | testuser role | Employee |
+| 11 | Leave Approver routing | via Employee.leave_approver field |
+| 12 | Workflow approver routing | Leave App: leave_approver; Shift Request: dept's Roster Manager (fallback HR Manager) |
+| 13 | Cross-functional Sr Manager | approve only own dept |
+
+**Architectural decisions status:** All 3 architectural decisions (A: Branches — Add now; B: 2FA — None; C: Password policy — Adopt as-is) have been resolved.
+
+**Execution impact:** Decision 6 (Branches) brings Branch DocType + Employee.branch Custom Field + 3D User Permissions into scope. Revised Phase A total: ~7-8h wall time (was 5.5h).

@@ -137,6 +137,26 @@ Deliver **two things simultaneously**:
 - **R2 — User dashboard for every role** with their respective permissions + access. 6 roles → 6 dashboards (Workspace + module visibility + custom cards). Not "Desk default" — built per role.
 - **R3 — Derive roles / permissions / access from existing designations.** 39 departments × 49 designations exist in prod. Observe the data, cluster designations into role-candidates, assign per best practices + org structure.
 
+**Venkat's Phase A Decisions (locked 2026-09-30 09:38 IST):**
+
+| # | Decision | Value |
+|---|---|---|
+| 1 | SMTP | Defer to Phase D (option c) |
+| 2 | COO role | System Manager |
+| 3 | Manager / GM cluster | Default Employee + per-dept overrides |
+| 4 | Roster Manager count | 4 (3 Nursing Supervisors + 1 Nursing Superintendent) |
+| 5 | HR Mgr / HR User boundary | 1 HR Manager + 2 HR Users |
+| 6 | Branches | Add now |
+| 7 | 2FA | None |
+| 8 | Password policy | Adopt as-is (min 12, score 3, 90-day expiry, history 5) |
+| 9 | Notifications | tabNotification, System channel initially, Email in Phase D |
+| 10 | testuser role | Employee |
+| 11 | Leave Approver routing | via Employee.leave_approver field |
+| 12 | Workflow approver routing | Leave App: leave_approver; Shift Request: dept's Roster Manager (fallback HR Manager) |
+| 13 | Cross-functional Sr Manager | approve only own dept |
+
+**Implication for execution:** Branch DocType + Employee.branch Custom Field + 3D User Permissions are now IN scope (Decision 6). Adds ~1.5-2h to execution time vs original 5.5h estimate → revised total ~7-8h.
+
 **Phase A steps:**
 
 A.0. **Analyze Designation + Department data (R3 pre-work).** Pull all 49 Designations + 39 Departments from prod. Cluster designations into role-candidates:
