@@ -219,12 +219,16 @@ A.10. **Take a backup** at end of Phase A before Phase B begins.
 
 **Note from verification:** shift_assignment_count went from 8118 → 7830 (288 pruned) between audit and now. Investigate whether 288 were legitimately expired (use `mark_expired_shift_assignments_as_inactive` cron output) or were bulk-deleted. Either way, document.
 
+**Phase B status (2026-09-30 12:30 IST):** ✅ B.1–B.4 COMPLETE. See `tracker-phases/Phase-B-Activation.md` for full details.
+
+⚠️ **Critical runtime blocker discovered during B.3:** All HRMS scheduler jobs (15 methods) are failing with `ModuleNotFoundError: No module named 'hrms'` for ~14 hours. `process_auto_attendance_for_all_shifts` updates `last_execution` (Phase 0 Fix B still working) but `Scheduled Job Log` shows 100% Failed. Phase B config is correct and will take effect when scheduler env is fixed — DO NOT re-run Phase B to fix this. Separate diagnostic session required before Phase C.
+
 ---
 
 #### Phase C — Custom App Hardening & Reusability (Day 2)
 
 1. **Clean up scripts directory** — archive all old `_v1`, `_v2`, `fix_*` versions (per audit: 12 superseded ingest scripts, 14 fix-scripts).
-2. **Complete fixtures export** — audit confirmed only 5 of 274 Haritha customizations are in fixtures. Verify each Custom Field, Property Setter, Notification, Letter Head, Print Format is in the custom app fixtures, OR in an env-init script that runs during install.
+2. **Complete fixtures export** — audit confirmed only 5 of 274 hospital customizations are in fixtures. Verify each Custom Field, Property Setter, Notification, Letter Head, Print Format is in the custom app fixtures, OR in an env-init script that runs during install.
 3. **Make `hooks.py` useful** — verification shows all sections except `fixtures` are commented out. At minimum populate:
  - `scheduler_events` (if HRMS-scheduled jobs need to be registered here)
  - any required `doc_events` for the workflows created in Phase A
@@ -320,7 +324,7 @@ When handing this plan to your AI agent, use this instruction:
 - This plan deliberately puts **HRMS scheduler diagnosis first (Phase 0)** because without it, Phase B's auto-attendance work is a black box. Verification on 2026-09-29 found the scheduler silently broken (32+ days stale) — this is the highest-priority blocker.
 - Phase A (RBAC + Workflows) is next because without it the system is not safe for real users.
 - Auto-Attendance (Phase B) is the third priority because that's the core value proposition.
-- Everything else (app cleanliness, playbook, DR test) turns the current Haritha deployment into a real product.
+- Everything else (app cleanliness, playbook, DR test) turns the current hospital deployment into a real product.
 - **Audit caveat:** the 2026-09-29 audit (`docs/handbook/05-process/03-project-go-live-audit-2026-09-29.md`) is already partially stale relative to live prod (shift types 25→26, auto-attendance flags flipped, holidays 12→14, dept 37→39, shift assignments 8118→7830). Treat the audit as a snapshot; re-run key checks after any major change rather than trusting the audit row counts blindly.
 
 ---

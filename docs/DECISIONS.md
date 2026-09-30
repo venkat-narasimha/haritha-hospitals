@@ -39,7 +39,7 @@
 
 ### 2026-08-19 — Custom leave types = deferred
 - **Decision:** No custom Leave Type DocTypes for MVP; use HRMS defaults only.
-- **Rationale:** User said Haritha adds later.
+- **Rationale:** User said hospital adds later.
 - **Status:** ⏳ Deferred (post-MVP)
 
 ### 2026-08-19 — Leave allocation = standard Indian defaults
@@ -58,7 +58,7 @@
 - **Status:** ✅ Active
 
 ### 2026-08-19 — Comprehensive 7-change schema update
-- **Decision:** Apply 7 schema changes across 9 HRMS doctypes for canonical Haritha structure.
+- **Decision:** Apply 7 schema changes across 9 HRMS doctypes for canonical hospital structure.
 - **Rationale:** 9 HRMS docs verified; HRMS v15 canonical structure applied.
 - **Status:** ✅ Active (see `all_schemas.csv`)
 
@@ -234,7 +234,13 @@
 - **Rationale:** Live verification (Phase 0) found HRMS scheduler broken; Phase 0 fixed it. Phase A design walkthrough captured 13 locked decisions (SMTP defer to Phase D, 2FA none, Branches added now, Password policy as-is, Notifications via tabNotification System-only, etc.). Execution batch: A.1-A.4 (Roles + Role Profiles + Permission Manager, 858 perm values) → A.5-A.6 (leave_approver populated, User Permissions created — initial bulk-creation deferred to A.11) → A.7-A.8 (Workflows + Workspaces) → A.11 (User Provisioning + Module Profile + A.5/A.6 re-runs, 211 Employee Users provisioned) → A.9 (test users + E2E, 6/6 pass) → A.10 (final backup + sign-off). Notable choices in execution: role_profile_name didn't persist on User.insert(), force-inserted via tabHas Role (workaround); bench restart required between bulk operations due to stale Frappe role cache; SMTP not configured so notification emails don't deliver (known Phase D gap).
 - **Status:** ✅ Complete (batch sign-off pending Venkat review). Phase A officially closed. Phase B (auto-attendance production activation) unblocked.
 
-### Phase D backlog (carried forward from Phase A)
+### 2026-09-30 — Phase B Auto-Attendance Activation COMPLETE (with CRITICAL runtime blocker discovered)
+
+- **Decision:** Auto-attendance production configuration activated on prod (`prod-env.duckdns.org`). All 4 sub-steps (B.1–B.4) executed in batch 2026-09-30 12:30 → 12:45 IST (~15 min wall time after pre-flight diagnostics). Data-level config is correct and applied; new critical runtime blocker discovered during B.3 reconciliation that requires immediate attention (NOT deferred to Phase D).
+- **Rationale:** Phase 0 + Phase A confirmed HRMS scheduler is firing (`process_auto_attendance_for_all_shifts` last_execution updates hourly). Phase B closed the remaining config gaps: (B.1) `working_hours_threshold_for_absent` 0.0 → 2.0 on all 26 Shift Types — without this, any employee working 0.001h would be marked Present, making absent detection ineffective; (B.2) Holiday List `weekly_off` Sunday → NULL — this hospital works Sundays in OPD/IPD (~52 Sundays/year were misclassified); (B.1 also included) `last_sync_of_checkin` set on Morning-8h shift (was NULL → auto-attendance silently skipping per LEARNINGS.md #42); (B.3) attendance vs checkin reconciliation — 180 attendance records in last 7d, all marked Absent (working_hours=0), 0 checkins in last 7d (only 2 real checkins since Sept 17); (B.4) fresh backup taken: `prod-env_backup_20260930_124132.tar.gz` (2.6M, SHA `45dc04fbf2c10932b490051f487bd9a17313b785cb94c86d213033415558b151`), offsite rsync verified at `[redacted-offsite]`.
+- **CRITICAL new blocker (discovered in B.3):** All 15 HRMS scheduler jobs (15 methods × 14 hourly firings = 210 invocations in 7 days) are failing with `builtins.ModuleNotFoundError: No module named 'hrms'`. This is NOT a Phase B scope issue — the scheduler process is firing on schedule (`last_execution` updates), `bench console` and `bench execute` CAN import hrms, but the scheduler's per-job invocation fails. 337 frappe/erpnext jobs succeed in the same window — this is an HRMS-specific import path issue inside `frappe.get_attr()` call chain. **Auto-attendance is configured correctly but NOT actually running end-to-end.** This is the most critical prod blocker since Phase 0.
+- **Secondary observations:** (1) DB timezone = UTC but `time`/`attendance_date` stored in IST — date arithmetic needs CONVERT_TZ awareness; (2) Biometric checkin devices appear offline — last 2 real checkins Sep 17-18, then 12-day gap with 420/day bulk-imported 2025-06 historical data; (3) Attendance already marked Absent in bulk (correct given 0 checkins), but operationally wrong because employees ARE working (just no biometric data) — gap closes only when biometric devices come back online.
+- **Status:** ✅ B.1–B.4 COMPLETE on prod (config + docs + backup). ⚠️ AUTO-ATTENDANCE NOT YET OPERATIONAL end-to-end pending ModuleNotFoundError resolution. Recommend dedicated session for root-cause analysis of scheduler HRMS import (likely apps.txt, PYTHONPATH, or container mount issue) BEFORE Phase C. Phase B sign-off commit pending.
 - [ ] **SMTP configuration** — required for notification emails, password reset emails, welcome emails. Currently zero outgoing email.
 - [ ] **`User.role_profile_name` persistence fix** — investigate why field doesn't persist on User.insert(); may require patching User class or using hook-based approach.
 - [ ] **`Role.module_profile` Custom Field** — Role DocType in Frappe v16 doesn't have this field natively; add as Custom Field to enable true per-role module visibility.
