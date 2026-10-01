@@ -118,6 +118,65 @@ A full backup of the original 1492-line TRACKER.md is preserved at [`tracker-pha
 
 ---
 
+## 2026-10-01 (10:21 → 10:32 IST) — Phase D Item 5 (leave_approver) RESOLVED + D3/D4/D5 drift investigated
+
+### Phase D Item 5 — leave_approver cleanup FULLY RESOLVED
+
+**Pre-state (handover claim):** 12 employees on Administrator fallback (HR-EMP-00415/00399 in CSSD, HR-EMP-00242/00275/00305 in Internal Audit, HR-EMP-00234/00324 in OT, HR-EMP-00248 in Finance, HR-EMP-00339 in HR, HR-EMP-00390 in IP Ops, plus 2 in `depts without senior candidates`).
+
+**Actual pre-state (verified 2026-10-01 09:55 IST):** 10 employees on Administrator fallback (handover's 12 was outdated; 2 had been closed by HR since handover).
+
+**Fix applied (10:21 → 10:27 IST):** 10 of 10 employees mapped via `frappe.db.set_value` (Lesson #177 safe_exec pattern):
+
+| Emp ID | Dept | Approver Email |
+|---|---|---|
+| HR-EMP-00234 | Operation Theatre | srtechnician1052262@harithahospitals.com |
+| HR-EMP-00242 | Internal Audit | seniorexecutive1053263@harithahospitals.com |
+| HR-EMP-00248 | Finance & Accounts | assistantmanager1026236@harithahospitals.com ⚠️ inverted (closes 3 ghost delegations) |
+| HR-EMP-00275 | Internal Audit | seniorexecutive1053263@harithahospitals.com |
+| HR-EMP-00305 | Internal Audit | seniorexecutive1053263@harithahospitals.com |
+| HR-EMP-00324 | Operation Theatre | srtechnician1052262@harithahospitals.com |
+| HR-EMP-00390 | IP Operations | seniorexecutive1042252@harithahospitals.com ⚠️ inverted (closes 3 ghost delegations) |
+| HR-EMP-00399 | CSSD | srtechnician1011221@harithahospitals.com |
+| HR-EMP-00415 | CSSD | srtechnician1011221@harithahospitals.com |
+| HR-EMP-00339 | HR | seniorvicepresident1115325@harithahospitals.com (VP-level, top of hierarchy) |
+
+**Post-state:** **0 employees on Administrator fallback** ✓ — Phase D item 5 FULLY RESOLVED.
+
+**Side benefits:**
+- 6 ghost delegations closed (3 each from Finance Mgr + IP Ops Mgr — they were approving leave for 3 others while their own approver was Administrator; now both have a proper superior in their chain)
+- All 7 handover-noted dept-head candidates verified (CSSD HR-EMP-00221, Internal Audit HR-EMP-00263, Medical Records HR-EMP-00282, OT HR-EMP-00262 — all active, with User accounts)
+
+### Drift Investigation — D3/D4/D5 (all non-issues)
+
+| Item | Handover | Verified | Verdict | Action |
+|---|---|---|---|---|
+| D3 Custom DocPerm | 858 | 379 | 858 was design target (33 roles × 26 doctypes grid); 379 is actual scoped count covering all Haritha-critical HRMS surface | Accept + add design-vs-actual note |
+| D4 Notifications | 8 | 16 | Handover undercounted: 6 stock framework (Email, 2017-2021) + 8 workflow-generated (auto-created 2026-09-30 10:49:25 when Leave App + Shift Request workflows defined) + 2 disabled | Update handover doc to 16 = 6+8+2 |
+| D5 Admin-like users | 3 | 5 | 2 "extras" are false positives: `coordinator*@harithahospitals.com` users have only Employee role + Haritha: Employee profile. Audit filter `LIKE '%coo%'` matched "coordinator" substring | Tighten audit filter; document as Employee-role |
+
+### Session Summary (10:32 IST)
+
+**6 of 10 Phase D backlog items CLOSED in this session:**
+
+| # | Item | Status | Closed |
+|---|---|---|---|
+| D1 | User RP migration (218 users → Haritha RPs) | ✅ RESOLVED | 09:26 |
+| D2 | test.emp Employee role | ✅ RESOLVED | 09:26 |
+| D3 (audit) | Role.module_profile CF verify | ✅ verified | 09:00 |
+| D4 (audit) | Enforce 90-Day Password Expiry rewrite | ✅ enabled + working | 09:00 |
+| D5 | Small dept leave_approver (was 12) | ✅ FULLY RESOLVED | 10:27 |
+| D3/D4/D5 (drift) | Custom DocPerm / Notifications / Admin-like | ✅ investigated — non-issues | 10:29 |
+
+**4 Phase D items still OPEN:** SMTP (deferred per Venkat), Image version drift (accepted minor), DR drill (needs dedicated session), 8-phase regression on pberpdev.
+
+**Lessons captured:**
+- Lesson #183: Built-in Guest user has `role_profile_name = NULL` by design (`user_type='Website User'`). Always exclude from "no NULL role_profile_name" verification queries.
+- Lesson #184: Audit filter for admin-like users should use `role_profile_name LIKE '%System Manager%' OR email LIKE '%@admin%'`, NOT `email LIKE '%coo%'` (matches "coordinator"/"cooper" substrings → false positives).
+- Lesson #185: Workflow auto-creates 4 notifications per workflow with 4 states (System Notification channel, Value Change event, `is_standard=0`). Verify workflow count × 4 when investigating notification drift.
+
+---
+
 ## Phase Index
 
 > **Consolidated 2026-08-30:** 38 numbered phase files merged into 9 logical phase documents (preserving all content). The numbered filenames referenced in the right-column summaries (e.g. `003+004+005`) point to the original files, which are preserved in git history.
