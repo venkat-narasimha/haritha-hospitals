@@ -68,6 +68,56 @@ A full backup of the original 1492-line TRACKER.md is preserved at [`tracker-pha
 
 ---
 
+## 📌 Recent Activity (Oct 1, 2026) — Phase D Backlog: D1 (User Role Profile Migration) + D2 (test.emp Employee Role) RESOLVED
+
+**Audit findings (RBAC verification subagent 2026-10-01 08:43 IST):**
+- 219 enabled users, 0 currently assigned to any Haritha Role Profile
+- **D1 (CRITICAL):** All 219 users had `role_profile_name = NULL` — RPs + Workspaces existed but unused
+- **D2 (HIGH):** `test.emp@harithahospitals.com` had zero roles in `tabHas Role`
+- Drift: Custom DocPerm = 379 (handover said 858), Notifications = 16 (handover said 8), Admin-like users = 5 (handover said 3)
+
+**D1 fix applied (2026-10-01 09:26 IST):**
+- Snapshot CSV: `/root/.openclaw/workspace/audit/d1-dry-run-snapshot-2026-10-01.csv` (219 rows)
+- Backup: `pberpprod_backup_20261001_091507.tar.gz` (5.0 MB, local + offsite verified)
+- Mapped 219 users to 6 Haritha Role Profiles via priority cascade (System Manager → HR Manager → HR User → Roster Manager → Leave Approver → Employee default)
+- Administrator exception: `Haritha: System Manager` (Option a — preserves Administrator's 46-role `tabHas Role` history)
+- All updates via `frappe.db.set_value` (NOT `doc.save()` per Lesson #177)
+- 218 of 219 non-Guest users on Haritha RPs; 1 Guest system user has NULL (expected, `user_type='Website User'`)
+
+**D2 fix applied:**
+- Granted `Employee` role to `test.emp@harithahospitals.com` via direct `tabHas Role` INSERT
+- test.emp now lands on `Haritha: Employee` RP
+
+**Final distribution (218 Haritha users):**
+
+| Haritha Role Profile | Count |
+|---|---:|
+| Haritha: Employee | 179 |
+| Haritha: Leave Approver | 28 |
+| Haritha: Roster Manager | 5 |
+| Haritha: HR Manager | 3 |
+| Haritha: System Manager | 2 (Administrator + test.sm) |
+| Haritha: HR User | 1 |
+
+**Verification (9 checks):**
+- V1 Distribution: ✓ PASS
+- V2 NULL count: 1 (Guest only, expected)
+- V3 Non-Haritha count: ✓ 0
+- V4 Total on Haritha RPs: ✓ 218
+- V5 Administrator: ✓ `Haritha: System Manager`
+- V6 test.emp roles: ✓ `['Employee']`
+- V7 test.emp RP: ✓ `Haritha: Employee`
+- V8 RP coverage: ✓ All 6 RPs ≥1 user
+- V9 Test user spot-checks: ✓ All 7 match (Administrator + 6 test users)
+
+**Lessons:**
+- Lesson (new, ~#183): Always exclude `name='Guest'` AND `user_type='Website User'` from "no NULL role_profile_name" checks — Guest is a built-in system user with NULL by design.
+- Lesson (extended): D1 fix demonstrates `frappe.db.set_value` works reliably for User doc writes (Lesson #177 pattern extended from Server Scripts to User docs).
+
+**Status:** Phase D backlog items D1 + D2 RESOLVED. 6 backlog items remain (SMTP, image version drift, DR drill, regression test, pberpqa update, leave_approver fallback for 10 remaining small depts).
+
+---
+
 ## Phase Index
 
 > **Consolidated 2026-08-30:** 38 numbered phase files merged into 9 logical phase documents (preserving all content). The numbered filenames referenced in the right-column summaries (e.g. `003+004+005`) point to the original files, which are preserved in git history.

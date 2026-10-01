@@ -314,6 +314,44 @@
 
 ---
 
+## 2026-10-01 — Phase D D1 + D2 RESOLVED
+
+### 2026-10-01 — D1 RESOLVED: User Role Profile migration (218 of 219 users)
+
+- **Status:** ✅ RESOLVED 2026-10-01 09:26 IST
+- **Fix:** Migrated 218 of 219 non-Guest enabled users to 6 Haritha Role Profiles via `frappe.db.set_value` (avoids `doc.save()` safe_exec issue per Lesson #177).
+- **Mapping logic:** Priority cascade — System Manager → HR Manager → HR User → Roster Manager → Leave Approver → Employee default. Administrator exception set to `Haritha: System Manager` (Option a, preserves full `tabHas Role` history).
+- **Result:** 218 users on Haritha RPs (179 Employee + 28 LA + 5 RM + 3 HRM + 2 SM + 1 HRU). Built-in Guest user excluded (NULL by design — `user_type='Website User'`).
+- **Snapshot files:** `/root/.openclaw/workspace/audit/d1-dry-run-snapshot-2026-10-01.csv` + `d1-apply-changelog-2026-10-01.log` + `d1-final-state-2026-10-01.txt`.
+
+### 2026-10-01 — D2 RESOLVED: test.emp Employee role
+
+- **Status:** ✅ RESOLVED 2026-10-01 09:26 IST
+- **Fix:** Direct INSERT into `tabHas Role` for `test.emp@harithahospitals.com` with `role='Employee'`, `idx=1`.
+- **Result:** test.emp now has 1 role (Employee) + lands on `Haritha: Employee` RP via D1 migration.
+
+### 2026-10-01 — RBAC Verification Audit (first independent audit post-Phase A)
+
+- **Method:** Live read-only MariaDB queries via `docker exec` against pberpprod (219 users, 53 roles, 6 Haritha RPs, 6 Haritha Workspaces, 2 active workflows, 451 User Permissions, 16 Notifications, 4 Server Scripts, 78 Haritha custom fields).
+- **Findings:**
+  - **D1 (CRITICAL):** 0 of 219 users on Haritha RPs → **RESOLVED** (migration applied)
+  - **D2 (HIGH):** test.emp missing Employee role → **RESOLVED**
+  - D3 (Med): Custom DocPerm = 379 vs handover-claimed 858 (−479). Likely design target, not actual. Investigate later.
+  - D4 (Med): Notifications = 16 vs handover-claimed 8 (+8). Likely undercount in handover.
+  - D5 (Med): Admin-like users = 5 vs handover-claimed 3 (+2 coordinators). Confirm legitimacy.
+  - D6 (✅): `leave_approver` on Admin = 10 (handover said 12). 2 more closed since handover.
+  - D7 (✅): `Enforce 90-Day Password Expiry` Server Script enabled + working. Phase D backlog item 4 CLOSED.
+- **Subagent:** `haritha-rbac-audit` (runId `a6d10cc6-8f3c-42b5-bc2d-26d5d4ac1c10`, isolated context, MiniMax-M3).
+- **Snapshot:** Full audit report in subagent's session log; raw SQL queries in subagent task prompt.
+
+### 2026-10-01 — Lesson #183 (Guest system user has NULL `role_profile_name` by design)
+
+- **Decision:** Document that the built-in Guest user (`name='Guest'`, `user_type='Website User'`) has `role_profile_name = NULL` by design. Any "no NULL role_profile_name" verification must exclude `name='Guest'` AND `user_type='Website User'` — otherwise it produces a false-positive abort.
+- **Rationale:** During D1 verification, the in-script V2 check aborted because Guest user had NULL. Post-investigation confirmed Guest is a built-in system user without RP by design (it's not a real authenticated user, just a public/anonymous fallback). Excluding it gives 1 NULL (expected) vs 219 NULLs (real problem).
+- **Status:** ✅ Adopted — applies to all future role/RP audits.
+
+---
+
 **Sanitization note:** All client-identifying strings scrubbed from this section per `AGENTS.md` rule (the client name `this hospital`, region `regional`, hostnames, IPs, and credentials are redacted).
 **Source:** Phase E subagent (depth 1/5), live SQL queries on `[redacted-db-name]` 2026-09-30 15:14-15:16 IST.
 
