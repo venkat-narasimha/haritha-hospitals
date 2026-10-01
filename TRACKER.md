@@ -177,6 +177,65 @@ A full backup of the original 1492-line TRACKER.md is preserved at [`tracker-pha
 
 ---
 
+## 2026-10-01 (08:13 → 20:44 IST) — RBAC Audit + Workspace + Permissions Day
+
+**Theme:** Phase D backlog burn-down (D1/D2/D3/D4/D5) + workspace visibility/content fixes + permission deep-dive + RBAC URL redirect attempt (rolled back).
+
+**Net results:**
+- **6 of 10 Phase D backlog items CLOSED:** D1 (User RP migration, 218 users), D2 (test.emp Employee role), D3 (Role.module_profile CF verified), D4 (Enforce 90-Day Password Expiry enabled+working), D5 (leave_approver cleanup 12→10→1→0), Drift D3/D4/D5 (Custom DocPerm 379, Notifications 16, Admin-like 5 — all non-issues)
+- **6 Haritha workspaces** made visible (public=1, is_hidden=0, for_user='') + content JSON regenerated with proper `card_name` / `shortcut_name` / `chart_name` references
+- **HR Manager content cleanup:** 6 duplicate Link cards collapsed to 1, broken `/app/organizational-chart` URL block removed
+- **Round 2 fixes:** HR User / Employee / Leave Approver / Roster Manager workspaces verified + duplicated card cleanup
+- **218 User.default_workspace assignments** via `frappe.db.set_value` (role-specific Haritha workspace per user)
+- **Page DocPerm fix:** Desk User role now has read=1 on Page (fixes "No permission for Page" on report URLs)
+- **Report.roles fix:** Leave Ledger + Monthly Attendance Sheet Report.roles corrected (5 reports total)
+- **RBAC redirect attempt (Option A URL redirect + Option C sidebar filter):** ROLLED BACK due to regression (54-min stuck subagent + slug comparison bug); code preserved at `/tmp/rollback_backup/` for retry
+- **medicalsuperdinet1194404** workspace routing recovered (had `role_profile_name=NULL` → db.set_value to `Haritha: HR Manager`)
+
+### Phase D backlog status (post 2026-10-01)
+
+| # | Item | Status | Closed |
+|---|---|---|---|
+| D1 | User RP migration (218 users → Haritha RPs) | ✅ RESOLVED | 09:26 |
+| D2 | test.emp Employee role | ✅ RESOLVED | 09:26 |
+| D3 (audit) | Role.module_profile CF verify | ✅ RESOLVED (verified) | 09:09 |
+| D4 (audit) | Enforce 90-Day Password Expiry rewrite | ✅ RESOLVED (enabled+working) | 09:09 |
+| D5 | leave_approver cleanup (was 12) | ✅ FULLY RESOLVED | 10:27 |
+| Drift D3/D4/D5 | Custom DocPerm / Notif / Admin-like | ✅ RESOLVED (all non-issues) | 10:29 |
+| D6 | SMTP setup | ⏳ OPEN — Venkat deferred | — |
+| D7 | Image version drift (Frappe 16.30.0 vs ERPNext 16.31.1) | ⏳ OPEN — accepted minor | — |
+| D8 | Quarterly DR drill | ⏳ OPEN — needs dedicated session | — |
+| D9 | 8-phase regression test on pberpdev | ⏳ OPEN | — |
+| D10 | pberpqa v16 update | ⏳ OPEN | — |
+
+**6 of 10 Phase D backlog items CLOSED in this session.**
+
+### Commits pushed today
+
+| Hash | What |
+|---|---|
+| `651536f` | D1 + D2 (User RP migration + test.emp Employee role) — morning commit |
+| `1211249` | D5 + drift (leave_approver cleanup + D3/D4/D5 drift investigation) — mid-session commit |
+
+### 2026-10-01 Open Issues (for next session)
+
+- 🔴 **HR Manager workspace "Page not found" — bootinfo filter excludes 5 of 6 Haritha workspaces for non-admin users.** Administrator sees all 6 in `bootinfo.workspaces.pages`; HR Manager only sees `Haritha: System Manager`. Workspace IS in `tabWorkspace` with `public=1, is_hidden=0` but bootinfo module/app filter blocks it. **Suggested fix:** `frappe.modules.reload_doc('HR', 'Workspace', 'Haritha: HR Manager')` + clear bootinfo cache, OR investigate why System Manager workspace passes filter but HR Manager (same config) doesn't. 3 test users affected: `assistantgeneralmanager1002212`, `manager1001211`, `nursingsupervisor1045255` see all 6 Haritha in bootinfo but only `System Manager` is callable.
+- 🔴 **`medicalsuperdinet1194404` (real HR Manager)** direct URL verification pending — RP fixed but needs browser walkthrough to confirm full RBAC works for real production user (not just test users).
+- ⚠️ **Workspace Sidebar DocType missing parent column** — design constraint that limits sidebar hierarchy options.
+- ⚠️ **URL redirect hook (Option A)** and **sidebar filter (Option C)** NOT deployed — rolled back due to regression. Code preserved at `/tmp/rollback_backup/` on VPS for next session to retry with safer pattern.
+- ⚠️ **rbac_sidebar.py** Python `__pycache__` may still reference deleted module until explicitly cleared.
+- ⚠️ **`medicalsuperdinet1194404` had `role_profile_name=NULL`** (the only Haritha user in that state) — fixed via db.set_value but root cause of why this user alone fell out of the cascade is unknown.
+
+### Lessons captured (5 new)
+
+- **Lesson #183:** Built-in Guest user has `role_profile_name = NULL` by design (`user_type='Website User'`). Always exclude from "no NULL role_profile_name" verification queries.
+- **Lesson #184:** Audit filter for admin-like users should use `role_profile_name LIKE '%System Manager%' OR email LIKE '%@admin%'`, NOT `email LIKE '%coo%'` (matches "coordinator"/"cooper" substrings → false positives).
+- **Lesson #185:** Frappe Workflow auto-spawns 1 notification per state (System Notification channel, Value Change event, `is_standard=0`). Expect N×states workflow notifications.
+- **Lesson #186 (NEW):** Frappe v16's `User.on_update` hook reconciles `role_profile_name` field with `User Role Profile` child table. If child table is empty, `doc.save()` SILENTLY NULLs `role_profile_name`. Use `frappe.db.set_value` OR populate child table first. Lesson #177 was right — `doc.save()` is hazardous for User docs in v16.
+- **Lesson #187 (NEW):** For RBAC workspace routing, Frappe uses `bootinfo.workspaces.pages` (bootinfo cache) NOT `tabWorkspace` table directly. A workspace can exist in DB with `public=1, is_hidden=0` and still not render if missing from bootinfo pages — typically a caching/module-tag issue, not a permission issue.
+
+---
+
 ## Phase Index
 
 > **Consolidated 2026-08-30:** 38 numbered phase files merged into 9 logical phase documents (preserving all content). The numbered filenames referenced in the right-column summaries (e.g. `003+004+005`) point to the original files, which are preserved in git history.
