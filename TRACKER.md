@@ -208,7 +208,7 @@ A full backup of the original 1492-line TRACKER.md is preserved at [`tracker-pha
 | D9 | 8-phase regression test on pberpdev | ⏳ OPEN | — |
 | D10 | pberpqa v16 update | ⏳ OPEN | — |
 
-**6 of 10 Phase D backlog items CLOSED in this session.**
+**7 of 10 Phase D backlog items CLOSED in this session (added HR Manager workspace bootinfo fix in evening).**
 
 ### Commits pushed today
 
@@ -216,15 +216,16 @@ A full backup of the original 1492-line TRACKER.md is preserved at [`tracker-pha
 |---|---|
 | `651536f` | D1 + D2 (User RP migration + test.emp Employee role) — morning commit |
 | `1211249` | D5 + drift (leave_approver cleanup + D3/D4/D5 drift investigation) — mid-session commit |
+| `<NEW_HASH>` | HR Manager workspace bootinfo fix — evening commit (per-user Block Module cleanup + 3 test users + medicalsuperdinet "Page not found" resolved) |
 
 ### 2026-10-01 Open Issues (for next session)
 
-- 🔴 **HR Manager workspace "Page not found" — bootinfo filter excludes 5 of 6 Haritha workspaces for non-admin users.** Administrator sees all 6 in `bootinfo.workspaces.pages`; HR Manager only sees `Haritha: System Manager`. Workspace IS in `tabWorkspace` with `public=1, is_hidden=0` but bootinfo module/app filter blocks it. **Suggested fix:** `frappe.modules.reload_doc('HR', 'Workspace', 'Haritha: HR Manager')` + clear bootinfo cache, OR investigate why System Manager workspace passes filter but HR Manager (same config) doesn't. 3 test users affected: `assistantgeneralmanager1002212`, `manager1001211`, `nursingsupervisor1045255` see all 6 Haritha in bootinfo but only `System Manager` is callable.
-- 🔴 **`medicalsuperdinet1194404` (real HR Manager)** direct URL verification pending — RP fixed but needs browser walkthrough to confirm full RBAC works for real production user (not just test users).
+- ✅ **HR Manager workspace "Page not found" — RESOLVED in 2026-10-01 evening session.** Bootinfo filter was excluding 5 of 6 Haritha workspaces due to per-user `tabBlock Module` child table rows copied from `module_profile="Haritha: Employee Modules"` (Lesson #188: Module Profile `block_modules` is TEMPLATE only — runtime enforcement is per-user `tabBlock Module` child table, NOT the Module Profile). Fix: `DELETE bm FROM tabBlock Module bm INNER JOIN tabUser u ON bm.parent=u.name WHERE u.module_profile='Haritha: Employee Modules' AND u.enabled=1 AND bm.module='HR' AND bm.parenttype='User'` (211 rows). Verified via browser: all 5 affected users (3 test users + medicalsuperdinet + test.hruser) see all 6 Haritha workspaces; `/desk/haritha:-hr-manager` URL renders correctly.
+- ✅ **`medicalsuperdinet1194404` (real HR Manager)** direct URL verified via incognito browser — all 6 Haritha workspaces visible + URL renders correctly.
+- ✅ **"DocType Automation Flow not found" modal on Haritha: HR Manager** — was browser cache (cleared via hard refresh); not a server-side reference. Confirmed via c10 system-wide search: 0 references to "Automation Flow" DocType in workspaces, shortcuts, charts, number cards, custom blocks, or sidebar items.
 - ⚠️ **Workspace Sidebar DocType missing parent column** — design constraint that limits sidebar hierarchy options.
 - ⚠️ **URL redirect hook (Option A)** and **sidebar filter (Option C)** NOT deployed — rolled back due to regression. Code preserved at `/tmp/rollback_backup/` on VPS for next session to retry with safer pattern.
 - ⚠️ **rbac_sidebar.py** Python `__pycache__` may still reference deleted module until explicitly cleared.
-- ⚠️ **`medicalsuperdinet1194404` had `role_profile_name=NULL`** (the only Haritha user in that state) — fixed via db.set_value but root cause of why this user alone fell out of the cascade is unknown.
 
 ### Lessons captured (5 new)
 
@@ -233,6 +234,9 @@ A full backup of the original 1492-line TRACKER.md is preserved at [`tracker-pha
 - **Lesson #185:** Frappe Workflow auto-spawns 1 notification per state (System Notification channel, Value Change event, `is_standard=0`). Expect N×states workflow notifications.
 - **Lesson #186 (NEW):** Frappe v16's `User.on_update` hook reconciles `role_profile_name` field with `User Role Profile` child table. If child table is empty, `doc.save()` SILENTLY NULLs `role_profile_name`. Use `frappe.db.set_value` OR populate child table first. Lesson #177 was right — `doc.save()` is hazardous for User docs in v16.
 - **Lesson #187 (NEW):** For RBAC workspace routing, Frappe uses `bootinfo.workspaces.pages` (bootinfo cache) NOT `tabWorkspace` table directly. A workspace can exist in DB with `public=1, is_hidden=0` and still not render if missing from bootinfo pages — typically a caching/module-tag issue, not a permission issue.
+- **Lesson #188 (NEW, evening session):** Module Profile `block_modules` is TEMPLATE only — when a User gets `module_profile` assigned in Frappe v16, block rows are COPIED to per-user `tabBlock Module` child table (`parent=<user.email>`, `parenttype='User'`). `User.get_blocked_modules()` reads per-user `tabBlock Module`, NOT the Module Profile. Modifying Module Profile `block_modules` only affects FUTURE assignments; existing users require per-user `tabBlock Module` modification. (Verified 2026-10-01: 211/211 affected users had per-user HR block copies.)
+- **Lesson #189 (NEW, evening session):** `bench execute` does NOT accept file paths in Frappe v16 — use `bench console < script.py` (stdin) instead. `bench execute /tmp/script.py` raises `SyntaxError: invalid decimal literal` because `frappe.get_attr()` fails on file paths and the fallback `compile()` chokes on the `.py` extension.
+- **Lesson #190 (NEW, evening session):** `frappe.boot` is NOT auto-imported as a module attribute on the `frappe` package in Frappe v16 — `frappe.boot.get_bootinfo()` raises `AttributeError: module 'frappe' has no attribute 'boot'`. Use `from frappe.boot import get_bootinfo` for full bootinfo, or `frappe.desk.desktop.get_workspaces()` for workspace-only checks (cleaner, less indirection). (Cost 30 min today: c3 produced false-negative "fix failed" when fix was working.)
 
 ---
 
