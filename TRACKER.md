@@ -226,6 +226,8 @@ A full backup of the original 1492-line TRACKER.md is preserved at [`tracker-pha
 - ⚠️ **Workspace Sidebar DocType missing parent column** — design constraint that limits sidebar hierarchy options.
 - ⚠️ **URL redirect hook (Option A)** and **sidebar filter (Option C)** NOT deployed — rolled back due to regression. Code preserved at `/tmp/rollback_backup/` on VPS for next session to retry with safer pattern.
 - ⚠️ **rbac_sidebar.py** Python `__pycache__` may still reference deleted module until explicitly cleared.
+- 🔴 **Home button → /desk** (per-user personalization) — `frappe.boot.add_home_page` reads GLOBAL `desktop:home_page` default only; per-user defaults (`parent=user_email`) are IGNORED. `frappe.desk.desk_page.get("Haritha: HR Manager")` raises `DoesNotExistError: Page Haritha: HR Manager not found` because it loads `Page` DocType (singular), not `Workspace`. All 218 per-user defaults set in DB but unused. (Lesson #191)
+- 🔴 **Frappe hook loader doesn't pick up harita_hospital's boot_session** — `frappe.get_hooks("boot_session")` returns ONLY `['erpnext.startup.boot.boot_session']` even with clean clone from GitHub HEAD `04e4dac`. The module `harita_hospital.hooks` IS importable + HAS the `boot_session` attribute (verified via `dir(shim)`), but Frappe's loader skips it. Blocks the only viable per-user home page approach via hooks. (Lesson #192)
 
 ### Lessons captured (5 new)
 
