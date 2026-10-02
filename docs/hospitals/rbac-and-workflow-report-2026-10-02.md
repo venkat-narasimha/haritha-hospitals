@@ -270,11 +270,18 @@ These 4 doc-only bugs were categorized as by-design / test-design / data gaps / 
 
 | # | Bug | Found in | Severity | Status |
 |---|---|---|---|---|
+| 1 | Monthly Attendance Sheet pypika `AttributeError: 'NoneType' object has no attribute 'nodes_'` in `apps/hrms/hrms/hr/report/monthly_attendance_sheet/monthly_attendance_sheet.py:329` regardless of filter combo | 2026-10-02 verification | medium | RESOLVED 2026-10-02 — Cycle fix: HR-EMP-00325.reports_to set to null (top of BD chain), leave_approver set to medicalsuperdinet1194404 (HR Manager); HR-EMP-00331 direction was already correct; HR-EMP-00212 preserved (Bug 5 fix); backup at `/home/vijay/backups/prod/task8_pre_20261002_162523_*` |
 | 4 | Workflow Submit path leaves `workflow_state`='Draft' (status='Draft') after `client.insert`; explicit `apply_workflow` API call with action "Submit for Approval" transitions to Pending Approval correctly | 2026-10-02 verification | low | by-design workaround verified — use `apply_workflow` API |
 | 6 | Leave Approver / Employee can read own Employee but cannot update own `cell_number` (HTTP 403) | Test 5 D5 | medium | Open — design choice, not a bug per se |
 | 7 | `status` field not auto-updated by workflow transitions (only updated on Approved/Rejected per Workflow Update Field config) | Test 6 B1 | low | Open — known limitation, documented in F2 fix |
 | 9 | `Attendance Summary (HR)` report doesn't exist (actual report name: "Shift Attendance") | E2E 2.4, Test 4 C5 | low | Open — spec vs reality drift |
 | 10 | Workflow Apply Workflow API returns HTML "Invalid Link" for some transitions; workaround: direct `workflow_state` PUT via `frappe.client.set_value` | Test 3 B1 | low | Open — API quirk, workaround documented |
+
+### Deferred (2026-10-02)
+
+| # | Bug | Reason | Artefact |
+|---|---|---|---|
+| 1 | Monthly Attendance Sheet pypika upstream HRMS bug | Web search 2026-10-02 found no fix; no workaround from our app side. Venkat decided not to file upstream at this time | Issue draft at `/root/.openclaw/workspace/audit/bug-stack-traces-2026-10-02/hrms-issue-draft.md` for future filing |
 
 **Bug 6 — Self-update of cell_number returns 403 (by-design):** The Leave Approver + Employee role profiles can `read` their own Employee record but are correctly denied `write` on `cell_number` per Frappe v16's role-permission model. The Employee Self Service role only grants read access. This is a security boundary, not a defect. To enable self-update of `cell_number`, add a Custom DocPerm row for the appropriate role on the Employee DocType with `write=1` for the `cell_number` field only (not the whole doc).
 

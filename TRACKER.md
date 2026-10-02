@@ -245,11 +245,19 @@ A full backup of the original 1492-line TRACKER.md is preserved at [`tracker-pha
 - ⚠️ **F2 — Reports module documentation (NO code change):** Captured 5 test-name → actual-name mappings: `Attendance Sheet → Monthly Attendance Sheet / Shift Attendance`, `Leave Ledger → Leave Ledger` (exact match), `Employee Leave Balance → Employee Leave Balance` (exact match, has internal TypeError — deferred), `Attendance Summary → Monthly Attendance Sheet`, `Shift Roster → Shift Attendance`.
 
 ### 2026-10-02 — Open Bugs (deferred to manual) — REFINED VERDICTS
-- Bug 1: Monthly Attendance Sheet pypika — **REAL HRMS upstream bug.** `apps/hrms/hrms/hr/report/monthly_attendance_sheet/monthly_attendance_sheet.py:329` raises `AttributeError: 'NoneType' object has no attribute 'nodes_'` in pypika's `.where()` regardless of filter combo (deeper issue: pypika `_validate_table` on AND-combined None conditions). Workarounds exhausted: `company="Processbricks"` only → fails (companies is None); `companies=["Processbricks"]` only → fails HRMS validation "Please select company"; **BOTH** → still fails HTTP 500. **Verdict: NO workaround from our app side. File upstream HRMS issue.**
+- Bug 1: Monthly Attendance Sheet pypika — **REAL HRMS upstream bug.** `apps/hrms/hrms/hr/report/monthly_attendance_sheet/monthly_attendance_sheet.py:329` raises `AttributeError: 'NoneType' object has no attribute 'nodes_'` in pypika's `.where()` regardless of filter combo (deeper issue: pypika `_validate_table` on AND-combined None conditions). Workarounds exhausted: `company="Processbricks"` only → fails (companies is None); `companies=["Processbricks"]` only → fails HRMS validation "Please select company"; **BOTH** → still fails HTTP 500. **Status: DEFERRED — web search 2026-10-02 found no fix; issue draft at `/root/.openclaw/workspace/audit/bug-stack-traces-2026-10-02/hrms-issue-draft.md` for future filing.** (Venkat decided not to file upstream at this time.)
 - Bug 2: Employee Leave Balance TypeError — **Real HRMS bug but workaround exists.** Pass BOTH `from_date` AND `to_date` (verified: HR-EMP-00211 returns 12 CL leaves via API). Fails only when `to_date` is None (HRMS does `if filters.to_date <= filters.from_date:` without None check). **Verdict: Real bug, workaround in place. Defer upstream report.**
 - Bug 3: `/api/method/frappe.boot.get_bootinfo` HTTP 403 "Function not whitelisted" — **NOT A BUG.** Earlier Test 3 used `/api/method/frappe.boot` (module, not function) — wrong path. Bootinfo is delivered via page-level loader, not as a whitelisted method. **Verdict: Was test error (wrong endpoint path). No code change needed.**
-- Bug 5: HR-EMP-00212 has 0 direct reports (Asst. Gen. Mgr data setup) — manual
+- Bug 5: HR-EMP-00212 has 0 direct reports (Asst. Gen. Mgr data setup) — manual → **Resolved 2026-10-02 via direct DB write (HR-EMP-00325 chosen as manager)** — see cycle fix entry below.
 - Bug 6, 7, 9, 10: doc-only (see RBAC report) — manual / documentation
+
+### 2026-10-02 — Cycle fix (HR-EMP-00325 ↔ HR-EMP-00331)
+- HR-EMP-00325.reports_to: HR-EMP-00331 → null (top of BD chain, matches old_parent)
+- HR-EMP-00325.leave_approver: HR-EMP-00331 → medicalsuperdinet1194404 (HR Manager)
+- HR-EMP-00331 unchanged (direction was already correct)
+- HR-EMP-00212 unchanged (Bug 5 fix preserved)
+- Backup: /home/vijay/backups/prod/task8_pre_20261002_162523_*
+- Status: Resolved 2026-10-02 via direct DB write
 
 ### 2026-10-02 — Resolved today (workaround verified)
 - ✅ Bug 4: Workflow Submit path UX — **RESOLVED via workaround.** Verified today: explicit `frappe.model.workflow.apply_workflow(doc, 'Submit for Approval')` correctly transitions `workflow_state` Draft → Pending Approval. `status` field stays "Draft" because Submit transition has no `update_field` configured (by design — only Approved/Rejected states have it per today's earlier F2 fix). **Workaround: call `apply_workflow` API explicitly with action "Submit for Approval"; `status` remains "Draft" until Approved/Rejected by approver.**
