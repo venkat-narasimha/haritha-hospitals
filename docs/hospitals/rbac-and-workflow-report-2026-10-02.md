@@ -114,7 +114,9 @@
 | `Reject` | Pending | Rejected | (configured approvers) |
 | `Reject (HR)` | Pending | Rejected | (HR Manager override) |
 
-> **Recent fix (2026-10-02):** Custom `before_save` server hook in `harita_hospital.workflow_sync` bridges the gap where HRMS's `on_submit` validates `status in [Approved, Rejected]` but the workflow action didn't pre-set the Status field. The hook now mirrors `workflow_state` → `status` before save. Also added Property Setters making `status` field read-only in form (admin can still override via API).
+> **Workflow-state → Status sync (2026-10-02):** A `before_save` doc_events hook (`harita_hospital.workflow_sync.sync_workflow_state_to_status`) was tried first to bridge the gap where HRMS's `on_submit` validates `status in [Approved, Rejected]` but the workflow action didn't pre-set the Status field. The hook was registered correctly in `hooks.py` (`doc_events = {"Shift Request": {"before_save": ...}}`) and confirmed via `frappe.get_hooks("doc_events")`. However, **the hook did NOT fire on the submit-path transition** — Approved/Rejected have Doc Status=1, so Frappe's workflow apply path calls `doc.submit()`, and HRMS's `on_submit` validator runs BEFORE custom `before_save`/`on_update` doc_events hooks. A temporary `frappe.throw` inside the hook never appeared when "Approve" was clicked from the UI. (Lesson #193.)
+>
+> **Actual mechanism now in place:** Workflow's built-in `Update Field` / `Update Value` mechanism on the state definition. On the Approved state: `update_field='status', update_value='Approved'`. On the Rejected state: `update_field='status', update_value='Rejected'`. This runs DURING the transition (before `on_submit` validates) and is the framework-supported way. Same setup applied to the Leave Application workflow. Property Setters still make the `status` field read-only on forms (admin can still override via API).
 
 ### 5.2 Workflow: Leave Application
 
@@ -140,7 +142,7 @@
 | `Approve` | Pending | Approved | (managers) |
 | `Reject` | Pending | Rejected | (managers) |
 
-> Same `harita_hospital.workflow_sync` hook applies — Leave Application also benefits from the workflow_state → status sync.
+> Leave Application workflow uses the same mechanism: `Update Field = 'status'`, `Update Value = 'Approved'` on the Approved state and `'Rejected'` on the Rejected state (no doc_events hook — same Lesson #193 reason).
 
 ---
 
@@ -230,7 +232,7 @@
 | User Permission records | 451 |
 | Custom DocPerms (custom additions) | 1 (Page · Desk User · read=1) |
 | Workflow state transitions | Submit / Approve / Approve (HR) / Reject / Reject (HR) |
-| Recent fix (2026-10-02) | `harita_hospital.workflow_sync` hook syncs workflow_state → status before save |
+| Workflow sync (2026-10-02) | Workflow State's `Update Field` / `Update Value` mechanism sets `status` from `workflow_state` on submit-path transitions (Shift Request + Leave Application) — `before_save` doc_events hook was tried first but did NOT fire on submit-path (Lesson #193) |
 
 ---
 
@@ -244,7 +246,7 @@
 | 2026-10-01 (bootinfo fix) | Deleted 211 per-user `tabBlock Module` rows for `HR` module (was blocking bootinfo; now role profiles grant HR access) |
 | 2026-10-01 (test users) | `medicalsuperdinet1194404` role_profile fixed (was NULL) |
 | 2026-10-01 (Page DocPerm) | Added Custom DocPerm: `Page` · `Desk User` · read=1 (fixes "No permission for Page" on report URLs) |
-| 2026-10-02 (workflow sync) | Added `harita_hospital.workflow_sync.sync_workflow_state_to_status` (before_save hook) + hooks.py doc_events registration; Property Setters make `status` read-only on Shift Request + Leave Application forms |
+| 2026-10-02 (workflow sync — superseded) | Tried `harita_hospital.workflow_sync.sync_workflow_state_to_status` (before_save hook) + hooks.py doc_events registration; **did NOT fire on submit-path** — replaced by Workflow's `Update Field` / `Update Value` on Approved/Rejected states. Property Setters still make `status` read-only on forms |
 | 2026-10-02 (Approvers) | Set `Employee.shift_request_approver = medicalsuperdinet1194404` for HR-EMP-00212 (Assistant General Manager-1002) — for cross-user workflow testing |
 
 ---
