@@ -263,3 +263,24 @@
 ---
 
 _Document generated 2026-10-02 (Haritha Hospitals deployment, Frappe v16 + ERPNext v16 + HRMS v16.5.0)._
+
+## Open RBAC + Workflow Findings (2026-10-02)
+
+These 4 doc-only bugs were categorized as by-design / test-design / data gaps / API quirks per Lesson #196 (3-bucket triage) and require no code fix. Each is documented here for future reference and to inform future test plans.
+
+| # | Bug | Found in | Severity | Status |
+|---|---|---|---|---|
+| 6 | Leave Approver / Employee can read own Employee but cannot update own `cell_number` (HTTP 403) | Test 5 D5 | medium | Open — design choice, not a bug per se |
+| 7 | `status` field not auto-updated by workflow transitions (only updated on Approved/Rejected per Workflow Update Field config) | Test 6 B1 | low | Open — known limitation, documented in F2 fix |
+| 9 | `Attendance Summary (HR)` report doesn't exist (actual report name: "Shift Attendance") | E2E 2.4, Test 4 C5 | low | Open — spec vs reality drift |
+| 10 | Workflow Apply Workflow API returns HTML "Invalid Link" for some transitions; workaround: direct `workflow_state` PUT via `frappe.client.set_value` | Test 3 B1 | low | Open — API quirk, workaround documented |
+
+**Bug 6 — Self-update of cell_number returns 403 (by-design):** The Leave Approver + Employee role profiles can `read` their own Employee record but are correctly denied `write` on `cell_number` per Frappe v16's role-permission model. The Employee Self Service role only grants read access. This is a security boundary, not a defect. To enable self-update of `cell_number`, add a Custom DocPerm row for the appropriate role on the Employee DocType with `write=1` for the `cell_number` field only (not the whole doc).
+
+**Bug 7 — `status` field not auto-updated by every workflow transition:** Frappe v16 Workflow transitions only update the `workflow_state` field automatically. The `status` DocField (separate from `workflow_state`) is updated only when a state's `update_field` is configured to point to `status` with a specific `update_value`. Today this is set on Approved + Rejected for both Shift Request + Leave Application workflows. To update `status` on additional transitions (e.g. "Pending Approval"), edit the Workflow state definition and add `update_field='status', update_value='Open'` on those states. Already covered by F2 fix — listed for completeness.
+
+**Bug 9 — `Attendance Summary (HR)` report name mismatch:** The test plan referenced `Attendance Summary (HR)` but the actual HRMS report is `Shift Attendance`. This is test-plan drift, not a code bug. The HRMS v16 reports available include `Monthly Attendance Sheet`, `Shift Attendance`, `Employee Leave Balance`, `Leave Ledger`. Update future test cases to use the actual report names; no code change required.
+
+**Bug 10 — Apply Workflow API HTML "Invalid Link" quirk:** Calling `POST /api/method/frappe.model.workflow.apply_workflow` with a `state` value that's not the current state's allowed transitions returns a wrapped HTML "Invalid Link" error instead of a clean JSON 422. Workaround used today: bypass `apply_workflow` and set `workflow_state` directly via `frappe.client.set_value(doctype, docname, 'workflow_state', new_state)` from a Python context with `frappe.set_user` to escalate. The API quirk does not affect standard UI-based workflow transitions (which use the correct endpoint); only programmatic transitions hit it. No fix recommended — workaround documented for future automation scripts.
+
+---

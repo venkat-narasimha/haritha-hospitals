@@ -244,6 +244,18 @@ A full backup of the original 1492-line TRACKER.md is preserved at [`tracker-pha
 - ✅ **Test data cleanup (2026-10-02 ~11:55 GMT):** Deleted `Employee Checkin EMP-CKIN-10-2026-000001` via REST (HTTP 202 → GET 404). 6 docstatus=0 Shift Requests via REST (HR-SHR-26-10-00001/00002/00005/00006/00007/00008 → HTTP 202 each). 1 docstatus=1 Shift Request HR-SHR-26-10-00004 force-deleted via SQL (Lesson #63 recipe: `DELETE FROM tabShift Request WHERE name='HR-SHR-26-10-00004'` after clearing tabVersion/tabActivity Log/tabComment/tabWorkflow Action/tabNotification). Total deleted: 1 Employee Checkin + 7 Shift Requests. **Survived:** `HR-SHR-26-10-00009` (excluded per spec — pre-existing Employee draft from earlier session).
 - ⚠️ **F2 — Reports module documentation (NO code change):** Captured 5 test-name → actual-name mappings: `Attendance Sheet → Monthly Attendance Sheet / Shift Attendance`, `Leave Ledger → Leave Ledger` (exact match), `Employee Leave Balance → Employee Leave Balance` (exact match, has internal TypeError — deferred), `Attendance Summary → Monthly Attendance Sheet`, `Shift Roster → Shift Attendance`.
 
+### 2026-10-02 — Open Bugs (deferred to manual)
+- Bug 1: Monthly Attendance Sheet pypika AttributeError (HRMS upstream) — manual
+- Bug 2: Employee Leave Balance TypeError (HRMS upstream) — manual
+- Bug 3: /api/method/frappe.boot AttributeError for ALL users (Frappe core) — manual
+- Bug 4: Workflow Submit path leaves workflow_state=Draft after client.insert — manual
+- Bug 5: HR-EMP-00212 has 0 direct reports (Asst. Gen. Mgr data setup) — manual
+- Bug 6, 7, 9, 10: doc-only (see RBAC report) — manual / documentation
+
+### 2026-10-02 — Bug 8 (Automation Flow)
+- Root cause: Frappe v16.36.0 ships a new "Automation Flow" DocType (file `/home/frappe/frappe-bench/apps/frappe/frappe/automation/doctype/automation_flow/automation_flow.json`) + `frappe.automation_engine` module. The DocType JSON exists in source but is NOT installed in the DB at pberpprod.duckdns.org (`frappe.db.exists("DocType", "Automation Flow") == None`). Related DocTypes "Automation Trigger Queue" + "Automation Run" also missing. The warning "DocType Automation Flow not found" is thrown by `frappe/modules/utils.py:288` in `get_doctype_module()` whenever any code path calls `load_doctype_module("Automation Flow")` or `frappe.get_doc("Automation Flow", ...)`. Triggered on every workflow action because Frappe's `doctype_modules` cache lookup + dashboard/registry paths resolve against `tabDocType`, which doesn't contain the missing DocType. The "Automation" Module Def IS installed (app_name=frappe) — only the individual DocType registrations are missing, likely because their schema/permission fixtures weren't included in the migration set installed to this DB.
+- Status: investigation done; fix recommended: run `bench --site pberpprod.duckdns.org migrate` to install missing automation_engine DocTypes. Alternative if automation_engine is undesired on prod: leave the DB alone and patch `frappe/hooks.py` to remove the `automation_engine.scheduler.process_cron` + `automation_engine.drainer.drain_due` scheduled jobs so they don't try to query the missing DocType. **Lowest-risk path for production:** review `bench migrate --skip-search-index` output first to confirm only Automation* DocTypes are pending, then run migrate during a quiet window.
+
 ### Lessons captured (5 new)
 
 - **Lesson #183:** Built-in Guest user has `role_profile_name = NULL` by design (`user_type='Website User'`). Always exclude from "no NULL role_profile_name" verification queries.
