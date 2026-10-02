@@ -248,6 +248,7 @@
 | 2026-10-01 (Page DocPerm) | Added Custom DocPerm: `Page` · `Desk User` · read=1 (fixes "No permission for Page" on report URLs) |
 | 2026-10-02 (workflow sync — superseded) | Tried `harita_hospital.workflow_sync.sync_workflow_state_to_status` (before_save hook) + hooks.py doc_events registration; **did NOT fire on submit-path** — replaced by Workflow's `Update Field` / `Update Value` on Approved/Rejected states. Property Setters still make `status` read-only on forms |
 | 2026-10-02 (Approvers) | Set `Employee.shift_request_approver = medicalsuperdinet1194404` for HR-EMP-00212 (Assistant General Manager-1002) — for cross-user workflow testing |
+| 2026-10-02 (F1+F2+F3 RBAC fixes) | **F1 User Permission:** removed `medicalsuperdinet1194404` over-restriction (`allow=Employee, for_value=HR-EMP-00404, apply_to_all_doctypes=1`) → HR Manager now sees 212 employees via API (was 1). **F3 Account/Project doctype leak:** `Account` blocked via Custom DocPerm zero-out for HR Manager → HTTP 403 verified; `Project` PARTIAL — same approach returns HTTP 200 (deeper Frappe perm path grant suspected — Server Script `permission_query` hook or v16 `if_owner` re-grant) → deferred. **F2 Reports module:** 5 test-name → actual-name mappings documented (Attendance Sheet, Attendance Summary, Shift Roster, Leave Ledger, Employee Leave Balance); Employee Leave Balance has internal TypeError deferred. |
 
 ---
 
