@@ -259,6 +259,14 @@ A full backup of the original 1492-line TRACKER.md is preserved at [`tracker-pha
 - Backup: /home/vijay/backups/prod/task8_pre_20261002_162523_*
 - Status: Resolved 2026-10-02 via direct DB write
 
+### 2026-10-02 — Workspace regression found + restored
+- 17:07 IST — User reported "after login UI not taking to respective workspaces" during manual UI E2E test
+- Root cause: 6 Haritha workspaces completely deleted from `tabWorkspace` (parent rows + child Workspace Link + Workspace Chart). NOT hidden, NOT permissioned out. Workspace content JSON had been wiped between 16:30 and 17:07 IST yesterday — likely by "regenerate workspace content" action during 2026-10-01 late session. Today's 6 commits did NOT touch tabWorkspace.
+- Fix: Restored from `apps/haritha_hospital/haritha_hospital/fixtures/workspace.json` (1470 lines, canonical fixture) via Python script (`frappe.get_doc(d).insert()` for each workspace). Re-applied `UPDATE tabWorkspace SET public=1, is_hidden=0, for_user='' WHERE name LIKE 'Haritha:%'`. `bench clear-cache` + `bench restart`.
+- Verified (5/5): login home_page, Workspace API, get_workspaces (6 present), User API, direct URL no "page not found"
+- Lesson #198: Treat fixtures as production-data backups
+- Recommendations: include workspace.json in daily bench backup rotation; audit yesterday's workspace action log; consider Server Script for auto-recovery if workspace count drops below 6
+
 ### 2026-10-02 — Resolved today (workaround verified)
 - ✅ Bug 4: Workflow Submit path UX — **RESOLVED via workaround.** Verified today: explicit `frappe.model.workflow.apply_workflow(doc, 'Submit for Approval')` correctly transitions `workflow_state` Draft → Pending Approval. `status` field stays "Draft" because Submit transition has no `update_field` configured (by design — only Approved/Rejected states have it per today's earlier F2 fix). **Workaround: call `apply_workflow` API explicitly with action "Submit for Approval"; `status` remains "Draft" until Approved/Rejected by approver.**
 

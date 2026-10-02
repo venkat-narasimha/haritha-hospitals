@@ -266,6 +266,9 @@ _Document generated 2026-10-02 (Haritha Hospitals deployment, Frappe v16 + ERPNe
 
 ## Open RBAC + Workflow Findings (2026-10-02)
 
+- **2026-10-02 17:07–17:08 (Workspace regression):** 6 Haritha workspaces completely deleted from `tabWorkspace` between yesterday's session and today's UI testing. Restored from canonical fixture. Verified 5/5. Lesson #198: fixtures as production-data backups.
+
+
 These 4 doc-only bugs were categorized as by-design / test-design / data gaps / API quirks per Lesson #196 (3-bucket triage) and require no code fix. Each is documented here for future reference and to inform future test plans.
 
 | # | Bug | Found in | Severity | Status |
